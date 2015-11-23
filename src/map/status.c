@@ -830,6 +830,7 @@ void initChangeTables(void) {
 	status->dbs->IconChangeTable[SC_ATKER_ASPD] = SI_ATKER_ASPD;
 	status->dbs->IconChangeTable[SC_ATKER_MOVESPEED] = SI_ATKER_MOVESPEED;
 	status->dbs->IconChangeTable[SC_CUP_OF_BOZA] = SI_CUP_OF_BOZA;
+	status->dbs->IconChangeTable[SC_PHI_DEMON] = SI_PHI_DEMON;
 	
 	// Eden Crystal Synthesis
 	status->dbs->IconChangeTable[SC_QUEST_BUFF1] = SI_QUEST_BUFF1;
@@ -997,6 +998,7 @@ void initChangeTables(void) {
 	status->dbs->ChangeFlagTable[SC_ATKER_MOVESPEED] |= SCB_MAXSP | SCB_ALL;
 	status->dbs->ChangeFlagTable[SC_FOOD_CRITICALSUCCESSVALUE] |= SCB_CRI;
 	status->dbs->ChangeFlagTable[SC_CUP_OF_BOZA] |= SCB_VIT | SCB_ALL;
+	status->dbs->ChangeFlagTable[SC_PHI_DEMON] |= SCB_ALL;
 	
 	// Cash Items
 	status->dbs->ChangeFlagTable[SC_FOOD_STR_CASH] = SCB_STR;
@@ -3045,6 +3047,11 @@ int status_calc_pc_(struct map_session_data* sd, enum e_status_calc_opt opt) {
 		}
 		if (sc->data[SC_CUP_OF_BOZA])
 			sd->subele[ELE_FIRE] += sc->data[SC_CUP_OF_BOZA]->val2;
+		if (sc->data[SC_PHI_DEMON]) {
+			sd->right_weapon.addele[ELE_DEMON] += sc->data[SC_PHI_DEMON]->val1;
+			sd->left_weapon.addele[ELE_DEMON] += sc->data[SC_PHI_DEMON]->val1;
+			sd->magic_addele[ELE_DEMON] += sc->data[SC_PHI_DEMON]->val1;
+		}
 	}
 	status_cpy(&sd->battle_status, bstatus);
 
