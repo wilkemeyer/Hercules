@@ -23,7 +23,7 @@ ECHO.
 ECHO Exporting item databases to 'sql-files' folder...
 PING -n 3 -w 1 127.0.0.1 > nul
 
-map-server.exe --itemdb2sql
+map-server.exe --load-plugin itemdb2sql --itemdb2sql
 ECHO.
 
 PING -n 10 -w 1 127.0.0.1 > nul
