@@ -1,7 +1,7 @@
 -- NOTE: This file was auto-generated and should never be manually edited,
 --       as it will get overwritten. If you need to modify this file,
 --       please consider modifying the corresponding .conf file inside
---       the db folder, and then re-run the db2sql plugin.
+--       the db folder, and then re-run the itemdb2sql plugin.
 
 --
 -- Table structure for table `item_db`

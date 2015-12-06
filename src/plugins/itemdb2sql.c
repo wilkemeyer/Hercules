@@ -8,12 +8,10 @@
 #include "common/conf.h"
 #include "common/memmgr.h"
 #include "common/mmo.h"
+#include "common/nullpo.h"
 #include "common/strlib.h"
-#include "common/timer.h"
-#include "map/clif.h"
 #include "map/itemdb.h"
 #include "map/map.h"
-#include "map/pc.h"
 
 #include "common/HPMDataCheck.h"
 
@@ -21,43 +19,63 @@
 #include <stdlib.h>
 
 HPExport struct hplugin_info pinfo = {
-	"DB2SQL",        // Plugin name
+	"ItemDB2SQL",    // Plugin name
 	SERVER_TYPE_MAP, // Which server types this plugin works with?
-	"0.5",           // Plugin version
+	"0.6",           // Plugin version
 	HPM_VERSION,     // HPM Version (don't change, macro is automatically updated)
 };
 
+/// Conversion state tracking.
 struct {
-	FILE *fp;
+	FILE *fp; ///< Currently open file pointer
 	struct {
-		char *p;
-		size_t len;
-	} buf[4];
-	char *db_name;
+		char *p;    ///< Buffer pointer
+		size_t len; ///< Buffer length
+	} buf[4]; ///< Output buffer
+	char *db_name; ///< Database table name
 } tosql;
-bool torun = false;
 
+/// Whether the plugin will automatically run.
+bool itemdb2sql_torun = false;
+
+/// Backup of the original function pointer.
 int (*itemdb_readdb_libconfig_sub) (config_setting_t *it, int n, const char *source);
 
-void hstr(const char *str) {
-	if( strlen(str) > tosql.buf[3].len ) {
+
+/**
+ * Normalizes and appends a string to the output buffer.
+ *
+ * @param str The string to append.
+ */
+void hstr(const char *str)
+{
+	if (strlen(str) > tosql.buf[3].len) {
 		tosql.buf[3].len = tosql.buf[3].len + strlen(str) + 1000;
 		RECREATE(tosql.buf[3].p,char,tosql.buf[3].len);
 	}
 	safestrncpy(tosql.buf[3].p,str,strlen(str));
 	normalize_name(tosql.buf[3].p,"\t\n ");
 }
-int db2sql(config_setting_t *entry, int n, const char *source) {
+
+/**
+ * Converts an Item DB entry to SQL.
+ *
+ * @see itemdb_readdb_libconfig_sub.
+ */
+int itemdb2sql_sub(config_setting_t *entry, int n, const char *source)
+{
 	struct item_data *it = NULL;
 
-	if( (it = itemdb->exists(itemdb_readdb_libconfig_sub(entry,n,source))) ) {
+	if ((it = itemdb->exists(itemdb_readdb_libconfig_sub(entry,n,source)))) {
 		char e_name[ITEM_NAME_LENGTH*2+1];
 		const char *bonus = NULL;
 		char *str;
 		int i32;
-		unsigned int ui32;
+		uint32 ui32;
 		config_setting_t *t = NULL;
 		StringBuf buf;
+
+		nullpo_ret(entry);
 
 		StrBuf->Init(&buf);
 
@@ -76,10 +94,10 @@ int db2sql(config_setting_t *entry, int n, const char *source) {
 		StrBuf->Printf(&buf, "'%u',", it->flag.delay_consume?IT_DELAYCONSUME:it->type);
 
 		// price_buy
-		StrBuf->Printf(&buf, "'%u',", it->value_buy);
+		StrBuf->Printf(&buf, "'%d',", it->value_buy);
 
 		// price_sell
-		StrBuf->Printf(&buf, "'%u',", it->value_sell);
+		StrBuf->Printf(&buf, "'%d',", it->value_sell);
 
 		// weight
 		StrBuf->Printf(&buf, "'%u',", it->weight);
@@ -100,15 +118,15 @@ int db2sql(config_setting_t *entry, int n, const char *source) {
 		StrBuf->Printf(&buf, "'%u',", it->slot);
 
 		// equip_jobs
-		if( libconfig->setting_lookup_int(entry, "Job", &i32) ) // This is an unsigned value, do not check for >= 0
-			ui32 = (unsigned int)i32;
+		if (libconfig->setting_lookup_int(entry, "Job", &i32)) // This is an unsigned value, do not check for >= 0
+			ui32 = (uint32)i32;
 		else
 			ui32 = UINT_MAX;
 		StrBuf->Printf(&buf, "'%u',", ui32);
 
 		// equip_upper
-		if( libconfig->setting_lookup_int(entry, "Upper", &i32) && i32 >= 0 )
-			ui32 = (unsigned int)i32;
+		if (libconfig->setting_lookup_int(entry, "Upper", &i32) && i32 >= 0)
+			ui32 = (uint32)i32;
 		else
 			ui32 = ITEMUPPER_ALL;
 		StrBuf->Printf(&buf, "'%u',", ui32);
@@ -126,7 +144,7 @@ int db2sql(config_setting_t *entry, int n, const char *source) {
 		StrBuf->Printf(&buf, "'%u',", it->elv);
 
 		// equip_level_max
-		if( (t = libconfig->setting_get_member(entry, "EquipLv")) && config_setting_is_aggregate(t) && libconfig->setting_length(t) >= 2 )
+		if ((t = libconfig->setting_get_member(entry, "EquipLv")) && config_setting_is_aggregate(t) && libconfig->setting_length(t) >= 2)
 			StrBuf->Printf(&buf, "'%u',", it->elvmax);
 		else
 			StrBuf->AppendStr(&buf, "NULL,");
@@ -237,12 +255,17 @@ int db2sql(config_setting_t *entry, int n, const char *source) {
 
 	return it?it->nameid:0;
 }
-void totable(void) {
+
+/**
+ * Prints a SQL table header for the current table.
+ */
+void itemdb2sql_tableheader(void)
+{
 	fprintf(tosql.fp,
 			"-- NOTE: This file was auto-generated and should never be manually edited,\n"
 			"--       as it will get overwritten. If you need to modify this file,\n"
 			"--       please consider modifying the corresponding .conf file inside\n"
-			"--       the db folder, and then re-run the db2sql plugin.\n"
+			"--       the db folder, and then re-run the itemdb2sql plugin.\n"
 			"\n"
 			"--\n"
 			"-- Table structure for table `%s`\n"
@@ -289,47 +312,55 @@ void totable(void) {
 			") ENGINE=MyISAM;\n"
 			"\n",tosql.db_name,tosql.db_name,tosql.db_name);
 }
-void do_db2sql(void) {
+
+/**
+ * Plugin main function.
+ *
+ * Converts Renewal, Pre-Renewal Item DB and Item DB2 to SQL scripts.
+ */
+void do_itemdb2sql(void)
+{
+	int i;
+
 	/* link */
 	itemdb_readdb_libconfig_sub = itemdb->readdb_libconfig_sub;
-	itemdb->readdb_libconfig_sub = db2sql;
-	/* */
+	itemdb->readdb_libconfig_sub = itemdb2sql_sub;
 
+	memset(&tosql.buf, 0, sizeof(tosql.buf));
+
+	/* Process Renewal Item DB */
 	if ((tosql.fp = fopen("sql-files/item_db_re.sql", "wt+")) == NULL) {
 		ShowError("itemdb_tosql: File not found \"%s\".\n", "sql-files/item_db_re.sql");
 		return;
 	}
-
 	tosql.db_name = "item_db";
-	totable();
-
-	memset(&tosql.buf, 0, sizeof(tosql.buf) );
+	itemdb2sql_tableheader();
 
 	itemdb->clear(false);
 	itemdb->readdb_libconfig("re/item_db.conf");
 
 	fclose(tosql.fp);
 
+	/* Process Pre-Renewal Item DB */
 	if ((tosql.fp = fopen("sql-files/item_db.sql", "wt+")) == NULL) {
 		ShowError("itemdb_tosql: File not found \"%s\".\n", "sql-files/item_db.sql");
 		return;
 	}
-
 	tosql.db_name = "item_db";
-	totable();
+	itemdb2sql_tableheader();
 
 	itemdb->clear(false);
 	itemdb->readdb_libconfig("pre-re/item_db.conf");
 
 	fclose(tosql.fp);
 
+	/* Process Item DB2 */
 	if ((tosql.fp = fopen("sql-files/item_db2.sql", "wt+")) == NULL) {
 		ShowError("itemdb_tosql: File not found \"%s\".\n", "sql-files/item_db2.sql");
 		return;
 	}
-
 	tosql.db_name = "item_db2";
-	totable();
+	itemdb2sql_tableheader();
 
 	itemdb->clear(false);
 	itemdb->readdb_libconfig("item_db2.conf");
@@ -339,27 +370,37 @@ void do_db2sql(void) {
 	/* unlink */
 	itemdb->readdb_libconfig_sub = itemdb_readdb_libconfig_sub;
 
-	if( tosql.buf[0].p ) aFree(tosql.buf[0].p);
-	if( tosql.buf[1].p ) aFree(tosql.buf[1].p);
-	if( tosql.buf[2].p ) aFree(tosql.buf[2].p);
-	if( tosql.buf[3].p ) aFree(tosql.buf[3].p);
+	for (i = 0; i < ARRAYLENGTH(tosql.buf); i++) {
+		if (tosql.buf[i].p)
+			aFree(tosql.buf[i].p);
+	}
 }
-CPCMD(db2sql) {
-	do_db2sql();
-}
-CMDLINEARG(db2sql)
+
+CPCMD(itemdb2sql)
 {
-	map->minimal = torun = true;
+	do_itemdb2sql();
+}
+
+CMDLINEARG(itemdb2sql)
+{
+	map->minimal = true;
+	itemdb2sql_torun = true;
 	return true;
 }
-HPExport void server_preinit(void) {
 
-	addArg("--db2sql",false,db2sql,NULL);
+HPExport void server_preinit(void)
+{
+
+	addArg("--itemdb2sql", false, itemdb2sql, NULL);
 }
-HPExport void plugin_init(void) {
-	addCPCommand("server:tools:db2sql",db2sql);
+
+HPExport void plugin_init(void)
+{
+	addCPCommand("server:tools:itemdb2sql",itemdb2sql);
 }
-HPExport void server_online(void) {
-	if( torun )
-		do_db2sql();
+
+HPExport void server_online(void)
+{
+	if (itemdb2sql_torun)
+		do_itemdb2sql();
 }

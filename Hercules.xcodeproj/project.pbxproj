@@ -167,7 +167,7 @@
 		A58A5A281858025D0099683E /* HPMHooking.c in Sources */ = {isa = PBXBuildFile; fileRef = A58A5A271858025D0099683E /* HPMHooking.c */; };
 		A59EA4511A727D36005F2B6D /* channel.c in Sources */ = {isa = PBXBuildFile; fileRef = A59EA44F1A727D36005F2B6D /* channel.c */; };
 		A5AA94EE185796CB00C940C8 /* sample.c in Sources */ = {isa = PBXBuildFile; fileRef = A5AA94ED185796CB00C940C8 /* sample.c */; };
-		A5AA94FA185799E400C940C8 /* db2sql.c in Sources */ = {isa = PBXBuildFile; fileRef = A5AA94F8185799DF00C940C8 /* db2sql.c */; };
+		A5AA94FA185799E400C940C8 /* itemdb2sql.c in Sources */ = {isa = PBXBuildFile; fileRef = A5AA94F8185799DF00C940C8 /* itemdb2sql.c */; };
 		A5B894AA1A03CDD4005AD22E /* HPMlogin.c in Sources */ = {isa = PBXBuildFile; fileRef = A5B894A81A03CDD4005AD22E /* HPMlogin.c */; };
 		A5B894AD1A03CDFA005AD22E /* HPMchar.c in Sources */ = {isa = PBXBuildFile; fileRef = A5B894AB1A03CDFA005AD22E /* HPMchar.c */; };
 		A5B894B01A03CE25005AD22E /* HPMHooking.c in Sources */ = {isa = PBXBuildFile; fileRef = A58A5A271858025D0099683E /* HPMHooking.c */; };
@@ -415,8 +415,8 @@
 		A59EA4501A727D36005F2B6D /* channel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = channel.h; path = src/map/channel.h; sourceTree = SOURCE_ROOT; };
 		A5AA94E71857956100C940C8 /* sample.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = sample.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		A5AA94ED185796CB00C940C8 /* sample.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = sample.c; path = src/plugins/sample.c; sourceTree = "<group>"; };
-		A5AA94F3185799B700C940C8 /* db2sql.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = db2sql.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
-		A5AA94F8185799DF00C940C8 /* db2sql.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = db2sql.c; path = src/plugins/db2sql.c; sourceTree = "<group>"; };
+		A5AA94F3185799B700C940C8 /* itemdb2sql.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = itemdb2sql.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		A5AA94F8185799DF00C940C8 /* itemdb2sql.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = itemdb2sql.c; path = src/plugins/itemdb2sql.c; sourceTree = "<group>"; };
 		A5B894A81A03CDD4005AD22E /* HPMlogin.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = HPMlogin.c; path = src/login/HPMlogin.c; sourceTree = SOURCE_ROOT; };
 		A5B894A91A03CDD4005AD22E /* HPMlogin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HPMlogin.h; path = src/login/HPMlogin.h; sourceTree = SOURCE_ROOT; };
 		A5B894AB1A03CDFA005AD22E /* HPMchar.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = HPMchar.c; path = src/char/HPMchar.c; sourceTree = SOURCE_ROOT; };
@@ -539,7 +539,7 @@
 				A56CC67C18564356009EB79C /* map-server */,
 				A5380CCD1856CE180090CBC4 /* mapcache */,
 				A5AA94E71857956100C940C8 /* sample.dylib */,
-				A5AA94F3185799B700C940C8 /* db2sql.dylib */,
+				A5AA94F3185799B700C940C8 /* itemdb2sql.dylib */,
 				A58A5A26185801FF0099683E /* HPMHooking_map.dylib */,
 				A5B894B61A03CE25005AD22E /* HPMHooking_char.dylib */,
 				A5B894BF1A03CE5D005AD22E /* HPMHooking_login.dylib */,
@@ -842,7 +842,7 @@
 			isa = PBXGroup;
 			children = (
 				A58A5A291858026F0099683E /* HPMHooking */,
-				A5AA94F7185799CF00C940C8 /* db2sql */,
+				A5AA94F7185799CF00C940C8 /* itemdb2sql */,
 				A5AA94EC185796AB00C940C8 /* sample */,
 			);
 			name = plugins;
@@ -856,12 +856,12 @@
 			name = sample;
 			sourceTree = "<group>";
 		};
-		A5AA94F7185799CF00C940C8 /* db2sql */ = {
+		A5AA94F7185799CF00C940C8 /* itemdb2sql */ = {
 			isa = PBXGroup;
 			children = (
-				A5AA94F8185799DF00C940C8 /* db2sql.c */,
+				A5AA94F8185799DF00C940C8 /* itemdb2sql.c */,
 			);
-			name = db2sql;
+			name = itemdb2sql;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -1011,9 +1011,9 @@
 			productReference = A5AA94E71857956100C940C8 /* sample.dylib */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
-		A5AA94F2185799B700C940C8 /* db2sql */ = {
+		A5AA94F2185799B700C940C8 /* itemdb2sql */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = A5AA94F4185799B700C940C8 /* Build configuration list for PBXNativeTarget "db2sql" */;
+			buildConfigurationList = A5AA94F4185799B700C940C8 /* Build configuration list for PBXNativeTarget "itemdb2sql" */;
 			buildPhases = (
 				A5AA94EF185799B700C940C8 /* Sources */,
 				A5AA94F0185799B700C940C8 /* Frameworks */,
@@ -1023,9 +1023,9 @@
 			);
 			dependencies = (
 			);
-			name = db2sql;
-			productName = db2sql;
-			productReference = A5AA94F3185799B700C940C8 /* db2sql.dylib */;
+			name = itemdb2sql;
+			productName = itemdb2sql;
+			productReference = A5AA94F3185799B700C940C8 /* itemdb2sql.dylib */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 		A5B894AE1A03CE25005AD22E /* HPMHooking_char */ = {
@@ -1090,7 +1090,7 @@
 				A5B894B71A03CE5D005AD22E /* HPMHooking_login */,
 				A5B894AE1A03CE25005AD22E /* HPMHooking_char */,
 				A58A5A1E185801FF0099683E /* HPMHooking_map */,
-				A5AA94F2185799B700C940C8 /* db2sql */,
+				A5AA94F2185799B700C940C8 /* itemdb2sql */,
 				A5AA94E61857956100C940C8 /* sample */,
 			);
 		};
@@ -1364,7 +1364,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A5AA94FA185799E400C940C8 /* db2sql.c in Sources */,
+				A5AA94FA185799E400C940C8 /* itemdb2sql.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2098,7 +2098,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		A5AA94F4185799B700C940C8 /* Build configuration list for PBXNativeTarget "db2sql" */ = {
+		A5AA94F4185799B700C940C8 /* Build configuration list for PBXNativeTarget "itemdb2sql" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				A5AA94F5185799B700C940C8 /* Debug */,

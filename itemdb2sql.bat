@@ -15,7 +15,7 @@ ECHO                ^|  _  ^|/ _ \ '__/ __^| ^| ^| ^| ^|/ _ \/ __^|
 ECHO                ^| ^| ^| ^|  __/ ^| ^| (__^| ^|_^| ^| ^|  __/\__ \
 ECHO                \_^| ^|_/\___^|_^|  \___^|\__,_^|_^|\___^|^|___/
 ECHO.
-ECHO                     Database to SQL Converter
+ECHO                     Item Database to SQL Converter
 ECHO                     http://herc.ws/board/
 ECHO.
 ECHO.
@@ -23,7 +23,7 @@ ECHO.
 ECHO Exporting item databases to 'sql-files' folder...
 PING -n 3 -w 1 127.0.0.1 > nul
 
-map-server.exe --db2sql
+map-server.exe --itemdb2sql
 ECHO.
 
 PING -n 10 -w 1 127.0.0.1 > nul
