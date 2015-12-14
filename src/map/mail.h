@@ -5,7 +5,7 @@
 #ifndef MAP_MAIL_H
 #define MAP_MAIL_H
 
-#include "common/hercules.h"
+#include "../common/hercules.h"
 
 struct item;
 struct mail_message;

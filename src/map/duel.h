@@ -5,7 +5,7 @@
 #ifndef MAP_DUEL_H
 #define MAP_DUEL_H
 
-#include "common/hercules.h"
+#include "../common/hercules.h"
 
 struct map_session_data;
 

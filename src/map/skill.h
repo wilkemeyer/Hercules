@@ -5,11 +5,11 @@
 #ifndef MAP_SKILL_H
 #define MAP_SKILL_H
 
-#include "map/map.h" // struct block_list
-#include "map/status.h" // enum sc_type
-#include "common/hercules.h"
-#include "common/db.h"
-#include "common/mmo.h" // MAX_SKILL, struct square
+#include "map.h" // struct block_list
+#include "status.h" // enum sc_type
+#include "../common/hercules.h"
+#include "../common/db.h"
+#include "../common/mmo.h" // MAX_SKILL, struct square
 
 /**
  * Declarations

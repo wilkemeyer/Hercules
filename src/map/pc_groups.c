@@ -6,17 +6,17 @@
 
 #include "pc_groups.h"
 
-#include "map/atcommand.h" // atcommand-"exists(), atcommand-"load_groups()
-#include "map/clif.h"      // clif-"GM_kick()
-#include "map/map.h"       // mapiterator
-#include "map/pc.h"        // pc-"set_group()
-#include "common/cbasetypes.h"
-#include "common/conf.h"
-#include "common/db.h"
-#include "common/memmgr.h"
-#include "common/nullpo.h"
-#include "common/showmsg.h"
-#include "common/strlib.h" // strcmp
+#include "atcommand.h" // atcommand-"exists(), atcommand-"load_groups()
+#include "clif.h"      // clif-"GM_kick()
+#include "map.h"       // mapiterator
+#include "pc.h"        // pc-"set_group()
+#include "../common/cbasetypes.h"
+#include "../common/conf.h"
+#include "../common/db.h"
+#include "../common/memmgr.h"
+#include "../common/nullpo.h"
+#include "../common/showmsg.h"
+#include "../common/strlib.h" // strcmp
 
 static GroupSettings dummy_group; ///< dummy group used in dummy map sessions @see pc_get_dummy_sd()
 
@@ -433,13 +433,6 @@ void do_init_pc_groups(void) {
 			ShowError("do_init_pc_groups: %s error : %d != %d\n",pc_g_defaults[i].name,p,pc_g_defaults[i].permission);
 	}
 
-	/**
-	 * Handle plugin-provided permissions
-	 **/
-	for(i = 0; i < pcg->HPMpermissions_count; i++) {
-		*pcg->HPMpermissions[i].mask = pc_groups_add_permission(pcg->HPMpermissions[i].name);
-	}
-
 	pcg->db = idb_alloc(DB_OPT_RELEASE_DATA);
 	pcg->name_db = stridb_alloc(DB_OPT_DUP_KEY, 0);
 
@@ -513,9 +506,6 @@ void pc_groups_defaults(void) {
 	/* */
 	pcg->permissions = NULL;
 	pcg->permission_count = 0;
-	/* */
-	pcg->HPMpermissions = NULL;
-	pcg->HPMpermissions_count = 0;
 	/* */
 	pcg->init = do_init_pc_groups;
 	pcg->final = do_final_pc_groups;

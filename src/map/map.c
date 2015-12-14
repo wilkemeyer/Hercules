@@ -4,58 +4,57 @@
 
 #define HERCULES_CORE
 
-#include "config/core.h" // CELL_NOSTACK, CIRCULAR_AREA, CONSOLE_INPUT, DBPATH, RENEWAL
+#include "../config/core.h" // CELL_NOSTACK, CIRCULAR_AREA, CONSOLE_INPUT, DBPATH, RENEWAL
 #include "map.h"
 
-#include "map/HPMmap.h"
-#include "map/atcommand.h"
-#include "map/battle.h"
-#include "map/battleground.h"
-#include "map/channel.h"
-#include "map/chat.h"
-#include "map/chrif.h"
-#include "map/clif.h"
-#include "map/duel.h"
-#include "map/elemental.h"
-#include "map/guild.h"
-#include "map/homunculus.h"
-#include "map/instance.h"
-#include "map/intif.h"
-#include "map/irc-bot.h"
-#include "map/itemdb.h"
-#include "map/log.h"
-#include "map/mail.h"
-#include "map/mapreg.h"
-#include "map/mercenary.h"
-#include "map/mob.h"
-#include "map/npc.h"
-#include "map/npc.h" // npc_setcells(), npc_unsetcells()
-#include "map/party.h"
-#include "map/path.h"
-#include "map/pc.h"
-#include "map/pet.h"
-#include "map/quest.h"
-#include "map/script.h"
-#include "map/skill.h"
-#include "map/status.h"
-#include "map/storage.h"
-#include "map/trade.h"
-#include "map/unit.h"
-#include "common/HPM.h"
-#include "common/cbasetypes.h"
-#include "common/conf.h"
-#include "common/console.h"
-#include "common/core.h"
-#include "common/ers.h"
-#include "common/grfio.h"
-#include "common/memmgr.h"
-#include "common/nullpo.h"
-#include "common/random.h"
-#include "common/showmsg.h"
-#include "common/socket.h" // WFIFO*()
-#include "common/strlib.h"
-#include "common/timer.h"
-#include "common/utils.h"
+#include "atcommand.h"
+#include "battle.h"
+#include "battleground.h"
+#include "channel.h"
+#include "chat.h"
+#include "chrif.h"
+#include "clif.h"
+#include "duel.h"
+#include "elemental.h"
+#include "guild.h"
+#include "homunculus.h"
+#include "instance.h"
+#include "intif.h"
+#include "irc-bot.h"
+#include "itemdb.h"
+#include "log.h"
+#include "mail.h"
+#include "mapreg.h"
+#include "mercenary.h"
+#include "mob.h"
+#include "npc.h"
+#include "npc.h" // npc_setcells(), npc_unsetcells()
+#include "party.h"
+#include "path.h"
+#include "pc.h"
+#include "pet.h"
+#include "quest.h"
+#include "script.h"
+#include "skill.h"
+#include "status.h"
+#include "storage.h"
+#include "trade.h"
+#include "unit.h"
+
+#include "../common/cbasetypes.h"
+#include "../common/conf.h"
+#include "../common/console.h"
+#include "../common/core.h"
+#include "../common/ers.h"
+#include "../common/grfio.h"
+#include "../common/memmgr.h"
+#include "../common/nullpo.h"
+#include "../common/random.h"
+#include "../common/showmsg.h"
+#include "../common/socket.h" // WFIFO*()
+#include "../common/strlib.h"
+#include "../common/timer.h"
+#include "../common/utils.h"
 
 #include <math.h>
 #include <stdarg.h>
@@ -64,6 +63,11 @@
 #include <string.h>
 #ifndef _WIN32
 #include <unistd.h>
+#endif
+
+// Win32:
+#if defined(_MSC_VER)
+#pragma comment(lib, "..\\..\\build\\common.lib")
 #endif
 
 struct map_interface map_s;
@@ -3271,8 +3275,6 @@ void do_final_maps(void) {
 
 		if( map->list[i].qi_data )
 			aFree(map->list[i].qi_data);
-
-		HPM->data_store_destroy(&map->list[i].hdata);
 	}
 
 	map->zone_db_clear();
@@ -3771,8 +3773,6 @@ int inter_config_read(char *cfgName) {
 		/* import */
 		else if(strcmpi(w1,"import")==0)
 			map->inter_config_read(w2);
-		else
-			HPM->parseConf(w1, w2, HPCT_MAP_INTER);
 	}
 	fclose(fp);
 
@@ -5358,7 +5358,6 @@ int do_final(void) {
 	ShowStatus("Terminating...\n");
 
 	channel->config->closing = true;
-	HPM->event(HPET_FINAL);
 
 	if (map->cpsd) aFree(map->cpsd);
 
@@ -5419,8 +5418,6 @@ int do_final(void) {
 	map->list_final();
 	vending->final();
 
-	HPM_map_do_final();
-
 	map->map_db->destroy(map->map_db, map->db_final);
 
 	mapindex->final();
@@ -5458,8 +5455,6 @@ int do_final(void) {
 	aFree(map->GRF_PATH_FILENAME);
 	aFree(map->INTER_CONF_NAME);
 	aFree(map->LOG_CONF_NAME);
-
-	HPM->event(HPET_POST_FINAL);
 
 	ShowStatus("Finished.\n");
 	return map->retval;
@@ -5805,11 +5800,7 @@ int do_init(int argc, char *argv[])
 	map->MSG_CONF_NAME           = aStrdup("conf/messages.conf");
 	map->GRF_PATH_FILENAME       = aStrdup("conf/grf-files.txt");
 
-	HPM_map_do_init();
 	cmdline->exec(argc, argv, CMDLINE_OPT_PREINIT);
-	HPM->config_read();
-
-	HPM->event(HPET_PRE_INIT);
 
 	cmdline->exec(argc, argv, CMDLINE_OPT_NORMAL);
 	minimal = map->minimal;/* temp (perhaps make minimal a mask with options of what to load? e.g. plugin 1 does minimal |= mob_db; */
@@ -5896,8 +5887,6 @@ int do_init(int argc, char *argv[])
 		timer->add_func_list(map->clearflooritem_timer, "map_clearflooritem_timer");
 		timer->add_func_list(map->removemobs_timer, "map_removemobs_timer");
 		timer->add_interval(timer->gettick()+1000, map->freeblock_timer, 0, 0, 60*1000);
-
-		HPM->event(HPET_INIT);
 	}
 
 	atcommand->init(minimal);
@@ -5941,7 +5930,6 @@ int do_init(int argc, char *argv[])
 	}
 
 	if( minimal ) {
-		HPM->event(HPET_READY);
 		exit(EXIT_SUCCESS);
 	}
 
@@ -5965,8 +5953,6 @@ int do_init(int argc, char *argv[])
 	}
 
 	map_cp_defaults();
-
-	HPM->event(HPET_READY);
 
 	return 0;
 }

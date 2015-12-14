@@ -4,16 +4,16 @@
 
 #define HERCULES_CORE
 
-#include "config/core.h" // CELL_NOSTACK, CIRCULAR_AREA
+#include "../config/core.h" // CELL_NOSTACK, CIRCULAR_AREA
 #include "path.h"
 
-#include "map/map.h"
-#include "common/cbasetypes.h"
-#include "common/db.h"
-#include "common/memmgr.h"
-#include "common/nullpo.h"
-#include "common/random.h"
-#include "common/showmsg.h"
+#include "map.h"
+#include "../common/cbasetypes.h"
+#include "../common/db.h"
+#include "../common/memmgr.h"
+#include "../common/nullpo.h"
+#include "../common/random.h"
+#include "../common/showmsg.h"
 
 #include <math.h>
 #include <stdio.h>

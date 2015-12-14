@@ -5,13 +5,13 @@
 #ifndef MAP_MAP_H
 #define MAP_MAP_H
 
-#include "map/atcommand.h"
-#include "common/hercules.h"
-#include "common/core.h" // CORE_ST_LAST
-#include "common/db.h"
-#include "common/mapindex.h"
-#include "common/mmo.h"
-#include "common/sql.h"
+#include "atcommand.h"
+#include "../common/hercules.h"
+#include "../common/core.h" // CORE_ST_LAST
+#include "../common/db.h"
+#include "../common/mapindex.h"
+#include "../common/mmo.h"
+#include "../common/sql.h"
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -19,7 +19,6 @@
 struct mob_data;
 struct npc_data;
 struct channel_data;
-struct hplugin_data_store;
 
 enum E_MAPSERVER_ST {
 	MAPSERVER_ST_RUNNING = CORE_ST_LAST,
@@ -775,7 +774,6 @@ struct map_data {
 
 	/* speeds up clif_updatestatus processing by causing hpmeter to run only when someone with the permission can view it */
 	unsigned short hpmeter_visible;
-	struct hplugin_data_store *hdata; ///< HPM Plugin Data Store
 };
 
 /// Stores information about a remote map (for multi-mapserver setups).

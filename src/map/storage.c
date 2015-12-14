@@ -6,20 +6,20 @@
 
 #include "storage.h"
 
-#include "map/atcommand.h"
-#include "map/battle.h"
-#include "map/chrif.h"
-#include "map/clif.h"
-#include "map/guild.h"
-#include "map/intif.h"
-#include "map/itemdb.h"
-#include "map/log.h"
-#include "map/map.h" // struct map_session_data
-#include "map/pc.h"
-#include "common/cbasetypes.h"
-#include "common/db.h"
-#include "common/memmgr.h"
-#include "common/nullpo.h"
+#include "atcommand.h"
+#include "battle.h"
+#include "chrif.h"
+#include "clif.h"
+#include "guild.h"
+#include "intif.h"
+#include "itemdb.h"
+#include "log.h"
+#include "map.h" // struct map_session_data
+#include "pc.h"
+#include "../common/cbasetypes.h"
+#include "../common/db.h"
+#include "../common/memmgr.h"
+#include "../common/nullpo.h"
 
 #include <stdio.h>
 #include <stdlib.h>

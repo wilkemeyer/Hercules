@@ -4,22 +4,21 @@
 
 #define HERCULES_CORE
 
-#include "config/core.h" // DBPATH, RENEWAL
+#include "../config/core.h" // DBPATH, RENEWAL
 #include "itemdb.h"
 
-#include "map/battle.h" // struct battle_config
-#include "map/map.h"
-#include "map/mob.h"    // MAX_MOB_DB
-#include "map/pc.h"     // W_MUSICAL, W_WHIP
-#include "map/script.h" // item script processing
-#include "common/HPM.h"
-#include "common/conf.h"
-#include "common/memmgr.h"
-#include "common/nullpo.h"
-#include "common/random.h"
-#include "common/showmsg.h"
-#include "common/strlib.h"
-#include "common/utils.h"
+#include "battle.h" // struct battle_config
+#include "map.h"
+#include "mob.h"    // MAX_MOB_DB
+#include "pc.h"     // W_MUSICAL, W_WHIP
+#include "script.h" // item script processing
+#include "../common/conf.h"
+#include "../common/memmgr.h"
+#include "../common/nullpo.h"
+#include "../common/random.h"
+#include "../common/showmsg.h"
+#include "../common/strlib.h"
+#include "../common/utils.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1975,7 +1974,6 @@ void destroy_item_data(struct item_data* self, int free_self)
 		script->free_code(self->unequip_script);
 	if( self->combos )
 		aFree(self->combos);
-	HPM->data_store_destroy(&self->hdata);
 #if defined(DEBUG)
 	// trash item
 	memset(self, 0xDD, sizeof(struct item_data));

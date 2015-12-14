@@ -6,17 +6,16 @@
 
 #include "log.h"
 
-#include "map/battle.h"
-#include "map/itemdb.h"
-#include "map/map.h"
-#include "map/mob.h"
-#include "map/pc.h"
-#include "common/cbasetypes.h"
-#include "common/nullpo.h"
-#include "common/showmsg.h"
-#include "common/sql.h" // SQL_INNODB
-#include "common/strlib.h"
-#include "common/HPM.h"
+#include "battle.h"
+#include "itemdb.h"
+#include "map.h"
+#include "mob.h"
+#include "pc.h"
+#include "../common/cbasetypes.h"
+#include "../common/nullpo.h"
+#include "../common/showmsg.h"
+#include "../common/sql.h" // SQL_INNODB
+#include "../common/strlib.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -526,8 +525,6 @@ int log_config_read(const char* cfgName) {
 			//support the import command, just like any other config
 			else if( strcmpi(w1,"import") == 0 )
 				logs->config_read(w2);
-			else if (HPM->parseConf(w1, w2, HPCT_LOG))
-				; // handled by plugins
 			else
 				ShowWarning("Unknown setting '%s' in file %s\n", w1, cfgName);
 		}

@@ -5,9 +5,9 @@
 #ifndef MAP_PC_GROUPS_H
 #define MAP_PC_GROUPS_H
 
-#include "common/hercules.h"
-#include "common/conf.h"
-#include "common/db.h"
+#include "../common/hercules.h"
+#include "../common/conf.h"
+#include "../common/db.h"
 
 /// PC permissions
 enum e_pc_permission {
@@ -78,9 +78,6 @@ struct pc_groups_interface {
 	/* */
 	struct pc_groups_permission_table *permissions;
 	unsigned char permission_count;
-	/* */
-	struct pc_groups_new_permission *HPMpermissions;
-	unsigned char HPMpermissions_count;
 	/* */
 	void (*init) (void);
 	void (*final) (void);

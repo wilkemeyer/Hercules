@@ -4,26 +4,25 @@
 
 #define HERCULES_CORE
 
-#include "config/core.h" // CELL_NOSTACK
+#include "../config/core.h" // CELL_NOSTACK
 #include "instance.h"
 
-#include "map/channel.h"
-#include "map/clif.h"
-#include "map/guild.h"
-#include "map/map.h"
-#include "map/npc.h"
-#include "map/party.h"
-#include "map/pc.h"
-#include "common/HPM.h"
-#include "common/cbasetypes.h"
-#include "common/db.h"
-#include "common/memmgr.h"
-#include "common/nullpo.h"
-#include "common/showmsg.h"
-#include "common/socket.h"
-#include "common/strlib.h"
-#include "common/timer.h"
-#include "common/utils.h"
+#include "channel.h"
+#include "clif.h"
+#include "guild.h"
+#include "map.h"
+#include "npc.h"
+#include "party.h"
+#include "pc.h"
+#include "../common/cbasetypes.h"
+#include "../common/db.h"
+#include "../common/memmgr.h"
+#include "../common/nullpo.h"
+#include "../common/showmsg.h"
+#include "../common/socket.h"
+#include "../common/strlib.h"
+#include "../common/timer.h"
+#include "../common/utils.h"
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -603,7 +602,6 @@ void instance_destroy(int instance_id) {
 	instance->list[instance_id].state = INSTANCE_FREE;
 	instance->list[instance_id].num_map = 0;
 
-	HPM->data_store_destroy(&instance->list[instance_id].hdata);
 }
 
 /*--------------------------------------

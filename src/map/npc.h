@@ -5,13 +5,12 @@
 #ifndef MAP_NPC_H
 #define MAP_NPC_H
 
-#include "map/map.h" // struct block_list
-#include "map/status.h" // struct status_change
-#include "map/unit.h" // struct unit_data
-#include "common/hercules.h"
-#include "common/db.h"
+#include "map.h" // struct block_list
+#include "status.h" // struct status_change
+#include "unit.h" // struct unit_data
+#include "../common/hercules.h"
+#include "../common/db.h"
 
-struct hplugin_data_store;
 struct view_data;
 
 enum npc_parse_options {
@@ -102,7 +101,6 @@ struct npc_data {
 			char killer_name[NAME_LENGTH];
 		} tomb;
 	} u;
-	struct hplugin_data_store *hdata; ///< HPM Plugin Data Store
 };
 
 

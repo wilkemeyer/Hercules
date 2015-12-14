@@ -6,16 +6,16 @@
 
 #include "mapreg.h"
 
-#include "map/map.h" // map-"mysql_handle
-#include "map/script.h"
-#include "common/cbasetypes.h"
-#include "common/db.h"
-#include "common/ers.h"
-#include "common/memmgr.h"
-#include "common/showmsg.h"
-#include "common/sql.h"
-#include "common/strlib.h"
-#include "common/timer.h"
+#include "map.h" // map-"mysql_handle
+#include "script.h"
+#include "../common/cbasetypes.h"
+#include "../common/db.h"
+#include "../common/ers.h"
+#include "../common/memmgr.h"
+#include "../common/showmsg.h"
+#include "../common/sql.h"
+#include "../common/strlib.h"
+#include "../common/timer.h"
 
 #include <stdlib.h>
 #include <string.h>

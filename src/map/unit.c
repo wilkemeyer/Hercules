@@ -4,42 +4,41 @@
 
 #define HERCULES_CORE
 
-#include "config/core.h" // RENEWAL_CAST
+#include "../config/core.h" // RENEWAL_CAST
 #include "unit.h"
 
-#include "map/battle.h"
-#include "map/battleground.h"
-#include "map/chat.h"
-#include "map/chrif.h"
-#include "map/clif.h"
-#include "map/duel.h"
-#include "map/elemental.h"
-#include "map/guild.h"
-#include "map/homunculus.h"
-#include "map/instance.h"
-#include "map/intif.h"
-#include "map/map.h"
-#include "map/mercenary.h"
-#include "map/mob.h"
-#include "map/npc.h"
-#include "map/party.h"
-#include "map/path.h"
-#include "map/pc.h"
-#include "map/pet.h"
-#include "map/script.h"
-#include "map/skill.h"
-#include "map/status.h"
-#include "map/storage.h"
-#include "map/trade.h"
-#include "map/vending.h"
-#include "common/HPM.h"
-#include "common/db.h"
-#include "common/memmgr.h"
-#include "common/nullpo.h"
-#include "common/random.h"
-#include "common/showmsg.h"
-#include "common/socket.h"
-#include "common/timer.h"
+#include "battle.h"
+#include "battleground.h"
+#include "chat.h"
+#include "chrif.h"
+#include "clif.h"
+#include "duel.h"
+#include "elemental.h"
+#include "guild.h"
+#include "homunculus.h"
+#include "instance.h"
+#include "intif.h"
+#include "map.h"
+#include "mercenary.h"
+#include "mob.h"
+#include "npc.h"
+#include "party.h"
+#include "path.h"
+#include "pc.h"
+#include "pet.h"
+#include "script.h"
+#include "skill.h"
+#include "status.h"
+#include "storage.h"
+#include "trade.h"
+#include "vending.h"
+#include "../common/db.h"
+#include "../common/memmgr.h"
+#include "../common/nullpo.h"
+#include "../common/random.h"
+#include "../common/showmsg.h"
+#include "../common/socket.h"
+#include "../common/timer.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -2651,7 +2650,6 @@ int unit_free(struct block_list *bl, clr_type clrtype) {
 				sd->quest_log = NULL;
 				sd->num_quests = sd->avail_quests = 0;
 			}
-			HPM->data_store_destroy(&sd->hdata);
 			break;
 		}
 		case BL_PET:
@@ -2762,7 +2760,6 @@ int unit_free(struct block_list *bl, clr_type clrtype) {
 			if( md->tomb_nid )
 				mob->mvptomb_destroy(md);
 
-			HPM->data_store_destroy(&md->hdata);
 			break;
 		}
 		case BL_HOM:

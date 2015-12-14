@@ -5,8 +5,8 @@
 #ifndef MAP_BATTLE_H
 #define MAP_BATTLE_H
 
-#include "map/map.h" //ELE_MAX
-#include "common/hercules.h"
+#include "map.h" //ELE_MAX
+#include "../common/hercules.h"
 
 /**
  * Declarations

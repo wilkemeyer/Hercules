@@ -5,21 +5,21 @@
 #ifndef MAP_PC_H
 #define MAP_PC_H
 
-#include "map/battle.h" // battle
-#include "map/battleground.h" // enum bg_queue_types
-#include "map/buyingstore.h"  // struct s_buyingstore
-#include "map/itemdb.h" // MAX_ITEMDELAYS
-#include "map/log.h" // struct e_log_pick_type
-#include "map/map.h" // RC_MAX, ELE_MAX
-#include "map/pc_groups.h" // GroupSettings
-#include "map/script.h" // struct reg_db
-#include "map/searchstore.h"  // struct s_search_store_info
-#include "map/status.h" // enum sc_type, OPTION_*
-#include "map/unit.h" // struct unit_data, struct view_data
-#include "map/vending.h" // struct s_vending
-#include "common/hercules.h"
-#include "common/ers.h" // struct eri
-#include "common/mmo.h" // JOB_*, MAX_FAME_LIST, struct fame_list, struct mmo_charstatus, NEW_CARTS
+#include "battle.h" // battle
+#include "battleground.h" // enum bg_queue_types
+#include "buyingstore.h"  // struct s_buyingstore
+#include "itemdb.h" // MAX_ITEMDELAYS
+#include "log.h" // struct e_log_pick_type
+#include "map.h" // RC_MAX, ELE_MAX
+#include "pc_groups.h" // GroupSettings
+#include "script.h" // struct reg_db
+#include "searchstore.h"  // struct s_search_store_info
+#include "status.h" // enum sc_type, OPTION_*
+#include "unit.h" // struct unit_data, struct view_data
+#include "vending.h" // struct s_vending
+#include "../common/hercules.h"
+#include "../common/ers.h" // struct eri
+#include "../common/mmo.h" // JOB_*, MAX_FAME_LIST, struct fame_list, struct mmo_charstatus, NEW_CARTS
 
 /**
  * Defines
@@ -538,7 +538,6 @@ END_ZEROED_BLOCK;
 	unsigned short (*parse_cmd_func)(int fd, struct map_session_data *sd); ///< parse_cmd_func used by this player
 
 	unsigned char delayed_damage;//ref. counter bugreport:7307 [Ind/Hercules]
-	struct hplugin_data_store *hdata; ///< HPM Plugin Data Store
 
 	/* expiration_time timer id */
 	int expiration_tid;
@@ -753,7 +752,6 @@ struct autotrade_vending {
 	struct item list[MAX_VENDING];
 	struct s_vending vending[MAX_VENDING];
 	unsigned char vend_num;
-	struct hplugin_data_store *hdata; ///< HPM Plugin Data Store
 };
 
 /*=====================================

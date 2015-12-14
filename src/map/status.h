@@ -5,9 +5,9 @@
 #ifndef MAP_STATUS_H
 #define MAP_STATUS_H
 
-#include "common/conf.h"
-#include "common/hercules.h"
-#include "common/mmo.h" // NEW_CARTS
+#include "../common/conf.h"
+#include "../common/hercules.h"
+#include "../common/mmo.h" // NEW_CARTS
 
 struct block_list;
 struct elemental_data;

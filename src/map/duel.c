@@ -6,11 +6,11 @@
 
 #include "duel.h"
 
-#include "map/atcommand.h"  // msg_txt
-#include "map/clif.h"
-#include "map/pc.h"
-#include "common/cbasetypes.h"
-#include "common/nullpo.h"
+#include "atcommand.h"  // msg_txt
+#include "clif.h"
+#include "pc.h"
+#include "../common/cbasetypes.h"
+#include "../common/nullpo.h"
 
 #include <stdio.h>
 #include <stdlib.h>

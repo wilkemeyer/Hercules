@@ -5,14 +5,13 @@
 #ifndef MAP_ITEMDB_H
 #define MAP_ITEMDB_H
 
-/* #include "map/map.h" */
-#include "common/hercules.h"
-#include "common/conf.h"
-#include "common/db.h"
-#include "common/mmo.h" // ITEM_NAME_LENGTH
+/* #include "map.h" */
+#include "../common/hercules.h"
+#include "../common/conf.h"
+#include "../common/db.h"
+#include "../common/mmo.h" // ITEM_NAME_LENGTH
 
 struct script_code;
-struct hplugin_data_store;
 
 /**
  * Defines
@@ -488,7 +487,6 @@ struct item_data {
 	/* TODO add a pointer to some sort of (struct extra) and gather all the not-common vals into it to save memory */
 	struct item_group *group;
 	struct item_package *package;
-	struct hplugin_data_store *hdata; ///< HPM Plugin Data Store
 };
 
 #define itemdb_name(n)        (itemdb->search(n)->name)

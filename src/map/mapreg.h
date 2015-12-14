@@ -5,9 +5,9 @@
 #ifndef MAP_MAPREG_H
 #define MAP_MAPREG_H
 
-#include "map/script.h" // struct reg_db
-#include "common/hercules.h"
-#include "common/db.h"
+#include "script.h" // struct reg_db
+#include "../common/hercules.h"
+#include "../common/db.h"
 
 struct eri;
 

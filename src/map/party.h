@@ -5,17 +5,15 @@
 #ifndef MAP_PARTY_H
 #define MAP_PARTY_H
 
-#include "map/map.h" // TBL_PC
-#include "common/hercules.h"
-#include "common/db.h"
-#include "common/mmo.h" // struct party
+#include "map.h" // TBL_PC
+#include "../common/hercules.h"
+#include "../common/db.h"
+#include "../common/mmo.h" // struct party
 
 #include <stdarg.h>
 
 #define PARTY_BOOKING_JOBS 6
 #define PARTY_BOOKING_RESULTS 10
-
-struct hplugin_data_store;
 
 struct party_member_data {
 	struct map_session_data *sd;
@@ -35,7 +33,6 @@ struct party_data {
 		unsigned snovice :1; ///< There's a Super Novice
 		unsigned tk : 1;     ///< There's a taekwon
 	} state;
-	struct hplugin_data_store *hdata; ///< HPM Plugin Data Store
 };
 
 #define PB_NOTICE_LENGTH (36 + 1)

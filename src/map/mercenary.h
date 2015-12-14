@@ -4,9 +4,9 @@
 #ifndef MAP_MERCENARY_H
 #define MAP_MERCENARY_H
 
-#include "map/status.h" // struct status_data, struct status_change
-#include "map/unit.h" // struct unit_data
-#include "common/hercules.h"
+#include "status.h" // struct status_data, struct status_change
+#include "unit.h" // struct unit_data
+#include "../common/hercules.h"
 
 struct map_session_data;
 

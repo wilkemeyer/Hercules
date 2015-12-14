@@ -4,34 +4,33 @@
 
 #define HERCULES_CORE
 
-#include "config/core.h" // AUTOTRADE_PERSISTENCY, STATS_OPT_OUT
+#include "../config/core.h" // AUTOTRADE_PERSISTENCY, STATS_OPT_OUT
 #include "chrif.h"
 
-#include "map/battle.h"
-#include "map/clif.h"
-#include "map/elemental.h"
-#include "map/guild.h"
-#include "map/homunculus.h"
-#include "map/instance.h"
-#include "map/intif.h"
-#include "map/map.h"
-#include "map/mercenary.h"
-#include "map/npc.h"
-#include "map/pc.h"
-#include "map/pet.h"
-#include "map/quest.h"
-#include "map/skill.h"
-#include "map/status.h"
-#include "map/storage.h"
-#include "common/HPM.h"
-#include "common/cbasetypes.h"
-#include "common/ers.h"
-#include "common/memmgr.h"
-#include "common/nullpo.h"
-#include "common/showmsg.h"
-#include "common/socket.h"
-#include "common/strlib.h"
-#include "common/timer.h"
+#include "battle.h"
+#include "clif.h"
+#include "elemental.h"
+#include "guild.h"
+#include "homunculus.h"
+#include "instance.h"
+#include "intif.h"
+#include "map.h"
+#include "mercenary.h"
+#include "npc.h"
+#include "pc.h"
+#include "pet.h"
+#include "quest.h"
+#include "skill.h"
+#include "status.h"
+#include "storage.h"
+#include "../common/cbasetypes.h"
+#include "../common/ers.h"
+#include "../common/memmgr.h"
+#include "../common/nullpo.h"
+#include "../common/showmsg.h"
+#include "../common/socket.h"
+#include "../common/strlib.h"
+#include "../common/timer.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1376,14 +1375,6 @@ int chrif_parse(int fd) {
 	}
 
 	while (RFIFOREST(fd) >= 2) {
-		if (VECTOR_LENGTH(HPM->packets[hpChrif_Parse]) > 0) {
-			int result = HPM->parse_packets(fd,hpChrif_Parse);
-			if (result == 1)
-				continue;
-			if (result == 2)
-				return 0;
-		}
-
 		cmd = RFIFOW(fd,0);
 
 		if (cmd < 0x2af8 || cmd >= 0x2af8 + ARRAYLENGTH(chrif->packet_len_table) || chrif->packet_len_table[cmd-0x2af8] == 0) {

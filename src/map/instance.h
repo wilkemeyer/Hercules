@@ -5,11 +5,10 @@
 #ifndef MAP_INSTANCE_H
 #define MAP_INSTANCE_H
 
-#include "map/script.h" // struct reg_db
-#include "common/hercules.h"
-#include "common/mmo.h" // struct point
+#include "script.h" // struct reg_db
+#include "../common/hercules.h"
+#include "../common/mmo.h" // struct point
 
-struct hplugin_data_store;
 struct block_list;
 struct map_session_data;
 
@@ -52,7 +51,6 @@ struct instance_data {
 	unsigned int original_progress_timeout;
 
 	struct point respawn; ///< reload spawn
-	struct hplugin_data_store *hdata; ///< HPM Plugin Data Store
 };
 
 struct instance_interface {

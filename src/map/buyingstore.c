@@ -6,18 +6,18 @@
 
 #include "buyingstore.h" // struct s_buyingstore
 
-#include "map/atcommand.h" // msg_txt
-#include "map/battle.h" // battle_config.*
-#include "map/chrif.h"
-#include "map/clif.h" // clif-"buyingstore_*
-#include "map/log.h" // log_pick_pc, log_zeny
-#include "map/pc.h" // struct map_session_data
-#include "common/cbasetypes.h"
-#include "common/db.h" // ARR_FIND
-#include "common/nullpo.h" // nullpo_*
-#include "common/showmsg.h" // ShowWarning
-#include "common/socket.h" // RBUF*
-#include "common/strlib.h" // safestrncpy
+#include "atcommand.h" // msg_txt
+#include "battle.h" // battle_config.*
+#include "chrif.h"
+#include "clif.h" // clif-"buyingstore_*
+#include "log.h" // log_pick_pc, log_zeny
+#include "pc.h" // struct map_session_data
+#include "../common/cbasetypes.h"
+#include "../common/db.h" // ARR_FIND
+#include "../common/nullpo.h" // nullpo_*
+#include "../common/showmsg.h" // ShowWarning
+#include "../common/socket.h" // RBUF*
+#include "../common/strlib.h" // safestrncpy
 
 struct buyingstore_interface buyingstore_s;
 struct buyingstore_interface *buyingstore;

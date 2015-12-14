@@ -4,32 +4,31 @@
 
 #define HERCULES_CORE
 
-#include "config/core.h" // GP_BOUND_ITEMS
+#include "../config/core.h" // GP_BOUND_ITEMS
 #include "guild.h"
 
-#include "map/battle.h"
-#include "map/channel.h"
-#include "map/clif.h"
-#include "map/instance.h"
-#include "map/intif.h"
-#include "map/log.h"
-#include "map/map.h"
-#include "map/mob.h"
-#include "map/npc.h"
-#include "map/pc.h"
-#include "map/skill.h"
-#include "map/status.h"
-#include "map/storage.h"
-#include "common/HPM.h"
-#include "common/cbasetypes.h"
-#include "common/ers.h"
-#include "common/memmgr.h"
-#include "common/mapindex.h"
-#include "common/nullpo.h"
-#include "common/showmsg.h"
-#include "common/strlib.h"
-#include "common/timer.h"
-#include "common/utils.h"
+#include "battle.h"
+#include "channel.h"
+#include "clif.h"
+#include "instance.h"
+#include "intif.h"
+#include "log.h"
+#include "map.h"
+#include "mob.h"
+#include "npc.h"
+#include "pc.h"
+#include "skill.h"
+#include "status.h"
+#include "storage.h"
+#include "../common/cbasetypes.h"
+#include "../common/ers.h"
+#include "../common/memmgr.h"
+#include "../common/mapindex.h"
+#include "../common/nullpo.h"
+#include "../common/showmsg.h"
+#include "../common/strlib.h"
+#include "../common/timer.h"
+#include "../common/utils.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1785,7 +1784,6 @@ int guild_broken(int guild_id,int flag)
 	if( g->instance )
 		aFree(g->instance);
 
-	HPM->data_store_destroy(&g->hdata);
 
 	idb_remove(guild->db,guild_id);
 	return 0;
@@ -2274,7 +2272,6 @@ void do_final_guild(void) {
 			aFree(g->instance);
 			g->instance = NULL;
 		}
-		HPM->data_store_destroy(&g->hdata);
 	}
 
 	dbi_destroy(iter);

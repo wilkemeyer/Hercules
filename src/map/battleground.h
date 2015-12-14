@@ -5,12 +5,11 @@
 #ifndef MAP_BATTLEGROUND_H
 #define MAP_BATTLEGROUND_H
 
-#include "map/map.h" // EVENT_NAME_LENGTH
-#include "common/hercules.h"
-#include "common/db.h"
-#include "common/mmo.h" // struct party
+#include "map.h" // EVENT_NAME_LENGTH
+#include "../common/hercules.h"
+#include "../common/db.h"
+#include "../common/mmo.h" // struct party
 
-struct hplugin_data_store;
 struct block_list;
 struct map_session_data;
 
@@ -53,7 +52,6 @@ struct battleground_data {
 	// Logout Event
 	char logout_event[EVENT_NAME_LENGTH];
 	char die_event[EVENT_NAME_LENGTH];
-	struct hplugin_data_store *hdata; ///< HPM Plugin Data Store
 };
 
 struct bg_arena {

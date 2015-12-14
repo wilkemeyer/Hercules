@@ -6,14 +6,14 @@
 
 #include "mail.h"
 
-#include "map/atcommand.h"
-#include "map/clif.h"
-#include "map/itemdb.h"
-#include "map/log.h"
-#include "map/pc.h"
-#include "map/storage.h"
-#include "common/nullpo.h"
-#include "common/showmsg.h"
+#include "atcommand.h"
+#include "clif.h"
+#include "itemdb.h"
+#include "log.h"
+#include "pc.h"
+#include "storage.h"
+#include "../common/nullpo.h"
+#include "../common/showmsg.h"
 
 #include <time.h>
 #include <string.h>

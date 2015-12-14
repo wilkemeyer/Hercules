@@ -5,13 +5,11 @@
 #ifndef MAP_MOB_H
 #define MAP_MOB_H
 
-#include "map/map.h" // struct block_list
-#include "map/status.h" // struct status_data, struct status_change
-#include "map/unit.h" // struct unit_data, view_data
-#include "common/hercules.h"
-#include "common/mmo.h" // struct item
-
-struct hplugin_data_store;
+#include "map.h" // struct block_list
+#include "status.h" // struct status_data, struct status_change
+#include "unit.h" // struct unit_data, view_data
+#include "../common/hercules.h"
+#include "../common/mmo.h" // struct item
 
 #define MAX_RANDOMMONSTER 5
 
@@ -140,7 +138,6 @@ struct mob_db {
 	int maxskill;
 	struct mob_skill skill[MAX_MOBSKILL];
 	struct spawn_info spawn[10];
-	struct hplugin_data_store *hdata; ///< HPM Plugin Data Store
 };
 
 struct mob_data {
@@ -207,7 +204,6 @@ struct mob_data {
 	 * MvP Tombstone NPC ID
 	 **/
 	int tomb_nid;
-	struct hplugin_data_store *hdata; ///< HPM Plugin Data Store
 };
 
 

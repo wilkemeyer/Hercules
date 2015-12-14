@@ -8,14 +8,14 @@
 
 #include "npc.h" // struct npc_data
 
-#include "map/mob.h" // struct mob_data
-#include "map/pc.h" // struct map_session_data
-#include "map/script.h" // set_var()
-#include "common/memmgr.h"
-#include "common/nullpo.h"
-#include "common/showmsg.h"
-#include "common/strlib.h"
-#include "common/timer.h"
+#include "mob.h" // struct mob_data
+#include "pc.h" // struct map_session_data
+#include "script.h" // set_var()
+#include "../common/memmgr.h"
+#include "../common/nullpo.h"
+#include "../common/showmsg.h"
+#include "../common/strlib.h"
+#include "../common/timer.h"
 
 #include <pcre/include/pcre.h>
 

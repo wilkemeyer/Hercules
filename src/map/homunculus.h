@@ -5,10 +5,10 @@
 #ifndef MAP_HOMUNCULUS_H
 #define MAP_HOMUNCULUS_H
 
-#include "map/status.h" // struct status_data, struct status_change
-#include "map/unit.h" // struct unit_data
-#include "common/hercules.h"
-#include "common/mmo.h"
+#include "status.h" // struct status_data, struct status_change
+#include "unit.h" // struct unit_data
+#include "../common/hercules.h"
+#include "../common/mmo.h"
 
 struct map_session_data;
 
