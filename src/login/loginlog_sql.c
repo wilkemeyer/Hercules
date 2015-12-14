@@ -6,12 +6,12 @@
 
 #include "loginlog.h"
 
-#include "common/cbasetypes.h"
-#include "common/mmo.h"
-#include "common/nullpo.h"
-#include "common/socket.h"
-#include "common/sql.h"
-#include "common/strlib.h"
+#include "../common/cbasetypes.h"
+#include "../common/mmo.h"
+#include "../common/nullpo.h"
+#include "../common/socket.h"
+#include "../common/sql.h"
+#include "../common/strlib.h"
 
 #include <stdlib.h> // exit
 

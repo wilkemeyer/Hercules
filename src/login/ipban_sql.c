@@ -6,13 +6,13 @@
 
 #include "ipban.h"
 
-#include "login/login.h"
-#include "login/loginlog.h"
-#include "common/cbasetypes.h"
-#include "common/nullpo.h"
-#include "common/sql.h"
-#include "common/strlib.h"
-#include "common/timer.h"
+#include "login.h"
+#include "loginlog.h"
+#include "../common/cbasetypes.h"
+#include "../common/nullpo.h"
+#include "../common/sql.h"
+#include "../common/strlib.h"
+#include "../common/timer.h"
 
 #include <stdlib.h>
 

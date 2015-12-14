@@ -4,18 +4,18 @@
 
 #define HERCULES_CORE
 
-#include "config/core.h" // CONSOLE_INPUT
+#include "../config/core.h" // CONSOLE_INPUT
 #include "account.h"
 
-#include "common/cbasetypes.h"
-#include "common/console.h"
-#include "common/memmgr.h"
-#include "common/mmo.h"
-#include "common/nullpo.h"
-#include "common/showmsg.h"
-#include "common/socket.h"
-#include "common/sql.h"
-#include "common/strlib.h"
+#include "../common/cbasetypes.h"
+#include "../common/console.h"
+#include "../common/memmgr.h"
+#include "../common/mmo.h"
+#include "../common/nullpo.h"
+#include "../common/showmsg.h"
+#include "../common/socket.h"
+#include "../common/sql.h"
+#include "../common/strlib.h"
 
 #include <stdlib.h>
 

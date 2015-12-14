@@ -6,27 +6,32 @@
 
 #include "login.h"
 
-#include "login/HPMlogin.h"
-#include "login/account.h"
-#include "login/ipban.h"
-#include "login/loginlog.h"
-#include "common/HPM.h"
-#include "common/cbasetypes.h"
-#include "common/conf.h"
-#include "common/core.h"
-#include "common/db.h"
-#include "common/memmgr.h"
-#include "common/md5calc.h"
-#include "common/nullpo.h"
-#include "common/random.h"
-#include "common/showmsg.h"
-#include "common/socket.h"
-#include "common/strlib.h"
-#include "common/timer.h"
-#include "common/utils.h"
+
+#include "account.h"
+#include "ipban.h"
+#include "loginlog.h"
+
+#include "../common/cbasetypes.h"
+#include "../common/conf.h"
+#include "../common/core.h"
+#include "../common/db.h"
+#include "../common/memmgr.h"
+#include "../common/md5calc.h"
+#include "../common/nullpo.h"
+#include "../common/random.h"
+#include "../common/showmsg.h"
+#include "../common/socket.h"
+#include "../common/strlib.h"
+#include "../common/timer.h"
+#include "../common/utils.h"
 
 #include <stdio.h>
 #include <stdlib.h>
+
+// Win32:
+#if defined(_MSC_VER)
+#pragma comment(lib, "..\\..\\build\\common.lib")
+#endif
 
 struct login_interface login_s;
 struct login_interface *login;
@@ -795,13 +800,6 @@ int login_parse_fromchar(int fd)
 	while( RFIFOREST(fd) >= 2 ) {
 		uint16 command = RFIFOW(fd,0);
 
-		if (VECTOR_LENGTH(HPM->packets[hpParse_FromChar]) > 0) {
-			int result = HPM->parse_packets(fd,hpParse_FromChar);
-			if (result == 1)
-				continue;
-			if (result == 2)
-				return 0;
-		}
 
 		switch( command ) {
 
@@ -1608,13 +1606,6 @@ int login_parse_login(int fd)
 	while( RFIFOREST(fd) >= 2 ) {
 		uint16 command = RFIFOW(fd,0);
 
-		if (VECTOR_LENGTH(HPM->packets[hpParse_Login]) > 0) {
-			int result = HPM->parse_packets(fd,hpParse_Login);
-			if (result == 1)
-				continue;
-			if (result == 2)
-				return 0;
-		}
 
 		switch( command ) {
 
@@ -1829,7 +1820,7 @@ int login_config_read(const char* cfgName)
 				db->set_property(db, w1, w2);
 			ipban_config_read(w1, w2);
 			loginlog_config_read(w1, w2);
-			HPM->parseConf(w1, w2, HPCT_LOGIN);
+			
 		}
 	}
 	fclose(fp);
@@ -1846,7 +1837,6 @@ int do_final(void) {
 
 	ShowStatus("Terminating...\n");
 
-	HPM->event(HPET_FINAL);
 
 	while (hn) {
 		struct client_hash_node *tmp = hn;
@@ -1879,12 +1869,11 @@ int do_final(void) {
 		login->fd = -1;
 	}
 
-	HPM_login_do_final();
+
 
 	aFree(login->LOGIN_CONF_NAME);
 	aFree(login->NET_CONF_NAME);
 
-	HPM->event(HPET_POST_FINAL);
 
 	ShowStatus("Finished.\n");
 	return EXIT_SUCCESS;
@@ -1975,10 +1964,7 @@ int do_init(int argc, char** argv)
 	login->LOGIN_CONF_NAME = aStrdup("conf/login-server.conf");
 	login->NET_CONF_NAME   = aStrdup("conf/network.conf");
 
-	HPM_login_do_init();
 	cmdline->exec(argc, argv, CMDLINE_OPT_PREINIT);
-	HPM->config_read();
-	HPM->event(HPET_PRE_INIT);
 
 	cmdline->exec(argc, argv, CMDLINE_OPT_NORMAL);
 	login_config_read(login->LOGIN_CONF_NAME);
@@ -2020,8 +2006,7 @@ int do_init(int argc, char** argv)
 		exit(EXIT_FAILURE);
 	}
 
-	HPM->event(HPET_INIT);
-
+	
 	// server port open & binding
 	if ((login->fd = sockt->make_listen_bind(login_config.login_ip,login_config.login_port)) == -1) {
 		ShowFatalError("Failed to bind to port '"CL_WHITE"%d"CL_RESET"'\n",login_config.login_port);
@@ -2036,8 +2021,7 @@ int do_init(int argc, char** argv)
 	ShowStatus("The login-server is "CL_GREEN"ready"CL_RESET" (Server is listening on the port %u).\n\n", login_config.login_port);
 	login_log(0, "login server", 100, "login server started");
 
-	HPM->event(HPET_READY);
-
+	
 	return 0;
 }
 
