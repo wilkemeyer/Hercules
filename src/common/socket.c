@@ -4,25 +4,24 @@
 
 #define HERCULES_CORE
 
-#include "config/core.h" // SHOW_SERVER_STATS
+#include "../config/core.h" // SHOW_SERVER_STATS
 #include "socket.h"
 
-#include "common/HPM.h"
-#include "common/cbasetypes.h"
-#include "common/db.h"
-#include "common/memmgr.h"
-#include "common/mmo.h"
-#include "common/nullpo.h"
-#include "common/showmsg.h"
-#include "common/strlib.h"
-#include "common/timer.h"
+#include "cbasetypes.h"
+#include "db.h"
+#include "memmgr.h"
+#include "mmo.h"
+#include "nullpo.h"
+#include "showmsg.h"
+#include "strlib.h"
+#include "timer.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
 
 #ifdef WIN32
-#	include "common/winapi.h"
+#	include "winapi.h"
 #else
 #	include <arpa/inet.h>
 #	include <errno.h>
@@ -637,7 +636,6 @@ static int create_session(int fd, RecvFunc func_recv, SendFunc func_send, ParseF
 	sockt->session[fd]->func_parse = func_parse;
 	sockt->session[fd]->rdata_tick = sockt->last_tick;
 	sockt->session[fd]->session_data = NULL;
-	sockt->session[fd]->hdata = NULL;
 	return 0;
 }
 
@@ -652,7 +650,7 @@ static void delete_session(int fd)
 		aFree(sockt->session[fd]->wdata);
 		if( sockt->session[fd]->session_data )
 			aFree(sockt->session[fd]->session_data);
-		HPM->data_store_destroy(&sockt->session[fd]->hdata);
+
 		aFree(sockt->session[fd]);
 		sockt->session[fd] = NULL;
 	}

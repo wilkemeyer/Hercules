@@ -6,11 +6,11 @@
 
 #include "mapindex.h"
 
-#include "common/cbasetypes.h"
-#include "common/db.h"
-#include "common/mmo.h"
-#include "common/showmsg.h"
-#include "common/strlib.h"
+#include "cbasetypes.h"
+#include "db.h"
+#include "mmo.h"
+#include "showmsg.h"
+#include "strlib.h"
 
 #include <stdio.h>
 #include <stdlib.h>

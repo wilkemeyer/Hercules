@@ -6,13 +6,13 @@
 
 #include "grfio.h"
 
-#include "common/cbasetypes.h"
-#include "common/des.h"
-#include "common/memmgr.h"
-#include "common/nullpo.h"
-#include "common/showmsg.h"
-#include "common/strlib.h"
-#include "common/utils.h"
+#include "cbasetypes.h"
+#include "des.h"
+#include "memmgr.h"
+#include "nullpo.h"
+#include "showmsg.h"
+#include "strlib.h"
+#include "utils.h"
 
 #include <stdio.h>
 #include <stdlib.h>

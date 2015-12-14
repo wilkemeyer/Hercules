@@ -5,7 +5,7 @@
 #ifndef COMMON_SQL_H
 #define COMMON_SQL_H
 
-#include "common/hercules.h"
+#include "hercules.h"
 
 #include <stdarg.h>// va_list
 

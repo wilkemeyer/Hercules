@@ -5,7 +5,7 @@
 #ifndef COMMON_NULLPO_H
 #define COMMON_NULLPO_H
 
-#include "common/hercules.h"
+#include "hercules.h"
 
 // enabled by default on debug builds
 #if defined(DEBUG) && !defined(NULLPO_CHECK)

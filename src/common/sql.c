@@ -6,14 +6,14 @@
 
 #include "sql.h"
 
-#include "common/cbasetypes.h"
-#include "common/memmgr.h"
-#include "common/showmsg.h"
-#include "common/strlib.h"
-#include "common/timer.h"
+#include "cbasetypes.h"
+#include "memmgr.h"
+#include "showmsg.h"
+#include "strlib.h"
+#include "timer.h"
 
 #ifdef WIN32
-#	include "common/winapi.h" // Needed before mysql.h
+#	include "winapi.h" // Needed before mysql.h
 #endif
 #include <mysql.h>
 #include <stdlib.h> // strtoul

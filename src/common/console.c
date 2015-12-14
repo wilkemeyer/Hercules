@@ -4,25 +4,25 @@
 
 #define HERCULES_CORE
 
-#include "config/core.h" // CONSOLE_INPUT, MAX_CONSOLE_INPUT
+#include "../config/core.h" // CONSOLE_INPUT, MAX_CONSOLE_INPUT
 #include "console.h"
 
-#include "common/cbasetypes.h"
-#include "common/core.h"
-#include "common/nullpo.h"
-#include "common/showmsg.h"
-#include "common/sysinfo.h"
+#include "cbasetypes.h"
+#include "core.h"
+#include "nullpo.h"
+#include "showmsg.h"
+#include "sysinfo.h"
 
 #ifndef MINICORE
-#	include "common/atomic.h"
-#	include "common/ers.h"
-#	include "common/memmgr.h"
-#	include "common/mutex.h"
-#	include "common/spinlock.h"
-#	include "common/sql.h"
-#	include "common/strlib.h"
-#	include "common/thread.h"
-#	include "common/timer.h"
+#	include "atomic.h"
+#	include "ers.h"
+#	include "memmgr.h"
+#	include "mutex.h"
+#	include "spinlock.h"
+#	include "sql.h"
+#	include "strlib.h"
+#	include "thread.h"
+#	include "timer.h"
 #endif
 
 #include <stdio.h>
@@ -31,7 +31,7 @@
 #	include <sys/time.h>
 #	include <unistd.h>
 #else
-#	include "common/winapi.h" // Console close event handling
+#	include "winapi.h" // Console close event handling
 #	ifdef CONSOLE_INPUT
 #		include <conio.h> /* _kbhit() */
 #	endif

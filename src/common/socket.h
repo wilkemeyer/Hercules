@@ -5,12 +5,12 @@
 #ifndef COMMON_SOCKET_H
 #define COMMON_SOCKET_H
 
-#include "common/hercules.h"
-#include "common/conf.h"
-#include "common/db.h"
+#include "hercules.h"
+#include "conf.h"
+#include "db.h"
 
 #ifdef WIN32
-#	include "common/winapi.h"
+#	include "winapi.h"
 	typedef long in_addr_t;
 #else
 #	include <netinet/in.h>
@@ -105,7 +105,6 @@ struct socket_data {
 	ParseFunc func_parse;
 
 	void* session_data; // stores application-specific data related to the session
-	struct hplugin_data_store *hdata; ///< HPM Plugin Data Store.
 };
 
 struct hSockOpt {

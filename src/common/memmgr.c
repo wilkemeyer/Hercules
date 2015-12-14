@@ -6,10 +6,10 @@
 
 #include "memmgr.h"
 
-#include "common/cbasetypes.h"
-#include "common/core.h"
-#include "common/showmsg.h"
-#include "common/sysinfo.h"
+#include "cbasetypes.h"
+#include "core.h"
+#include "showmsg.h"
+#include "sysinfo.h"
 
 #include <stdio.h>
 #include <stdlib.h>

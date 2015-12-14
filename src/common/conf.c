@@ -6,7 +6,7 @@
 
 #include "conf.h"
 
-#include "common/showmsg.h" // ShowError
+#include "showmsg.h" // ShowError
 
 #include <libconfig/libconfig.h>
 
@@ -184,7 +184,7 @@ void libconfig_defaults(void) {
 	libconfig->lookup_float = config_lookup_float;
 	libconfig->lookup_bool = config_lookup_bool;
 	libconfig->lookup_string = config_lookup_string;
-	/* those are custom and are from src/common/conf.c */
+	/* those are custom and are from src/conf.c */
 	libconfig->read_file = conf_read_file;
 	libconfig->setting_copy_simple = config_setting_copy_simple;
 	libconfig->setting_copy_elem = config_setting_copy_elem;

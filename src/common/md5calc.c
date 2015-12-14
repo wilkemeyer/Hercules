@@ -10,8 +10,8 @@
 
 #include "md5calc.h"
 
-#include "common/cbasetypes.h"
-#include "common/random.h"
+#include "cbasetypes.h"
+#include "random.h"
 
 #include <stdio.h>
 #include <stdlib.h>

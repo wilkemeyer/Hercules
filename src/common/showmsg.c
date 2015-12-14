@@ -6,9 +6,9 @@
 
 #include "showmsg.h"
 
-#include "common/cbasetypes.h"
-#include "common/core.h" //[Ind] - For SERVER_TYPE
-#include "common/strlib.h" // StringBuf
+#include "cbasetypes.h"
+#include "core.h" //[Ind] - For SERVER_TYPE
+#include "strlib.h" // StringBuf
 
 #include <libconfig/libconfig.h>
 
@@ -17,7 +17,7 @@
 #include <stdlib.h> // atexit
 
 #ifdef WIN32
-#	include "common/winapi.h"
+#	include "winapi.h"
 #else // not WIN32
 #	include <unistd.h>
 #endif // WIN32

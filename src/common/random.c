@@ -5,14 +5,14 @@
 
 #include "random.h"
 
-#include "common/cbasetypes.h" // for WIN32
-#include "common/showmsg.h"
-#include "common/timer.h" // gettick
+#include "cbasetypes.h" // for WIN32
+#include "showmsg.h"
+#include "timer.h" // gettick
 
 #include <mt19937ar/mt19937ar.h> // init_genrand, genrand_int32, genrand_res53
 
 #if defined(WIN32)
-#	include "common/winapi.h"
+#	include "winapi.h"
 #elif defined(HAVE_GETPID) || defined(HAVE_GETTID)
 #	include <sys/types.h>
 #	include <unistd.h>

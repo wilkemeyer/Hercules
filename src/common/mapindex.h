@@ -5,9 +5,9 @@
 #ifndef COMMON_MAPINDEX_H
 #define COMMON_MAPINDEX_H
 
-#include "common/hercules.h"
-#include "common/db.h"
-#include "common/mmo.h"
+#include "hercules.h"
+#include "db.h"
+#include "mmo.h"
 
 #define MAX_MAPINDEX 2000
 

@@ -5,8 +5,8 @@
 #ifndef COMMON_HERCULES_H
 #define COMMON_HERCULES_H
 
-#include "config/core.h"
-#include "common/cbasetypes.h"
+#include "../config/core.h"
+#include "cbasetypes.h"
 
 #ifdef WIN32
 	#define HPExport __declspec(dllexport)
@@ -16,8 +16,5 @@
 
 #define HPShared extern
 
-#ifndef HERCULES_CORE
-#include "common/HPMi.h"
-#endif // HERCULES_CORE
 
 #endif // COMMON_HERCULES_H

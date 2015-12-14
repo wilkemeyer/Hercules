@@ -72,11 +72,11 @@
 
 #include "db.h"
 
-#include "common/ers.h"
-#include "common/memmgr.h"
-#include "common/mmo.h"
-#include "common/showmsg.h"
-#include "common/strlib.h"
+#include "ers.h"
+#include "memmgr.h"
+#include "mmo.h"
+#include "showmsg.h"
+#include "strlib.h"
 
 #include <stdio.h>
 #include <stdlib.h>

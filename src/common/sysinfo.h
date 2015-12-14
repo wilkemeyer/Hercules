@@ -11,7 +11,7 @@
  * cached at compile time)
  */
 
-#include "common/hercules.h"
+#include "hercules.h"
 
 struct sysinfo_private;
 

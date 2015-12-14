@@ -7,7 +7,7 @@
 #define HPM_DATA_CHECK_H
 
 #if !defined(HPMHOOKGEN)
-#include "common/HPMSymbols.inc.h"
+#include "HPMSymbols.inc.h"
 #endif // ! HPMHOOKGEN
 #ifdef HPM_SYMBOL
 #undef HPM_SYMBOL

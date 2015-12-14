@@ -5,13 +5,13 @@
 
 #include "mutex.h"
 
-#include "common/cbasetypes.h" // for WIN32
-#include "common/memmgr.h"
-#include "common/showmsg.h"
-#include "common/timer.h"
+#include "cbasetypes.h" // for WIN32
+#include "memmgr.h"
+#include "showmsg.h"
+#include "timer.h"
 
 #ifdef WIN32
-#include "common/winapi.h"
+#include "winapi.h"
 #else
 #include <pthread.h>
 #include <sys/time.h>

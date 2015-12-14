@@ -6,7 +6,7 @@
 
 #include "nullpo.h"
 
-#include "common/showmsg.h"
+#include "showmsg.h"
 
 #include <stdio.h>
 #include <stdarg.h>

@@ -8,10 +8,10 @@
 
 #include "sysinfo.h"
 
-#include "common/cbasetypes.h"
-#include "common/core.h"
-#include "common/memmgr.h"
-#include "common/strlib.h"
+#include "cbasetypes.h"
+#include "core.h"
+#include "memmgr.h"
+#include "strlib.h"
 
 #include <stdio.h> // fopen
 #include <stdlib.h> // atoi

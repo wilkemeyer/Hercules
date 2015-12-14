@@ -6,15 +6,15 @@
 
 #include "utils.h"
 
-#include "common/cbasetypes.h"
-#include "common/core.h"
-#include "common/mmo.h"
-#include "common/showmsg.h"
-#include "common/socket.h"
-#include "common/strlib.h"
+#include "cbasetypes.h"
+#include "core.h"
+#include "mmo.h"
+#include "showmsg.h"
+#include "socket.h"
+#include "strlib.h"
 
 #ifdef WIN32
-#	include "common/winapi.h"
+#	include "winapi.h"
 #	ifndef F_OK
 #		define F_OK   0x0
 #	endif  /* F_OK */

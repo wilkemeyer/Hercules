@@ -5,7 +5,7 @@
 #ifndef COMMON_UTILS_H
 #define COMMON_UTILS_H
 
-#include "common/hercules.h"
+#include "hercules.h"
 
 #include <stdio.h> // FILE*
 

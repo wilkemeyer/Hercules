@@ -4,11 +4,11 @@
 #ifndef COMMON_HPMI_H
 #define COMMON_HPMI_H
 
-#include "common/hercules.h"
-#include "common/console.h"
-#include "common/core.h"
-#include "common/showmsg.h"
-#include "common/sql.h"
+#include "hercules.h"
+#include "console.h"
+#include "core.h"
+#include "showmsg.h"
+#include "sql.h"
 
 struct script_state;
 struct AtCommandInfo;

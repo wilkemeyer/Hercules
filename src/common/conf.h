@@ -5,7 +5,7 @@
 #ifndef COMMON_CONF_H
 #define COMMON_CONF_H
 
-#include "common/hercules.h"
+#include "hercules.h"
 
 #include <libconfig/libconfig.h>
 
@@ -82,7 +82,7 @@ struct libconfig_interface {
 	int (*lookup_bool) (const config_t *config, const char *filepath, int *value);
 	int (*lookup_string) (const config_t *config, const char *filepath, const char **value);
 
-	/* those are custom and are from src/common/conf.c */
+	/* those are custom and are from src/conf.c */
 	/* Functions to copy settings from libconfig/contrib */
 	int (*read_file) (config_t *config, const char *config_filename);
 	void (*setting_copy_simple) (config_setting_t *parent, const config_setting_t *src);

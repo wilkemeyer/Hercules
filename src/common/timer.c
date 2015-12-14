@@ -6,14 +6,14 @@
 
 #include "timer.h"
 
-#include "common/cbasetypes.h"
-#include "common/db.h"
-#include "common/memmgr.h"
-#include "common/showmsg.h"
-#include "common/utils.h"
+#include "cbasetypes.h"
+#include "db.h"
+#include "memmgr.h"
+#include "showmsg.h"
+#include "utils.h"
 
 #ifdef WIN32
-#	include "common/winapi.h" // GetTickCount()
+#	include "winapi.h" // GetTickCount()
 #else
 #	include <sys/time.h> // struct timeval, gettimeofday()
 #	include <unistd.h>

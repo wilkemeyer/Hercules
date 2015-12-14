@@ -8,9 +8,9 @@
 #error You should never include HPM.h from a plugin.
 #endif
 
-#include "common/hercules.h"
-#include "common/db.h"
-#include "common/HPMi.h"
+#include "hercules.h"
+#include "db.h"
+#include "HPMi.h"
 
 #ifdef WIN32
 	#ifndef WIN32_LEAN_AND_MEAN

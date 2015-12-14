@@ -4,12 +4,12 @@
 #ifndef COMMON_CONSOLE_H
 #define COMMON_CONSOLE_H
 
-#include "common/hercules.h"
-#include "common/db.h"
-#include "common/mutex.h"
-#include "common/spinlock.h"
-#include "common/sql.h"
-#include "common/thread.h"
+#include "hercules.h"
+#include "db.h"
+#include "mutex.h"
+#include "spinlock.h"
+#include "sql.h"
+#include "thread.h"
 
 /**
  * Queue Max

@@ -10,13 +10,13 @@
 
 #include "thread.h"
 
-#include "common/cbasetypes.h"
-#include "common/memmgr.h"
-#include "common/showmsg.h"
-#include "common/sysinfo.h" // sysinfo->getpagesize()
+#include "cbasetypes.h"
+#include "memmgr.h"
+#include "showmsg.h"
+#include "sysinfo.h" // sysinfo->getpagesize()
 
 #ifdef WIN32
-#	include "common/winapi.h"
+#	include "winapi.h"
 #	define __thread __declspec( thread )
 #else
 #	include <pthread.h>

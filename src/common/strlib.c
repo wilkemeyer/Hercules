@@ -6,9 +6,9 @@
 
 #include "strlib.h"
 
-#include "common/cbasetypes.h"
-#include "common/memmgr.h"
-#include "common/showmsg.h"
+#include "cbasetypes.h"
+#include "memmgr.h"
+#include "showmsg.h"
 
 #include <errno.h>
 #include <stdio.h>

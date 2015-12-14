@@ -4,39 +4,47 @@
 
 #define HERCULES_CORE
 
-#include "config/core.h"
+#include "../config/core.h"
 #include "core.h"
 
-#include "common/cbasetypes.h"
-#include "common/console.h"
-#include "common/db.h"
-#include "common/memmgr.h"
-#include "common/mmo.h"
-#include "common/random.h"
-#include "common/showmsg.h"
-#include "common/strlib.h"
-#include "common/sysinfo.h"
-#include "common/nullpo.h"
+#include "cbasetypes.h"
+#include "console.h"
+#include "db.h"
+#include "memmgr.h"
+#include "mmo.h"
+#include "random.h"
+#include "showmsg.h"
+#include "strlib.h"
+#include "sysinfo.h"
+#include "nullpo.h"
 
 #ifndef MINICORE
-#	include "common/HPM.h"
-#	include "common/conf.h"
-#	include "common/ers.h"
-#	include "common/socket.h"
-#	include "common/sql.h"
-#	include "common/thread.h"
-#	include "common/timer.h"
-#	include "common/utils.h"
+#	include "conf.h"
+#	include "ers.h"
+#	include "socket.h"
+#	include "sql.h"
+#	include "thread.h"
+#	include "timer.h"
+#	include "utils.h"
 #endif
 
 #ifndef _WIN32
 #	include <unistd.h>
 #else
-#	include "common/winapi.h" // Console close event handling
+#	include "winapi.h" // Console close event handling
 #endif
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#if defined(_MSC_VER)
+#pragma comment(lib, "..\\..\\build\\common.lib")
+#pragma comment(lib, "..\\..\\build\\zlib.lib")
+#pragma comment(lib, "..\\..\\build\\libconfig.lib")
+#pragma comment(lib, "..\\..\\build\\mt19937ar.lib")
+#pragma comment(lib, "..\\..\\3rdparty\\mysql\\lib\\libmysql.lib")
+#pragma comment(lib, "ws2_32.lib")
+#endif
 
 /// Called when a terminate signal is received.
 void (*shutdown_callback)(void) = NULL;
@@ -165,10 +173,6 @@ void usercheck(void) {
 
 void core_defaults(void) {
 	nullpo_defaults();
-#ifndef MINICORE
-	hpm_defaults();
-	HCache_defaults();
-#endif
 	sysinfo_defaults();
 	console_defaults();
 	strlib_defaults();
@@ -187,11 +191,9 @@ void core_defaults(void) {
  * Returns the source (core or plugin name) for the given command-line argument
  */
 const char *cmdline_arg_source(struct CmdlineArgData *arg) {
-#ifdef MINICORE
+
 	return "core";
-#else // !MINICORE
-	return HPM->pid2name(arg->pluginID);
-#endif // MINICORE
+
 }
 /**
  * Defines a command line argument.
@@ -337,15 +339,9 @@ int cmdline_exec(int argc, char **argv, unsigned int options)
  */
 void cmdline_init(void)
 {
-#ifdef MINICORE
-	// Minicore has no HPM. This value isn't used, but the arg_add function requires it, so we're (re)defining it here
-#define HPM_PID_CORE ((unsigned int)-1)
-#endif
 	CMDLINEARG_DEF(help, 'h', "Displays this help screen", CMDLINE_OPT_NORMAL);
 	CMDLINEARG_DEF(version, 'v', "Displays the server's version.", CMDLINE_OPT_NORMAL);
-#ifndef MINICORE
-	CMDLINEARG_DEF2(load-plugin, loadplugin, "Loads an additional plugin (can be repeated).", CMDLINE_OPT_PARAM|CMDLINE_OPT_PREINIT);
-#endif // !MINICORE
+
 	cmdline_args_init_local();
 }
 
@@ -432,10 +428,6 @@ int main (int argc, char **argv) {
 
 	console->init();
 
-	HCache->init();
-
-	HPM->init();
-
 	sockt->init();
 
 	do_init(argc,argv);
@@ -449,7 +441,6 @@ int main (int argc, char **argv) {
 	console->final();
 
 	retval = do_final();
-	HPM->final();
 	timer->final();
 	sockt->final();
 	DB->final();

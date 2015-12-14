@@ -5,8 +5,8 @@
 #ifndef COMMON_MMO_H
 #define COMMON_MMO_H
 
-#include "config/core.h"
-#include "common/cbasetypes.h"
+#include "core.h"
+#include "cbasetypes.h"
 
 // server->client protocol version
 //        0 - pre-?
@@ -663,7 +663,6 @@ struct guild {
 	unsigned short instances;
 
 	struct channel_data *channel;
-	struct hplugin_data_store *hdata; ///< HPM Plugin Data Store
 };
 
 struct guild_castle {
