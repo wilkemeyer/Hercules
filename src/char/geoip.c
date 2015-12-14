@@ -6,9 +6,9 @@
 
 #include "geoip.h"
 
-#include "common/cbasetypes.h"
-#include "common/memmgr.h"
-#include "common/showmsg.h"
+#include "../common/cbasetypes.h"
+#include "../common/memmgr.h"
+#include "../common/showmsg.h"
 
 #include <errno.h>
 #include <stdio.h>

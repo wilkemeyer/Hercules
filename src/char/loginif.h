@@ -5,7 +5,7 @@
 #ifndef CHAR_LOGINIF_H
 #define CHAR_LOGINIF_H
 
-#include "common/hercules.h"
+#include "../common/hercules.h"
 
 struct char_session_data;
 

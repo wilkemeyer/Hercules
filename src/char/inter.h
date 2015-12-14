@@ -5,9 +5,9 @@
 #ifndef CHAR_INTER_H
 #define CHAR_INTER_H
 
-#include "common/hercules.h"
-#include "common/db.h"
-#include "common/sql.h"
+#include "../common/hercules.h"
+#include "../common/db.h"
+#include "../common/sql.h"
 
 #include <stdarg.h>
 

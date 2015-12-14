@@ -5,8 +5,8 @@
 #ifndef CHAR_MAPIF_H
 #define CHAR_MAPIF_H
 
-#include "common/hercules.h"
-#include "common/mmo.h"
+#include "../common/hercules.h"
+#include "../common/mmo.h"
 
 struct WisData;
 

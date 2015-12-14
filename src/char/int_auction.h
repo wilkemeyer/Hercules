@@ -4,9 +4,9 @@
 #ifndef CHAR_INT_AUCTION_H
 #define CHAR_INT_AUCTION_H
 
-#include "common/hercules.h"
-#include "common/db.h"
-#include "common/mmo.h"
+#include "../common/hercules.h"
+#include "../common/db.h"
+#include "../common/mmo.h"
 
 /**
  * inter_auction_interface interface

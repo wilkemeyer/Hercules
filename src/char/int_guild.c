@@ -4,21 +4,21 @@
 
 #define HERCULES_CORE
 
-#include "config/core.h" // DBPATH
+#include "../config/core.h" // DBPATH
 #include "int_guild.h"
 
-#include "char/char.h"
-#include "char/inter.h"
-#include "char/mapif.h"
-#include "common/cbasetypes.h"
-#include "common/db.h"
-#include "common/memmgr.h"
-#include "common/mmo.h"
-#include "common/nullpo.h"
-#include "common/showmsg.h"
-#include "common/socket.h"
-#include "common/strlib.h"
-#include "common/timer.h"
+#include "char.h"
+#include "inter.h"
+#include "mapif.h"
+#include "../common/cbasetypes.h"
+#include "../common/db.h"
+#include "../common/memmgr.h"
+#include "../common/mmo.h"
+#include "../common/nullpo.h"
+#include "../common/showmsg.h"
+#include "../common/socket.h"
+#include "../common/strlib.h"
+#include "../common/timer.h"
 
 #include <stdio.h>
 #include <stdlib.h>

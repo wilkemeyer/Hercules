@@ -6,16 +6,16 @@
 
 #include "mapif.h"
 
-#include "char/char.h"
-#include "char/int_auction.h"
-#include "char/int_guild.h"
-#include "char/int_homun.h"
-#include "common/cbasetypes.h"
-#include "common/mmo.h"
-#include "common/random.h"
-#include "common/showmsg.h"
-#include "common/socket.h"
-#include "common/strlib.h"
+#include "char.h"
+#include "int_auction.h"
+#include "int_guild.h"
+#include "int_homun.h"
+#include "../common/cbasetypes.h"
+#include "../common/mmo.h"
+#include "../common/random.h"
+#include "../common/showmsg.h"
+#include "../common/socket.h"
+#include "../common/strlib.h"
 
 #include <stdlib.h>
 

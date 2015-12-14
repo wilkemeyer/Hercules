@@ -6,15 +6,15 @@
 
 #include "pincode.h"
 
-#include "char/char.h"
-#include "common/cbasetypes.h"
-#include "common/db.h"
-#include "common/mmo.h"
-#include "common/nullpo.h"
-#include "common/random.h"
-#include "common/showmsg.h"
-#include "common/socket.h"
-#include "common/strlib.h"
+#include "char.h"
+#include "../common/cbasetypes.h"
+#include "../common/db.h"
+#include "../common/mmo.h"
+#include "../common/nullpo.h"
+#include "../common/random.h"
+#include "../common/showmsg.h"
+#include "../common/socket.h"
+#include "../common/strlib.h"
 
 #include <stdlib.h>
 

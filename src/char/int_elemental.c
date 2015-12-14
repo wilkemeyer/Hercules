@@ -6,17 +6,17 @@
 
 #include "int_elemental.h"
 
-#include "char/char.h"
-#include "char/inter.h"
-#include "char/mapif.h"
-#include "common/memmgr.h"
-#include "common/mmo.h"
-#include "common/nullpo.h"
-#include "common/showmsg.h"
-#include "common/socket.h"
-#include "common/sql.h"
-#include "common/strlib.h"
-#include "common/utils.h"
+#include "char.h"
+#include "inter.h"
+#include "mapif.h"
+#include "../common/memmgr.h"
+#include "../common/mmo.h"
+#include "../common/nullpo.h"
+#include "../common/showmsg.h"
+#include "../common/socket.h"
+#include "../common/sql.h"
+#include "../common/strlib.h"
+#include "../common/utils.h"
 
 #include <stdio.h>
 #include <stdlib.h>

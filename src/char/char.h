@@ -5,10 +5,10 @@
 #ifndef CHAR_CHAR_H
 #define CHAR_CHAR_H
 
-#include "common/hercules.h"
-#include "common/core.h" // CORE_ST_LAST
-#include "common/db.h"
-#include "common/mmo.h"
+#include "../common/hercules.h"
+#include "../common/core.h" // CORE_ST_LAST
+#include "../common/db.h"
+#include "../common/mmo.h"
 
 enum E_CHARSERVER_ST {
 	CHARSERVER_ST_RUNNING = CORE_ST_LAST,

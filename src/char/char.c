@@ -4,41 +4,39 @@
 
 #define HERCULES_CORE
 
-#include "config/core.h" // CONSOLE_INPUT
+#include "../config/core.h" // CONSOLE_INPUT
 #include "char.h"
 
-#include "char/HPMchar.h"
-#include "char/geoip.h"
-#include "char/int_auction.h"
-#include "char/int_elemental.h"
-#include "char/int_guild.h"
-#include "char/int_homun.h"
-#include "char/int_mail.h"
-#include "char/int_mercenary.h"
-#include "char/int_party.h"
-#include "char/int_pet.h"
-#include "char/int_quest.h"
-#include "char/int_storage.h"
-#include "char/inter.h"
-#include "char/loginif.h"
-#include "char/mapif.h"
-#include "char/pincode.h"
+#include "geoip.h"
+#include "int_auction.h"
+#include "int_elemental.h"
+#include "int_guild.h"
+#include "int_homun.h"
+#include "int_mail.h"
+#include "int_mercenary.h"
+#include "int_party.h"
+#include "int_pet.h"
+#include "int_quest.h"
+#include "int_storage.h"
+#include "inter.h"
+#include "loginif.h"
+#include "mapif.h"
+#include "pincode.h"
 
-#include "common/HPM.h"
-#include "common/cbasetypes.h"
-#include "common/console.h"
-#include "common/core.h"
-#include "common/db.h"
-#include "common/memmgr.h"
-#include "common/mapindex.h"
-#include "common/mmo.h"
-#include "common/nullpo.h"
-#include "common/showmsg.h"
-#include "common/socket.h"
-#include "common/strlib.h"
-#include "common/sql.h"
-#include "common/timer.h"
-#include "common/utils.h"
+#include "../common/cbasetypes.h"
+#include "../common/console.h"
+#include "../common/core.h"
+#include "../common/db.h"
+#include "../common/memmgr.h"
+#include "../common/mapindex.h"
+#include "../common/mmo.h"
+#include "../common/nullpo.h"
+#include "../common/showmsg.h"
+#include "../common/socket.h"
+#include "../common/strlib.h"
+#include "../common/sql.h"
+#include "../common/timer.h"
+#include "../common/utils.h"
 
 #include <signal.h>
 #include <stdarg.h>
@@ -47,6 +45,11 @@
 #include <sys/types.h>
 #ifndef WIN32
 #	include <unistd.h>
+#endif
+
+// Win32:
+#if defined(_MSC_VER)
+#pragma comment(lib, "..\\..\\build\\common.lib")
 #endif
 
 // private declarations
@@ -2622,14 +2625,6 @@ int char_parse_fromlogin(int fd) {
 	while(RFIFOREST(fd) >= 2) {
 		uint16 command = RFIFOW(fd,0);
 
-		if (VECTOR_LENGTH(HPM->packets[hpParse_FromLogin]) > 0) {
-			int result = HPM->parse_packets(fd,hpParse_FromLogin);
-			if (result == 1)
-				continue;
-			if (result == 2)
-				return 0;
-		}
-
 		switch (command) {
 			// acknowledgment of connect-to-loginserver request
 			case 0x2711:
@@ -3909,13 +3904,6 @@ int char_parse_frommap(int fd)
 	}
 
 	while(RFIFOREST(fd) >= 2) {
-		if (VECTOR_LENGTH(HPM->packets[hpParse_FromMap]) > 0) {
-			int result = HPM->parse_packets(fd,hpParse_FromMap);
-			if (result == 1)
-				continue;
-			if (result == 2)
-				return 0;
-		}
 
 		switch(RFIFOW(fd,0)) {
 			case 0x2b0a:
@@ -5092,14 +5080,6 @@ int char_parse_char(int fd)
 		//For use in packets that depend on an sd being present [Skotlex]
 		#define FIFOSD_CHECK(rest) do { if(RFIFOREST(fd) < (rest)) return 0; if (sd==NULL || !sd->auth) { RFIFOSKIP(fd,(rest)); return 0; } } while (0)
 
-		if (VECTOR_LENGTH(HPM->packets[hpParse_Char]) > 0) {
-			int result = HPM->parse_packets(fd,hpParse_Char);
-			if (result == 1)
-				continue;
-			if (result == 2)
-				return 0;
-		}
-
 		cmd = RFIFOW(fd,0);
 
 		switch( cmd ) {
@@ -5541,8 +5521,7 @@ void char_sql_config_read(const char* cfgName)
 		//support the import command, just like any other config
 		else if(!strcmpi(w1,"import"))
 			chr->sql_config_read(w2);
-		else
-			HPM->parseConf(w1, w2, HPCT_CHAR_INTER);
+		
 	}
 	fclose(fp);
 	ShowInfo("Done reading %s.\n", cfgName);
@@ -5558,8 +5537,7 @@ void char_config_dispatch(char *w1, char *w2) {
 		if( (*dispatch_to[i])(w1,w2) )
 			break;/* we found who this belongs to, can stop */
 	}
-	if (i == len)
-		HPM->parseConf(w1, w2, HPCT_CHAR);
+	
 }
 
 int char_config_read(const char* cfgName)
@@ -5755,8 +5733,7 @@ int do_final(void) {
 
 	ShowStatus("Terminating...\n");
 
-	HPM->event(HPET_FINAL);
-
+	
 	chr->set_all_offline(-1);
 	chr->set_all_offline_sql();
 
@@ -5779,7 +5756,6 @@ int do_final(void) {
 		chr->char_fd = -1;
 	}
 
-	HPM_char_do_final();
 
 	SQL->Free(inter->sql_handle);
 	mapindex->final();
@@ -5792,7 +5768,6 @@ int do_final(void) {
 	aFree(chr->SQL_CONF_NAME);
 	aFree(chr->INTER_CONF_NAME);
 
-	HPM->event(HPET_POST_FINAL);
 
 	ShowStatus("Finished.\n");
 	return EXIT_SUCCESS;
@@ -5887,11 +5862,8 @@ int do_init(int argc, char **argv) {
 	for (i = 0; i < MAX_MAP_SERVERS; i++)
 		VECTOR_INIT(chr->server[i].maps);
 
-	HPM_char_do_init();
 	cmdline->exec(argc, argv, CMDLINE_OPT_PREINIT);
-	HPM->config_read();
-	HPM->event(HPET_PRE_INIT);
-
+	
 	//Read map indexes
 	mapindex->init();
 
@@ -5917,7 +5889,6 @@ int do_init(int argc, char **argv) {
 	auth_db = idb_alloc(DB_OPT_RELEASE_DATA);
 	chr->online_char_db = idb_alloc(DB_OPT_RELEASE_DATA);
 
-	HPM->event(HPET_INIT);
 
 	chr->mmo_char_sql_init();
 	chr->read_fame_list(); //Read fame lists.
@@ -5986,7 +5957,6 @@ int do_init(int argc, char **argv) {
 		core->runflag = CHARSERVER_ST_RUNNING;
 	}
 
-	HPM->event(HPET_READY);
 
 	return 0;
 }
