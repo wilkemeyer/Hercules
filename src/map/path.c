@@ -119,8 +119,8 @@ bool path_search_long(struct shootpath_data *spd,struct block_list *bl,int16 m,i
 
 	dx = (x1 - x0);
 	if (dx < 0) {
-		swap(x0, x1);
-		swap(y0, y1);
+		aSwap(x0, x1);
+		aSwap(y0, y1);
 		dx = -dx;
 	}
 	dy = (y1 - y0);

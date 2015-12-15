@@ -11,6 +11,7 @@
 #include "ipban.h"
 #include "loginlog.h"
 
+
 #include "../common/cbasetypes.h"
 #include "../common/conf.h"
 #include "../common/core.h"
@@ -1579,7 +1580,7 @@ int login_parse_login(int fd)
 
 	if( sockt->session[fd]->flag.eof )
 	{
-		ShowInfo("Closed connection from '"CL_WHITE"%s"CL_RESET"'.\n", ip);
+		ShowInfo("Closed connection from '" CL_WHITE "%s" CL_RESET "'.\n", ip);
 		sockt->close(fd);
 		return 0;
 	}
@@ -2008,7 +2009,7 @@ int do_init(int argc, char** argv)
 	
 	// server port open & binding
 	if ((login->fd = sockt->make_listen_bind(login_config.login_ip,login_config.login_port)) == -1) {
-		ShowFatalError("Failed to bind to port '"CL_WHITE"%d"CL_RESET"'\n",login_config.login_port);
+		ShowFatalError("Failed to bind to port '" CL_WHITE "%d" CL_RESET "'\n",login_config.login_port);
 		exit(EXIT_FAILURE);
 	}
 
@@ -2017,7 +2018,7 @@ int do_init(int argc, char** argv)
 		core->runflag = LOGINSERVER_ST_RUNNING;
 	}
 
-	ShowStatus("The login-server is "CL_GREEN"ready"CL_RESET" (Server is listening on the port %u).\n\n", login_config.login_port);
+	ShowStatus("The login-server is " CL_GREEN "ready" CL_RESET " (Server is listening on the port %u).\n\n", login_config.login_port);
 	login_log(0, "login server", 100, "login server started");
 
 	

@@ -7,7 +7,7 @@
 
 #include "hercules.h"
 
-#include <libconfig/libconfig.h>
+#include "../../3rdparty/libconfig/libconfig.h"
 
 #include <stdarg.h>
 

@@ -243,7 +243,7 @@ static void push_timer_heap(int tid) {
 #include "assert.h"
 	assert(BHEAP_DATA(timer_heap) != NULL);
 #endif // __clang_analyzer__
-	BHEAP_PUSH(timer_heap, tid, DIFFTICK_MINTOPCMP, swap);
+	BHEAP_PUSH(timer_heap, tid, DIFFTICK_MINTOPCMP, aSwap);
 }
 
 /*==========================
@@ -346,6 +346,22 @@ int timer_do_delete(int tid, TimerFunc func) {
 	return 0;
 }
 
+
+/// Marks a timer specified by 'id' for immediate deletion once it expires.
+/// Returns 0 on success, < 0 on failure.
+int timer_do_delete_nocheck(int tid) {
+	if(tid < 0 || tid >= timer_data_num) {
+		ShowError("timer_do_delete_nocheck error : no such timer %d");
+		return -1;
+	}
+
+	timer_data[tid].func = NULL;
+	timer_data[tid].type = TIMER_ONCE_AUTODEL;
+
+	return 0;
+}
+
+
 /// Adjusts a timer's expiration time.
 /// Returns the new tick value, or -1 if it fails.
 int64 timer_addtick(int tid, int64 tick) {
@@ -378,9 +394,9 @@ int64 timer_settick(int tid, int64 tick)
 		return tick; // nothing to do, already in proper position
 
 	// pop and push adjusted timer
-	BHEAP_POPINDEX(timer_heap, i, DIFFTICK_MINTOPCMP, swap);
+	BHEAP_POPINDEX(timer_heap, i, DIFFTICK_MINTOPCMP, aSwap);
 	timer_data[tid].tick = tick;
-	BHEAP_PUSH(timer_heap, tid, DIFFTICK_MINTOPCMP, swap);
+	BHEAP_PUSH(timer_heap, tid, DIFFTICK_MINTOPCMP, aSwap);
 	return tick;
 }
 
@@ -403,7 +419,7 @@ int do_timer(int64 tick)
 			break; // no more expired timers to process
 
 		// remove timer
-		BHEAP_POP(timer_heap, DIFFTICK_MINTOPCMP, swap);
+		BHEAP_POP(timer_heap, DIFFTICK_MINTOPCMP, aSwap);
 		timer_data[tid].type |= TIMER_REMOVE_HEAP;
 
 		if( timer_data[tid].func ) {
@@ -486,6 +502,7 @@ void timer_defaults(void) {
 	timer->add_func_list = timer_add_func_list;
 	timer->get = timer_get;
 	timer->_delete = timer_do_delete;
+	timer->_delete_nocheck = timer_do_delete_nocheck;
 	timer->addtick = timer_addtick;
 	timer->settick = timer_settick;
 	timer->get_uptime = timer_get_uptime;

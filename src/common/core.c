@@ -5,6 +5,8 @@
 #define HERCULES_CORE
 
 #include "../config/core.h"
+#include "../rgcore/rgcore.h"
+
 #include "core.h"
 
 #include "cbasetypes.h"
@@ -17,6 +19,8 @@
 #include "strlib.h"
 #include "sysinfo.h"
 #include "nullpo.h"
+
+
 
 #ifndef MINICORE
 #	include "conf.h"
@@ -42,6 +46,7 @@
 #pragma comment(lib, "..\\..\\build\\zlib.lib")
 #pragma comment(lib, "..\\..\\build\\libconfig.lib")
 #pragma comment(lib, "..\\..\\build\\mt19937ar.lib")
+#pragma comment(lib, "..\\..\\build\\rgcore.lib")
 #pragma comment(lib, "..\\..\\3rdparty\\mysql\\lib\\libmysql.lib")
 #pragma comment(lib, "ws2_32.lib")
 #endif
@@ -249,9 +254,9 @@ static CMDLINEARG(help)
  */
 static CMDLINEARG(version)
 {
-	ShowInfo(CL_GREEN"Website/Forum:"CL_RESET"\thttp://herc.ws/\n");
-	ShowInfo(CL_GREEN"IRC Channel:"CL_RESET"\tirc://irc.rizon.net/#Hercules\n");
-	ShowInfo("Open "CL_WHITE"readme.txt"CL_RESET" for more information.\n");
+	ShowInfo(CL_GREEN"Website/Forum:" CL_RESET "\thttp://herc.ws/\n");
+	ShowInfo(CL_GREEN"IRC Channel:" CL_RESET "\tirc://irc.rizon.net/#Hercules\n");
+	ShowInfo("Open " CL_WHITE "readme.txt" CL_RESET " for more information.\n");
 	return false;
 }
 /**
@@ -388,6 +393,8 @@ int main (int argc, char **argv) {
 		core->runflag = CORE_ST_RUN;
 	}
 	core_defaults();
+	
+	rgCore_init();
 
 	iMalloc->init();// needed for Show* in display_title() [FlavioJS]
 	showmsg->init();
@@ -452,6 +459,8 @@ int main (int argc, char **argv) {
 
 	iMalloc->final();
 	showmsg->final(); // Should be after iMalloc->final()
+
+	rgCore_final();
 
 	return retval;
 }

@@ -1,0 +1,92 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Source Files\allocator">
+      <UniqueIdentifier>{ba33ab04-623c-4d30-96fc-c52f594787e3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\allocator">
+      <UniqueIdentifier>{015a412a-ff0f-4a96-9cac-732b9a4b27e5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\config">
+      <UniqueIdentifier>{7d9213de-9490-43cd-ae72-a1a17a06b72a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\MT/Util">
+      <UniqueIdentifier>{0ba45bdc-78df-4f19-b352-d5b377c7b08b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Exception">
+      <UniqueIdentifier>{053cf740-bfd7-4e71-8403-1c6154e4c3e8}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="rgcore.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="roalloc.cpp">
+      <Filter>Source Files\allocator</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="rgcore.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pool.hpp">
+      <Filter>Header Files\allocator</Filter>
+    </ClInclude>
+    <ClInclude Include="roalloc.h">
+      <Filter>Header Files\allocator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\config\rgcore.h">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="arch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mt_util\atomic.hpp">
+      <Filter>Header Files\MT/Util</Filter>
+    </ClInclude>
+    <ClInclude Include="mt_util\box.hpp">
+      <Filter>Header Files\MT/Util</Filter>
+    </ClInclude>
+    <ClInclude Include="mt_util\cond.hpp">
+      <Filter>Header Files\MT/Util</Filter>
+    </ClInclude>
+    <ClInclude Include="mt_util\dynLib.hpp">
+      <Filter>Header Files\MT/Util</Filter>
+    </ClInclude>
+    <ClInclude Include="mt_util\getpagesize.hpp">
+      <Filter>Header Files\MT/Util</Filter>
+    </ClInclude>
+    <ClInclude Include="mt_util\mutex.hpp">
+      <Filter>Header Files\MT/Util</Filter>
+    </ClInclude>
+    <ClInclude Include="mt_util\os.h">
+      <Filter>Header Files\MT/Util</Filter>
+    </ClInclude>
+    <ClInclude Include="mt_util\stackbase.hpp">
+      <Filter>Header Files\MT/Util</Filter>
+    </ClInclude>
+    <ClInclude Include="mt_util\thread.hpp">
+      <Filter>Header Files\MT/Util</Filter>
+    </ClInclude>
+    <ClInclude Include="exception\Exception.hpp">
+      <Filter>Header Files\Exception</Filter>
+    </ClInclude>
+    <ClInclude Include="exception\fatal.h">
+      <Filter>Header Files\Exception</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

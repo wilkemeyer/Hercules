@@ -381,7 +381,7 @@ void mapif_parse_mail_return(int fd)
 			char temp_[MAIL_TITLE_LENGTH];
 
 			// swap sender and receiver
-			swap(msg.send_id, msg.dest_id);
+			aSwap(msg.send_id, msg.dest_id);
 			safestrncpy(temp_, msg.send_name, NAME_LENGTH);
 			safestrncpy(msg.send_name, msg.dest_name, NAME_LENGTH);
 			safestrncpy(msg.dest_name, temp_, NAME_LENGTH);

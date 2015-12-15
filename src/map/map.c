@@ -649,8 +649,8 @@ static int bl_getall_area(int type, int m, int x0, int y0, int x1, int y1, int (
 	if (m < 0)
 		return 0;
 
-	if (x1 < x0) swap(x0, x1);
-	if (y1 < y0) swap(y0, y1);
+	if (x1 < x0) aSwap(x0, x1);
+	if (y1 < y0) aSwap(y0, y1);
 
 	// Limit search area to map size
 	x0 = max(x0, 0);

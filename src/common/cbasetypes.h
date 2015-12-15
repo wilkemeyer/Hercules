@@ -298,9 +298,10 @@ typedef char bool;
 //////////////////////////////////////////////////////////////////////////
 // macro tools
 
-#ifdef swap // just to be sure
+/*#ifdef swap // just to be sure
 #undef swap
-#endif
+#endif*/
+
 // hmm only ints?
 //#define swap(a,b) { int temp=a; a=b; b=temp;}
 // if using macros then something that is type independent
@@ -308,7 +309,7 @@ typedef char bool;
 // Avoid "value computed is not used" warning and generates the same assembly code
 //#define swap(a,b) if (a != b) ((a ^= b), (b ^= a), (a ^= b))
 // but is vulnerable to 'if (foo) swap(bar, baz); else quux();', causing the else to nest incorrectly.
-#define swap(a,b) do { if ((a) != (b)) { (a) ^= (b); (b) ^= (a); (a) ^= (b); } } while(0)
+#define aSwap(a,b) do { if ((a) != (b)) { (a) ^= (b); (b) ^= (a); (a) ^= (b); } } while(0)
 #if 0 //to be activated soon, more tests needed on how VS works with the macro above
 #ifdef WIN32
 #undef swap
