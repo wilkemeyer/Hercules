@@ -1133,7 +1133,7 @@ struct packet_quest_list_info {
 	int32 quest_svrTime;
 	int32 quest_endTime;
 	int16 hunting_count;
-	struct packet_mission_info_sub objectives[]; // Note: This will be < MAX_QUEST_OBJECTIVES
+	struct packet_mission_info_sub *objectives;// []; // Note: This will be < MAX_QUEST_OBJECTIVES
 #endif // PACKETVER >= 20141022
 } __attribute__((packed));
 

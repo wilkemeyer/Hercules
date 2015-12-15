@@ -316,7 +316,7 @@ int intif_saveregistry(struct map_session_data *sd) {
 		if( varname[0] == '@' ) /* @string$ can get here, so we skip */
 			continue;
 
-		src = DB->data2ptr(data);
+		src = (struct script_reg_state*)DB->data2ptr(data);
 
 		/* no need! */
 		if( !src->update )
@@ -1527,7 +1527,7 @@ void intif_parse_QuestLog(int fd) {
 			// sd->avail_quests and k didn't meet in the middle: some entries were skipped
 			if (k < num_received) // Move the entries at the end to fill the gap
 				memmove(&sd->quest_log[k], &sd->quest_log[sd->avail_quests], sizeof(struct quest)*(num_received - k));
-			sd->quest_log = aRealloc(sd->quest_log, sizeof(struct quest)*sd->num_quests);
+			sd->quest_log = (struct quest*)aRealloc(sd->quest_log, sizeof(struct quest)*sd->num_quests);
 		}
 	}
 
@@ -2193,7 +2193,7 @@ void intif_parse_MessageToFD(int fd) {
 	Assert_retv(sockt->session_is_valid(u_fd));
 	if( sockt->session[u_fd] && sockt->session[u_fd]->session_data ) {
 		int aid = RFIFOL(fd,8);
-		struct map_session_data * sd = sockt->session[u_fd]->session_data;
+		struct map_session_data * sd = (struct map_session_data*)sockt->session[u_fd]->session_data;
 		/* matching e.g. previous fd owner didn't dc during request or is still the same */
 		if( sd && sd->bl.id == aid ) {
 			char msg[512];
@@ -2210,7 +2210,7 @@ void intif_parse_MessageToFD(int fd) {
  *------------------------------------------*/
 void intif_itembound_req(int char_id,int aid,int guild_id) {
 #ifdef GP_BOUND_ITEMS
-	struct guild_storage *gstor = idb_get(gstorage->db,guild_id);
+	struct guild_storage *gstor = (struct guild_storage*)idb_get(gstorage->db,guild_id);
 	WFIFOHEAD(inter_fd,12);
 	WFIFOW(inter_fd,0) = 0x3056;
 	WFIFOL(inter_fd,2) = char_id;
@@ -2228,7 +2228,7 @@ void intif_parse_Itembound_ack(int fd) {
 	struct guild_storage *gstor;
 	int guild_id = RFIFOW(fd,6);
 
-	gstor = idb_get(gstorage->db,guild_id);
+	gstor = (struct guild_storage*)idb_get(gstorage->db,guild_id);
 	if(gstor)
 		gstor->lock = 0; //Unlock now that operation is completed
 #endif

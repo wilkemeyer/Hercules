@@ -360,7 +360,7 @@ void Sql_Free(Sql* self) {
 	{
 		SQL->FreeResult(self);
 		StrBuf->Destroy(&self->buf);
-		if( self->keepalive != INVALID_TIMER ) timer->delete(self->keepalive, Sql_P_KeepaliveTimer);
+		if( self->keepalive != INVALID_TIMER ) timer->_delete(self->keepalive, Sql_P_KeepaliveTimer);
 		mysql_close(&self->handle);
 		aFree(self);
 	}
@@ -944,7 +944,7 @@ void Sql_HerculesUpdateCheck(Sql* self) {
 			if( SQL_ERROR == SQL->Query(self, "SELECT 1 FROM `sql_updates` WHERE `timestamp` = '%u' LIMIT 1", timestampui) )
 				Sql_ShowDebug(self);
 			if( Sql_NumRows(self) != 1 ) {
-				StrBuf->Printf(&buf,CL_MAGENTA"[SQL]"CL_RESET": -- '"CL_WHITE"%s"CL_RESET"'\n", path);
+				StrBuf->Printf(&buf,CL_MAGENTA "[SQL]" CL_RESET ": -- '" CL_WHITE "%s" CL_RESET "'\n", path);
 				performed++;
 			}
 		}

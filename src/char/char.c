@@ -206,7 +206,7 @@ void char_set_char_charselect(int account_id)
 		character->pincode_enable = pincode->charselect + pincode->enabled;
 
 	if(character->waiting_disconnect != INVALID_TIMER) {
-		timer->delete(character->waiting_disconnect, chr->waiting_disconnect);
+		timer->_delete(character->waiting_disconnect, chr->waiting_disconnect);
 		character->waiting_disconnect = INVALID_TIMER;
 	}
 
@@ -241,7 +241,7 @@ void char_set_char_online(int map_id, int char_id, int account_id)
 
 	//Get rid of disconnect timer
 	if(character->waiting_disconnect != INVALID_TIMER) {
-		timer->delete(character->waiting_disconnect, chr->waiting_disconnect);
+		timer->_delete(character->waiting_disconnect, chr->waiting_disconnect);
 		character->waiting_disconnect = INVALID_TIMER;
 	}
 
@@ -281,7 +281,7 @@ void char_set_char_offline(int char_id, int account_id)
 				chr->server[character->server].users--;
 
 		if(character->waiting_disconnect != INVALID_TIMER){
-			timer->delete(character->waiting_disconnect, chr->waiting_disconnect);
+			timer->_delete(character->waiting_disconnect, chr->waiting_disconnect);
 			character->waiting_disconnect = INVALID_TIMER;
 		}
 
@@ -312,7 +312,7 @@ static int char_db_setoffline(DBKey key, DBData *data, va_list ap)
 		character->char_id = -1;
 		character->server = -1;
 		if(character->waiting_disconnect != INVALID_TIMER){
-			timer->delete(character->waiting_disconnect, chr->waiting_disconnect);
+			timer->_delete(character->waiting_disconnect, chr->waiting_disconnect);
 			character->waiting_disconnect = INVALID_TIMER;
 		}
 	} else if (character->server == server_id)
@@ -399,7 +399,7 @@ int char_mmo_char_tosql(int char_id, struct mmo_charstatus* p)
 	nullpo_ret(p);
 	if (char_id != p->char_id) return 0;
 
-	cp = idb_ensure(chr->char_db_, char_id, chr->create_charstatus);
+	cp = (struct mmo_charstatus*)idb_ensure(chr->char_db_, char_id, chr->create_charstatus);
 
 	StrBuf->Init(&buf);
 	memset(save_status, 0, sizeof(save_status));
@@ -817,7 +817,7 @@ int char_memitemdata_to_sql(const struct item items[], int max, int id, int tabl
 		else
 			found = true;
 
-		StrBuf->Printf(&buf, "('%d', '%d', '%d', '%d', '%d', '%d', '%d', '%u', '%d', '%"PRIu64"'",
+		StrBuf->Printf(&buf, "('%d', '%d', '%d', '%d', '%d', '%d', '%d', '%u', '%d', '%" PRIu64 "'",
 			id, items[i].nameid, items[i].amount, items[i].equip, items[i].identify, items[i].refine, items[i].attribute, items[i].expire_time, items[i].bound, items[i].unique_id);
 		for( j = 0; j < MAX_SLOTS; ++j )
 			StrBuf->Printf(&buf, ", '%d'", items[i].card[j]);
@@ -959,7 +959,7 @@ int char_inventory_to_sql(const struct item items[], int max, int id) {
 		else
 			found = true;
 
-		StrBuf->Printf(&buf, "('%d', '%d', '%d', '%d', '%d', '%d', '%d', '%u', '%d', '%d', '%"PRIu64"'",
+		StrBuf->Printf(&buf, "('%d', '%d', '%d', '%d', '%d', '%d', '%d', '%u', '%d', '%d', '%" PRIu64 "'",
 						 id, items[i].nameid, items[i].amount, items[i].equip, items[i].identify, items[i].refine, items[i].attribute, items[i].expire_time, items[i].favorite, items[i].bound, items[i].unique_id);
 		for( j = 0; j < MAX_SLOTS; ++j )
 			StrBuf->Printf(&buf, ", '%d'", items[i].card[j]);
@@ -1451,7 +1451,7 @@ int char_mmo_char_fromsql(int char_id, struct mmo_charstatus* p, bool load_every
 	if( opt & OPT_SHOW_EQUIP )
 		p->show_equip = true;
 
-	cp = idb_ensure(chr->char_db_, char_id, chr->create_charstatus);
+	cp = (struct mmo_charstatus*)idb_ensure(chr->char_db_, char_id, chr->create_charstatus);
 	memcpy(cp, p, sizeof(struct mmo_charstatus));
 	return 1;
 }
@@ -3167,7 +3167,7 @@ void char_parse_frommap_set_users(int fd, int id)
 	for(i = 0; i < chr->server[id].users; i++) {
 		int aid = RFIFOL(fd,6+i*8);
 		int cid = RFIFOL(fd,6+i*8+4);
-		struct online_char_data *character = idb_ensure(chr->online_char_db, aid, chr->create_online_char_data);
+		auto character = (struct online_char_data *)idb_ensure(chr->online_char_db, aid, chr->create_online_char_data);
 		if (character->server > -1 && character->server != id) {
 			ShowNotice("Set map user: Character (%d:%d) marked on map server %d, but map server %d claims to have (%d:%d) online!\n",
 				character->account_id, character->char_id, character->server, id, aid, cid);
@@ -3320,7 +3320,7 @@ void char_parse_frommap_change_map_server(int fd)
 		node->changing_mapservers = 1;
 		idb_put(auth_db, RFIFOL(fd,2), node);
 
-		data = idb_ensure(chr->online_char_db, RFIFOL(fd,2), chr->create_online_char_data);
+		data = (struct online_char_data *)idb_ensure(chr->online_char_db, RFIFOL(fd,2), chr->create_online_char_data);
 		data->char_id = char_data->char_id;
 		data->server = map_id; //Update server where char is.
 
@@ -5344,7 +5344,7 @@ int char_broadcast_user_count(int tid, int64 tick, int id, intptr_t data) {
  */
 static int char_send_accounts_tologin_sub(DBKey key, DBData *data, va_list ap)
 {
-	struct online_char_data* character = DB->data2ptr(data);
+	auto character = (struct online_char_data *)DB->data2ptr(data);
 	int* i = va_arg(ap, int*);
 
 	nullpo_ret(character);
@@ -5413,7 +5413,7 @@ static int char_waiting_disconnect(int tid, int64 tick, int id, intptr_t data) {
  */
 static int char_online_data_cleanup_sub(DBKey key, DBData *data, va_list ap)
 {
-	struct online_char_data *character= DB->data2ptr(data);
+	auto character= (struct online_char_data *)DB->data2ptr(data);
 	nullpo_ret(character);
 	if (character->fd != -1)
 		return 0; //Character still connected

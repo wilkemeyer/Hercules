@@ -5502,7 +5502,7 @@ void clif_broadcast(struct block_list *bl, const char *mes, size_t len, int type
 	unsigned char *buf = NULL;
 	nullpo_retv(mes);
 
-	buf = aMalloc((4 + lp + len)*sizeof(unsigned char));
+	buf = (unsigned char*)aMalloc((4 + lp + len)*sizeof(unsigned char));
 
 	WBUFW(buf,0) = 0x9a;
 	WBUFW(buf,2) = 4 + lp + len;
@@ -5753,7 +5753,7 @@ void clif_wis_message(int fd, const char *nick, const char *mes, size_t mes_len)
 ///     2 = ignored by target
 ///     3 = everyone ignored by target
 void clif_wis_end(int fd, int flag) {
-	struct map_session_data *sd = sockt->session_is_valid(fd) ? sockt->session[fd]->session_data : NULL;
+	struct map_session_data *sd = (struct map_session_data*) (sockt->session_is_valid(fd) ? sockt->session[fd]->session_data : NULL);
 	struct packet_wis_end p;
 
 	if( !sd )
@@ -8190,7 +8190,7 @@ void clif_refresh_storagewindow(struct map_session_data *sd)
 	// remain locked forever and nobody will be able to access it
 	if (sd->state.storage_flag == STORAGE_FLAG_GUILD) {
 		struct guild_storage *gstor;
-		if( (gstor = idb_get(gstorage->db,sd->status.guild_id)) == NULL) {
+		if( (gstor = (struct guild_storage*)idb_get(gstorage->db,sd->status.guild_id)) == NULL) {
 			// Shouldn't happen... The information should already be at the map-server
 			intif->request_guild_storage(sd->status.account_id,sd->status.guild_id);
 		} else {
@@ -8914,7 +8914,7 @@ void clif_channel_msg(struct channel_data *chan, struct map_session_data *sd, ch
 	WFIFOL(sd->fd,8) = RGB2BGR(color);
 	safestrncpy((char*)WFIFOP(sd->fd,12), msg, msg_len);
 
-	for (user = dbi_first(iter); dbi_exists(iter); user = dbi_next(iter)) {
+	for (user = (struct map_session_data*)dbi_first(iter); dbi_exists(iter); user = (struct map_session_data*)dbi_next(iter)) {
 		if( user->fd == sd->fd )
 			continue;
 		WFIFOHEAD(user->fd,msg_len + 12);
@@ -8947,7 +8947,7 @@ void clif_channel_msg2(struct channel_data *chan, char *msg)
 	WBUFL(buf,8) = RGB2BGR(color);
 	safestrncpy((char*)WBUFP(buf,12), msg, msg_len);
 
-	for (user = dbi_first(iter); dbi_exists(iter); user = dbi_next(iter)) {
+	for (user = (struct map_session_data*)dbi_first(iter); dbi_exists(iter); user = (struct map_session_data*)dbi_next(iter)) {
 		WFIFOHEAD(user->fd,msg_len + 12);
 		memcpy(WFIFOP(user->fd,0), WBUFP(buf,0), msg_len + 12);
 		WFIFOSET(user->fd, msg_len + 12);
@@ -10302,7 +10302,7 @@ void clif_parse_EquipItem(int fd,struct map_session_data *sd) __attribute__((non
 /// 00a9 <index>.W <position>.W
 /// 0998 <index>.W <position>.L
 void clif_parse_EquipItem(int fd,struct map_session_data *sd) {
-	struct packet_equip_item *p = P2PTR(fd);
+	struct packet_equip_item *p = (struct packet_equip_item*)P2PTR(fd);
 
 	if(pc_isdead(sd)) {
 		clif->clearunit_area(&sd->bl,CLR_DEAD);
@@ -13248,7 +13248,7 @@ void clif_parse_GM_Monster_Item(int fd, struct map_session_data *sd) __attribute
 /// 013f <item/mob name>.24B
 /// 09ce <item/mob name>.100B [Ind/Yommy<3]
 void clif_parse_GM_Monster_Item(int fd, struct map_session_data *sd) {
-	struct packet_gm_monster_item *p = P2PTR(fd);
+	struct packet_gm_monster_item *p = (struct packet_gm_monster_item*)P2PTR(fd);
 	int i, count;
 	char *item_monster_name;
 	struct item_data *item_array[10];
@@ -13979,7 +13979,7 @@ void clif_parse_ranklist(int fd, struct map_session_data *sd) {
 		case RANKTYPE_BLACKSMITH:
 		case RANKTYPE_ALCHEMIST:
 		case RANKTYPE_TAEKWON:
-			clif->ranklist(sd, type); // pk_list unsupported atm
+			clif->ranklist(sd, (fame_list_type)type); // pk_list unsupported atm
 			break;
 	}
 }
@@ -15475,7 +15475,7 @@ void clif_quest_send_list(struct map_session_data *sd)
 	len = sizeof(struct packet_quest_list_header)
 	    + sd->avail_quests * (sizeof(struct packet_quest_list_info)
 	                         + MAX_QUEST_OBJECTIVES * sizeof(struct packet_mission_info_sub)); // >= than the actual length
-	buf = aMalloc(len);
+	buf = (uint8*)aMalloc(len);
 	packet = (struct packet_quest_list_header *)WBUFP(buf, 0);
 	real_len = sizeof(*packet);
 
@@ -15849,7 +15849,7 @@ void clif_parse_mercenary_action(int fd, struct map_session_data* sd)
 		return;
 
 	if (option == 2)
-		mercenary->delete(sd->md, 2);
+		mercenary->_delete(sd->md, 2);
 }
 
 /// Mercenary Message
@@ -17118,7 +17118,7 @@ void clif_parse_SkillSelectMenu(int fd, struct map_session_data *sd) {
 		return;
 
 	if( pc_istrading(sd) ) {
-		clif->skill_fail(sd,sd->ud.skill_id,0,0);
+		clif->skill_fail(sd,sd->ud.skill_id, USESKILL_FAIL_LEVEL,0);
 		clif_menuskill_clear(sd);
 		return;
 	}
@@ -17563,7 +17563,7 @@ void clif_bgqueue_notice_delete(struct map_session_data *sd, enum BATTLEGROUNDS_
 
 void clif_parse_bgqueue_register(int fd, struct map_session_data *sd) __attribute__((nonnull (2)));
 void clif_parse_bgqueue_register(int fd, struct map_session_data *sd) {
-	struct packet_bgqueue_register *p = P2PTR(fd);
+	struct packet_bgqueue_register *p = (struct packet_bgqueue_register*)P2PTR(fd);
 	struct bg_arena *arena = NULL;
 	if( !bg->queue_on ) return; /* temp, until feature is complete */
 
@@ -17601,7 +17601,7 @@ void clif_bgqueue_update_info(struct map_session_data *sd, unsigned char arena_i
 
 void clif_parse_bgqueue_checkstate(int fd, struct map_session_data *sd) __attribute__((nonnull (2)));
 void clif_parse_bgqueue_checkstate(int fd, struct map_session_data *sd) {
-	struct packet_bgqueue_checkstate *p = P2PTR(fd);
+	struct packet_bgqueue_checkstate *p = (struct packet_bgqueue_checkstate *)P2PTR(fd);
 
 	nullpo_retv(sd);
 	if ( sd->bg_queue.arena && sd->bg_queue.type ) {
@@ -17612,7 +17612,7 @@ void clif_parse_bgqueue_checkstate(int fd, struct map_session_data *sd) {
 
 void clif_parse_bgqueue_revoke_req(int fd, struct map_session_data *sd) __attribute__((nonnull (2)));
 void clif_parse_bgqueue_revoke_req(int fd, struct map_session_data *sd) {
-	struct packet_bgqueue_revoke_req *p = P2PTR(fd);
+	struct packet_bgqueue_revoke_req *p = (struct packet_bgqueue_revoke_req *)P2PTR(fd);
 
 	if( sd->bg_queue.arena )
 		bg->queue_pc_cleanup(sd);
@@ -17622,7 +17622,7 @@ void clif_parse_bgqueue_revoke_req(int fd, struct map_session_data *sd) {
 
 void clif_parse_bgqueue_battlebegin_ack(int fd, struct map_session_data *sd) __attribute__((nonnull (2)));
 void clif_parse_bgqueue_battlebegin_ack(int fd, struct map_session_data *sd) {
-	struct packet_bgqueue_battlebegin_ack *p = P2PTR(fd);
+	struct packet_bgqueue_battlebegin_ack *p = (struct packet_bgqueue_battlebegin_ack *)P2PTR(fd);
 	struct bg_arena *arena;
 
 	if( !bg->queue_on ) return; /* temp, until feature is complete */
@@ -17761,7 +17761,7 @@ void clif_cart_additem_ack(struct map_session_data *sd, int flag) {
 void clif_parse_BankDeposit(int fd, struct map_session_data* sd) __attribute__((nonnull (2)));
 /* Bank System [Yommy/Hercules] */
 void clif_parse_BankDeposit(int fd, struct map_session_data* sd) {
-	struct packet_banking_deposit_req *p = P2PTR(fd);
+	struct packet_banking_deposit_req *p = (struct  packet_banking_deposit_req *)P2PTR(fd);
 	int money;
 
 	if (!battle_config.feature_banking) {
@@ -17776,7 +17776,7 @@ void clif_parse_BankDeposit(int fd, struct map_session_data* sd) {
 
 void clif_parse_BankWithdraw(int fd, struct map_session_data* sd) __attribute__((nonnull (2)));
 void clif_parse_BankWithdraw(int fd, struct map_session_data* sd) {
-	struct packet_banking_withdraw_req *p = P2PTR(fd);
+	struct packet_banking_withdraw_req *p = (struct packet_banking_withdraw_req *)P2PTR(fd);
 	int money;
 
 	if (!battle_config.feature_banking) {
@@ -18053,7 +18053,7 @@ void clif_npc_market_purchase_ack(struct map_session_data *sd, struct packet_npc
 void clif_parse_NPCMarketPurchase(int fd, struct map_session_data *sd) __attribute__((nonnull (2)));
 void clif_parse_NPCMarketPurchase(int fd, struct map_session_data *sd) {
 #if PACKETVER >= 20131223
-	struct packet_npc_market_purchase *p = P2PTR(fd);
+	struct packet_npc_market_purchase *p = (struct packet_npc_market_purchase *)P2PTR(fd);
 
 	clif->npc_market_purchase_ack(sd,p,npc->market_buylist(sd,(p->PacketLength - 4) / sizeof(p->list[0]),p));
 #endif
@@ -18399,8 +18399,8 @@ void clif_openmergeitem(int fd, struct map_session_data *sd)
 
 int clif_comparemergeitem(const void *a, const void *b)
 {
-	const struct merge_item *a_ = a;
-	const struct merge_item *b_ = b;
+	const struct merge_item *a_ = (const struct merge_item *)a;
+	const struct merge_item *b_ = (const struct merge_item *)b;
 
 	nullpo_ret(a);
 	nullpo_ret(b);

@@ -238,7 +238,7 @@ int merc_contract_end_timer(int tid, int64 tick, int id, intptr_t data) {
 	}
 
 	md->contract_timer = INVALID_TIMER;
-	mercenary->delete(md, 0); // Mercenary soldier's duty hour is over.
+	mercenary->_delete(md, 0); // Mercenary soldier's duty hour is over.
 
 	return 0;
 }
@@ -273,7 +273,7 @@ void merc_contract_stop(struct mercenary_data *md)
 {
 	nullpo_retv(md);
 	if( md->contract_timer != INVALID_TIMER )
-		timer->delete(md->contract_timer, mercenary->contract_end_timer);
+		timer->_delete(md->contract_timer, mercenary->contract_end_timer);
 	md->contract_timer = INVALID_TIMER;
 }
 
@@ -356,7 +356,7 @@ void mercenary_heal(struct mercenary_data *md, int hp, int sp)
 
 int mercenary_dead(struct mercenary_data *md)
 {
-	mercenary->delete(md, 1);
+	mercenary->_delete(md, 1);
 	return 0;
 }
 
@@ -520,7 +520,7 @@ void mercenary_defaults(void) {
 	/* funcs */
 	mercenary->init = do_init_mercenary;
 
-	mercenary->class = merc_class;
+	mercenary->_class = merc_class;
 	mercenary->get_viewdata = merc_get_viewdata;
 
 	mercenary->create = merc_create;
@@ -530,7 +530,7 @@ void mercenary_defaults(void) {
 	mercenary->heal = mercenary_heal;
 	mercenary->dead = mercenary_dead;
 
-	mercenary->delete = merc_delete;
+	mercenary->_delete = merc_delete;
 	mercenary->contract_stop = merc_contract_stop;
 
 	mercenary->get_lifetime = mercenary_get_lifetime;

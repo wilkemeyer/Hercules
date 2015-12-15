@@ -863,7 +863,7 @@ int mob_setdelayspawn(struct mob_data *md)
 		spawntime = 5000;
 
 	if( md->spawn_timer != INVALID_TIMER )
-		timer->delete(md->spawn_timer, mob->delayspawn);
+		timer->_delete(md->spawn_timer, mob->delayspawn);
 	md->spawn_timer = timer->add(timer->gettick()+spawntime, mob->delayspawn, md->bl.id, 0);
 	return 0;
 }
@@ -909,14 +909,14 @@ int mob_spawn (struct mob_data *md)
 			if( !map->search_freecell(&md->bl, -1, &md->bl.x, &md->bl.y, md->spawn->xs, md->spawn->ys, battle_config.no_spawn_on_player?4:0) ) {
 				// retry again later
 				if( md->spawn_timer != INVALID_TIMER )
-					timer->delete(md->spawn_timer, mob->delayspawn);
+					timer->_delete(md->spawn_timer, mob->delayspawn);
 				md->spawn_timer = timer->add(tick+5000,mob->delayspawn,md->bl.id,0);
 				return 1;
 			}
 		} else if( battle_config.no_spawn_on_player > 99 && map->foreachinrange(mob->count_sub, &md->bl, AREA_SIZE, BL_PC) ) {
 			// retry again later (players on sight)
 			if( md->spawn_timer != INVALID_TIMER )
-				timer->delete(md->spawn_timer, mob->delayspawn);
+				timer->_delete(md->spawn_timer, mob->delayspawn);
 			md->spawn_timer = timer->add(tick+5000,mob->delayspawn,md->bl.id,0);
 			return 1;
 		}
@@ -932,7 +932,7 @@ int mob_spawn (struct mob_data *md)
 	md->ud.dir = 0;
 	if( md->spawn_timer != INVALID_TIMER )
 	{
-		timer->delete(md->spawn_timer, mob->delayspawn);
+		timer->_delete(md->spawn_timer, mob->delayspawn);
 		md->spawn_timer = INVALID_TIMER;
 	}
 
@@ -2605,7 +2605,7 @@ int mob_dead(struct mob_data *md, struct block_list *src, int type) {
 	}
 
 	if(md->deletetimer != INVALID_TIMER) {
-		timer->delete(md->deletetimer,mob->timer_delete);
+		timer->_delete(md->deletetimer,mob->timer_delete);
 		md->deletetimer = INVALID_TIMER;
 	}
 	/**
@@ -3533,7 +3533,7 @@ int mob_clone_spawn(struct map_session_data *sd, int16 m, int16 x, int16 y, cons
 		if (duration) //Auto Delete after a while.
 		{
 			if( md->deletetimer != INVALID_TIMER )
-				timer->delete(md->deletetimer, mob->timer_delete);
+				timer->_delete(md->deletetimer, mob->timer_delete);
 			md->deletetimer = timer->add(timer->gettick() + duration, mob->timer_delete, md->bl.id, 0);
 		}
 	}

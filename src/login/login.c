@@ -65,12 +65,11 @@ static DBData login_create_online_user(DBKey key, va_list args)
 
 struct online_login_data* login_add_online_user(int char_server, int account_id)
 {
-	struct online_login_data* p;
-	p = idb_ensure(login->online_db, account_id, login->create_online_user);
+	auto p = (struct online_login_data *)idb_ensure(login->online_db, account_id, login->create_online_user);
 	p->char_server = char_server;
 	if( p->waiting_disconnect != INVALID_TIMER )
 	{
-		timer->delete(p->waiting_disconnect, login->waiting_disconnect_timer);
+		timer->_delete(p->waiting_disconnect, login->waiting_disconnect_timer);
 		p->waiting_disconnect = INVALID_TIMER;
 	}
 	return p;
@@ -83,7 +82,7 @@ void login_remove_online_user(int account_id)
 	if( p == NULL )
 		return;
 	if( p->waiting_disconnect != INVALID_TIMER )
-		timer->delete(p->waiting_disconnect, login->waiting_disconnect_timer);
+		timer->_delete(p->waiting_disconnect, login->waiting_disconnect_timer);
 
 	idb_remove(login->online_db, account_id);
 }
@@ -104,7 +103,7 @@ static int login_waiting_disconnect_timer(int tid, int64 tick, int id, intptr_t 
  */
 static int login_online_db_setoffline(DBKey key, DBData *data, va_list ap)
 {
-	struct online_login_data* p = DB->data2ptr(data);
+	auto p = (struct online_login_data *)DB->data2ptr(data);
 	int server_id = va_arg(ap, int);
 	nullpo_ret(p);
 	if( server_id == -1 )
@@ -112,7 +111,7 @@ static int login_online_db_setoffline(DBKey key, DBData *data, va_list ap)
 		p->char_server = -1;
 		if( p->waiting_disconnect != INVALID_TIMER )
 		{
-			timer->delete(p->waiting_disconnect, login->waiting_disconnect_timer);
+			timer->_delete(p->waiting_disconnect, login->waiting_disconnect_timer);
 			p->waiting_disconnect = INVALID_TIMER;
 		}
 	}
@@ -126,7 +125,7 @@ static int login_online_db_setoffline(DBKey key, DBData *data, va_list ap)
  */
 static int login_online_data_cleanup_sub(DBKey key, DBData *data, va_list ap)
 {
-	struct online_login_data *character= DB->data2ptr(data);
+	auto character= (struct online_login_data *)DB->data2ptr(data);
 	nullpo_ret(character);
 	if (character->char_server == -2) //Unknown server.. set them offline
 		login->remove_online_user(character->account_id);
@@ -651,11 +650,11 @@ void login_fromchar_parse_online_accounts(int fd, int id)
 	users = RFIFOW(fd,4);
 	for (i = 0; i < users; i++) {
 		int aid = RFIFOL(fd,6+i*4);
-		struct online_login_data *p = idb_ensure(login->online_db, aid, login->create_online_user);
+		auto p = (struct online_login_data *)idb_ensure(login->online_db, aid, login->create_online_user);
 		p->char_server = id;
 		if (p->waiting_disconnect != INVALID_TIMER)
 		{
-			timer->delete(p->waiting_disconnect, login->waiting_disconnect_timer);
+			timer->_delete(p->waiting_disconnect, login->waiting_disconnect_timer);
 			p->waiting_disconnect = INVALID_TIMER;
 		}
 	}

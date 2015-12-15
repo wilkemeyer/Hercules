@@ -39,7 +39,7 @@ GroupSettings* pc_group_get_dummy_group(void)
  */
 static inline GroupSettings* name2group(const char* group_name)
 {
-	return strdb_get(pcg->name_db, group_name);
+	return (GroupSettings*)strdb_get(pcg->name_db, group_name);
 }
 
 /**
@@ -131,7 +131,7 @@ static void read_config(void) {
 
 		// Check if all commands and permissions exist
 		iter = db_iterator(pcg->db);
-		for (group_settings = dbi_first(iter); dbi_exists(iter); group_settings = dbi_next(iter)) {
+		for (group_settings = (GroupSettings*)dbi_first(iter); dbi_exists(iter); group_settings = (GroupSettings*)dbi_next(iter)) {
 			config_setting_t *commands = group_settings->commands, *permissions = group_settings->permissions;
 			int count = 0;
 
@@ -176,7 +176,7 @@ static void read_config(void) {
 		i = 0; // counter for processed groups
 		while (i < group_count) {
 			iter = db_iterator(pcg->db);
-			for (group_settings = dbi_first(iter); dbi_exists(iter); group_settings = dbi_next(iter)) {
+			for (group_settings = (GroupSettings*)dbi_first(iter); dbi_exists(iter); group_settings = (GroupSettings*)dbi_next(iter)) {
 				config_setting_t *inherit = NULL,
 				                 *commands = group_settings->commands,
 					             *permissions = group_settings->permissions;
@@ -241,7 +241,7 @@ static void read_config(void) {
 
 		// Pack permissions into GroupSettings.e_permissions for faster checking
 		iter = db_iterator(pcg->db);
-		for (group_settings = dbi_first(iter); dbi_exists(iter); group_settings = dbi_next(iter)) {
+		for (group_settings = (GroupSettings*)dbi_first(iter); dbi_exists(iter); group_settings = (GroupSettings*)dbi_next(iter)) {
 			config_setting_t *permissions = group_settings->permissions;
 			int count = libconfig->setting_length(permissions);
 
@@ -269,7 +269,7 @@ static void read_config(void) {
 			CREATE(commands, config_setting_t*, group_count);
 			i = 0;
 			iter = db_iterator(pcg->db);
-			for (group_settings = dbi_first(iter); dbi_exists(iter); group_settings = dbi_next(iter)) {
+			for (group_settings = (GroupSettings*)dbi_first(iter); dbi_exists(iter); group_settings = (GroupSettings*)dbi_next(iter)) {
 				pc_groups[i] = group_settings;
 				commands[i] = group_settings->commands;
 				i++;
@@ -321,7 +321,7 @@ bool pc_group_exists(int group_id)
  */
 GroupSettings* pc_group_id2group(int group_id)
 {
-	return idb_get(pcg->db, group_id);
+	return (GroupSettings*)idb_get(pcg->db, group_id);
 }
 
 /**
@@ -444,7 +444,7 @@ void do_init_pc_groups(void) {
  */
 static int group_db_clear_sub(DBKey key, DBData *data, va_list args)
 {
-	GroupSettings *group = DB->data2ptr(data);
+	GroupSettings *group = (GroupSettings*)DB->data2ptr(data);
 	if (group->name)
 		aFree(group->name);
 	return 0;

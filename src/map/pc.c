@@ -128,7 +128,7 @@ void pc_setinvincibletimer(struct map_session_data* sd, int val) {
 	val += map->list[sd->bl.m].invincible_time_inc;
 
 	if( sd->invincible_timer != INVALID_TIMER )
-		timer->delete(sd->invincible_timer,pc->invincible_timer);
+		timer->_delete(sd->invincible_timer,pc->invincible_timer);
 	sd->invincible_timer = timer->add(timer->gettick()+val,pc->invincible_timer,sd->bl.id,0);
 }
 
@@ -138,7 +138,7 @@ void pc_delinvincibletimer(struct map_session_data* sd)
 
 	if( sd->invincible_timer != INVALID_TIMER )
 	{
-		timer->delete(sd->invincible_timer,pc->invincible_timer);
+		timer->_delete(sd->invincible_timer,pc->invincible_timer);
 		sd->invincible_timer = INVALID_TIMER;
 		skill->unit_move(&sd->bl,timer->gettick(),1);
 	}
@@ -210,7 +210,7 @@ int pc_addspiritball(struct map_session_data *sd,int interval,int max)
 
 	if( sd->spiritball && sd->spiritball >= max ) {
 		if(sd->spirit_timer[0] != INVALID_TIMER)
-			timer->delete(sd->spirit_timer[0],pc->spiritball_timer);
+			timer->_delete(sd->spirit_timer[0],pc->spiritball_timer);
 		sd->spiritball--;
 		if( sd->spiritball != 0 )
 			memmove(sd->spirit_timer+0, sd->spirit_timer+1, (sd->spiritball)*sizeof(int));
@@ -252,7 +252,7 @@ int pc_delspiritball(struct map_session_data *sd,int count,int type)
 
 	for(i=0;i<count;i++) {
 		if(sd->spirit_timer[i] != INVALID_TIMER) {
-			timer->delete(sd->spirit_timer[i],pc->spiritball_timer);
+			timer->_delete(sd->spirit_timer[i],pc->spiritball_timer);
 			sd->spirit_timer[i] = INVALID_TIMER;
 		}
 	}
@@ -372,7 +372,7 @@ void pc_addfame(struct map_session_data *sd,int count)
 		case MAPID_ALCHEMIST:  ranktype = RANKTYPE_ALCHEMIST; break;
 		case MAPID_TAEKWON: ranktype = RANKTYPE_TAEKWON; break;
 	}
-	clif->update_rankingpoint(sd, ranktype, count);
+	clif->update_rankingpoint(sd, (fame_list_type)ranktype, count);
 	chrif->updatefamelist(sd);
 }
 
@@ -446,7 +446,7 @@ int pc_inventory_rental_clear(struct map_session_data *sd)
 {
 	if( sd->rental_timer != INVALID_TIMER )
 	{
-		timer->delete(sd->rental_timer, pc->inventory_rental_end);
+		timer->_delete(sd->rental_timer, pc->inventory_rental_end);
 		sd->rental_timer = INVALID_TIMER;
 	}
 
@@ -1123,7 +1123,7 @@ bool pc_authok(struct map_session_data *sd, int login_id2, time_t expiration_tim
 	sd->bg_queue.arena = NULL;
 	sd->bg_queue.ready = 0;
 	sd->bg_queue.client_has_bg_data = 0;
-	sd->bg_queue.type = 0;
+	sd->bg_queue.type = (bg_queue_types)0;
 
 	VECTOR_INIT(sd->script_queues);
 
@@ -1353,7 +1353,7 @@ int pc_reg_received(struct map_session_data *sd)
 
 	pc->load_combo(sd);
 
-	status_calc_pc(sd,SCO_FIRST|SCO_FORCE);
+	status_calc_pc(sd,(e_status_calc_opt)(SCO_FIRST|SCO_FORCE));
 	chrif->scdata_request(sd->status.account_id, sd->status.char_id);
 
 	intif->Mail_requestinbox(sd->status.char_id, 0); // MAIL SYSTEM - Request Mail Inbox
@@ -1371,7 +1371,7 @@ int pc_reg_received(struct map_session_data *sd)
 		map->list[sd->bl.m].users_pvp--;
 
 		if( map->list[sd->bl.m].flag.pvp && !map->list[sd->bl.m].flag.pvp_nocalcrank && sd->pvp_timer != INVALID_TIMER ) {// unregister the player for ranking
-			timer->delete( sd->pvp_timer, pc->calc_pvprank_timer );
+			timer->_delete( sd->pvp_timer, pc->calc_pvprank_timer );
 			sd->pvp_timer = INVALID_TIMER;
 		}
 		clif->changeoption(&sd->bl);
@@ -2066,7 +2066,7 @@ int pc_delautobonus(struct map_session_data* sd, struct s_autobonus *autobonus,c
 			}
 			else
 			{ // Logout / Unequipped an item with an activated bonus
-				timer->delete(autobonus[i].active,pc->endautobonus);
+				timer->_delete(autobonus[i].active,pc->endautobonus);
 				autobonus[i].active = INVALID_TIMER;
 			}
 		}
@@ -5157,7 +5157,7 @@ void pc_bound_clear(struct map_session_data *sd, enum e_item_bound_type type) {
 			ShowError("Helllo! You reached pc_bound_clear for IBT_ACCOUNT, unfortunately no scenario was expected for this!\n");
 			break;
 		case IBT_GUILD: {
-				struct guild_storage *gstor = idb_get(gstorage->db,sd->status.guild_id);
+				struct guild_storage *gstor = (struct guild_storage *)idb_get(gstorage->db,sd->status.guild_id);
 
 				for( i = 0; i < MAX_INVENTORY; i++ ){
 					if(sd->status.inventory[i].bound == type) {
@@ -5421,7 +5421,7 @@ int pc_setpos(struct map_session_data* sd, unsigned short map_index, int x, int 
 			if (sd->sc.data[SC_KNOWLEDGE]) {
 				struct status_change_entry *sce = sd->sc.data[SC_KNOWLEDGE];
 				if (sce->timer != INVALID_TIMER)
-					timer->delete(sce->timer, status->change_timer);
+					timer->_delete(sce->timer, status->change_timer);
 				sce->timer = timer->add(timer->gettick() + skill->get_time(SG_KNOWLEDGE, sce->val1), status->change_timer, sd->bl.id, SC_KNOWLEDGE);
 			}
 			status_change_end(&sd->bl, SC_PROPERTYWALK, INVALID_TIMER);
@@ -6422,7 +6422,7 @@ int pc_stop_following (struct map_session_data *sd)
 	nullpo_ret(sd);
 
 	if (sd->followtimer != INVALID_TIMER) {
-		timer->delete(sd->followtimer,pc->follow_timer);
+		timer->_delete(sd->followtimer,pc->follow_timer);
 		sd->followtimer = INVALID_TIMER;
 	}
 	sd->followtarget = -1;
@@ -7480,10 +7480,10 @@ int pc_dead(struct map_session_data *sd,struct block_list *src) {
 	}
 
 	if( sd->md )
-		mercenary->delete(sd->md, 3); // Your mercenary soldier has ran away.
+		mercenary->_delete(sd->md, 3); // Your mercenary soldier has ran away.
 
 	if( sd->ed )
-		elemental->delete(sd->ed, 0);
+		elemental->_delete(sd->ed, 0);
 
 	// Leave duel if you die [LuzZza]
 	if(battle_config.duel_autoleave_when_die) {
@@ -8415,7 +8415,7 @@ int pc_jobchange(struct map_session_data *sd,int job, int upper)
 	clif->skillinfoblock(sd);
 
 	if (sd->ed)
-		elemental->delete(sd->ed, 0);
+		elemental->_delete(sd->ed, 0);
 	if (sd->state.vending)
 		vending->close(sd);
 
@@ -8616,9 +8616,9 @@ int pc_setoption(struct map_session_data *sd,int type)
 
 		// End all SCs that can be reset when mado is taken off
 		for( i = 0; i < SC_MAX; i++ ) {
-			if ( !sd->sc.data[i] || !status->get_sc_type(i) )
+			if ( !sd->sc.data[i] || !status->get_sc_type((sc_type)i) )
 				continue;
-			if ( status->get_sc_type(i)&SC_MADO_NO_RESET )
+			if ( status->get_sc_type((sc_type)i)&SC_MADO_NO_RESET )
 				continue;
 			switch (i) {
 				case SC_BERSERK:
@@ -8900,7 +8900,7 @@ void pc_setreg(struct map_session_data* sd, int64 reg, int val) {
 char* pc_readregstr(struct map_session_data* sd, int64 reg) {
 	struct script_reg_str *p = NULL;
 
-	p = i64db_get(sd->regs.vars, reg);
+	p = (struct script_reg_str *)i64db_get(sd->regs.vars, reg);
 
 	return p ? p->value : NULL;
 }
@@ -8919,7 +8919,7 @@ void pc_setregstr(struct map_session_data* sd, int64 reg, const char* str) {
 		p->flag.type = 1;
 
 		if( sd->regs.vars->put(sd->regs.vars, DB->i642key(reg), DB->ptr2data(p), &prev) ) {
-			p = DB->data2ptr(&prev);
+			p = (struct script_reg_str *)DB->data2ptr(&prev);
 			if( p->value )
 				aFree(p->value);
 			ers_free(pc->str_reg_ers, p);
@@ -8929,7 +8929,7 @@ void pc_setregstr(struct map_session_data* sd, int64 reg, const char* str) {
 		}
 	} else {
 		if( sd->regs.vars->remove(sd->regs.vars, DB->i642key(reg), &prev) ) {
-			p = DB->data2ptr(&prev);
+			p = (struct script_reg_str *)DB->data2ptr(&prev);
 			if( p->value )
 				aFree(p->value);
 			ers_free(pc->str_reg_ers, p);
@@ -8955,7 +8955,7 @@ int pc_readregistry(struct map_session_data *sd, int64 reg) {
 		return 0;
 	}
 
-	p = i64db_get(sd->regs.vars, reg);
+	p = (struct script_reg_num *)i64db_get(sd->regs.vars, reg);
 
 	return p ? p->value : 0;
 }
@@ -8976,7 +8976,7 @@ char* pc_readregistry_str(struct map_session_data *sd, int64 reg) {
 		return NULL;
 	}
 
-	p = i64db_get(sd->regs.vars, reg);
+	p = (struct script_reg_str *)i64db_get(sd->regs.vars, reg);
 
 	return p ? p->value : NULL;
 }
@@ -9020,7 +9020,7 @@ int pc_setregistry(struct map_session_data *sd, int64 reg, int val) {
 		return 0;
 	}
 
-	if( (p = i64db_get(sd->regs.vars, reg) ) ) {
+	if( (p = (struct script_reg_num*)i64db_get(sd->regs.vars, reg) ) ) {
 		if( val ) {
 			if( !p->value && index ) /* its a entry that was deleted, so we reset array */
 				script->array_update(&sd->regs, reg, false);
@@ -9045,7 +9045,7 @@ int pc_setregistry(struct map_session_data *sd, int64 reg, int val) {
 			p->flag.update = 1;
 
 		if( sd->regs.vars->put(sd->regs.vars, DB->i642key(reg), DB->ptr2data(p), &prev) ) {
-			p = DB->data2ptr(&prev);
+			p = (struct script_reg_num*)DB->data2ptr(&prev);
 			ers_free(pc->num_reg_ers, p);
 		}
 	}
@@ -9071,7 +9071,7 @@ int pc_setregistry_str(struct map_session_data *sd, int64 reg, const char *val) 
 		return 0;
 	}
 
-	if( (p = i64db_get(sd->regs.vars, reg) ) ) {
+	if( (p = (struct script_reg_str *)i64db_get(sd->regs.vars, reg) ) ) {
 		if( val[0] ) {
 			if( p->value )
 				aFree(p->value);
@@ -9099,7 +9099,7 @@ int pc_setregistry_str(struct map_session_data *sd, int64 reg, const char *val) 
 		p->flag.type = 1;
 
 		if( sd->regs.vars->put(sd->regs.vars, DB->i642key(reg), DB->ptr2data(p), &prev) ) {
-			p = DB->data2ptr(&prev);
+			p = (struct script_reg_str *)DB->data2ptr(&prev);
 			if( p->value )
 				aFree(p->value);
 			ers_free(pc->str_reg_ers, p);
@@ -9176,7 +9176,7 @@ int pc_deleventtimer(struct map_session_data *sd,const char *name)
 	if( i == MAX_EVENTTIMER )
 		return 0; // not found
 
-	timer->delete(sd->eventtimer[i],pc->eventtimer);
+	timer->_delete(sd->eventtimer[i],pc->eventtimer);
 	sd->eventtimer[i] = INVALID_TIMER;
 	sd->eventcount--;
 	aFree(p);
@@ -9218,7 +9218,7 @@ int pc_cleareventtimer(struct map_session_data *sd)
 	for(i=0;i<MAX_EVENTTIMER;i++)
 		if( sd->eventtimer[i] != INVALID_TIMER ){
 			char *p = (char *)(timer->get(sd->eventtimer[i])->data);
-			timer->delete(sd->eventtimer[i],pc->eventtimer);
+			timer->_delete(sd->eventtimer[i],pc->eventtimer);
 			sd->eventtimer[i] = INVALID_TIMER;
 			sd->eventcount--;
 			if (p) aFree(p);
@@ -9865,7 +9865,7 @@ int pc_checkitem(struct map_session_data *sd)
 		}
 
 		if (sd->guild) {
-			struct guild_storage *guild_storage = idb_get(gstorage->db,sd->guild->guild_id);
+			auto guild_storage = (struct guild_storage*)idb_get(gstorage->db,sd->guild->guild_id);
 			if (guild_storage) {
 				for( i = 0; i < MAX_GUILD_STORAGE; i++ ) {
 					id = guild_storage->items[i].nameid;
@@ -10399,7 +10399,7 @@ void pc_add_charm(struct map_session_data *sd, int interval, int max, int type)
 
 	if (sd->charm_count && sd->charm_count >= max) {
 		if (sd->charm_timer[0] != INVALID_TIMER)
-			timer->delete(sd->charm_timer[0],pc->charm_timer);
+			timer->_delete(sd->charm_timer[0],pc->charm_timer);
 		sd->charm_count--;
 		if (sd->charm_count != 0)
 			memmove(sd->charm_timer+0, sd->charm_timer+1, sd->charm_count*sizeof(int));
@@ -10448,7 +10448,7 @@ void pc_del_charm(struct map_session_data *sd, int count, int type)
 
 	for (i = 0; i < count; i++) {
 		if(sd->charm_timer[i] != INVALID_TIMER) {
-			timer->delete(sd->charm_timer[i],pc->charm_timer);
+			timer->_delete(sd->charm_timer[i],pc->charm_timer);
 			sd->charm_timer[i] = INVALID_TIMER;
 		}
 	}
@@ -10727,7 +10727,7 @@ int pc_readdb(void) {
 	memset(pc->exp_table,0,sizeof(pc->exp_table));
 	memset(pc->max_level,0,sizeof(pc->max_level));
 
-	sprintf(line, "%s/"DBPATH"exp.txt", map->db_path);
+	sprintf(line, "%s/" DBPATH "exp.txt", map->db_path);
 
 	fp=fopen(line, "r");
 	if(fp==NULL){
@@ -10824,7 +10824,7 @@ int pc_readdb(void) {
 			for ( k = ELE_NEUTRAL; k<ELE_MAX; k++ )
 				battle->attr_fix_table[i][j][k]=100;
 
-	sprintf(line, "%s/"DBPATH"attr_fix.txt", map->db_path);
+	sprintf(line, "%s/" DBPATH "attr_fix.txt", map->db_path);
 
 	fp=fopen(line,"r");
 	if(fp==NULL){
@@ -10870,16 +10870,16 @@ int pc_readdb(void) {
 		}
 	}
 	fclose(fp);
-	ShowStatus("Done reading '"CL_WHITE"%u"CL_RESET"' entries in '"CL_WHITE"%s/"DBPATH"%s"CL_RESET"'.\n",count,map->db_path,"attr_fix.txt");
+	ShowStatus("Done reading '" CL_WHITE "%u" CL_RESET "' entries in '" CL_WHITE "%s/" DBPATH "%s" CL_RESET "'.\n",count,map->db_path,"attr_fix.txt");
 	count = 0;
 	// reset then read statspoint
 	memset(pc->statp,0,sizeof(pc->statp));
 	i=1;
 
-	sprintf(line, "%s/"DBPATH"statpoint.txt", map->db_path);
+	sprintf(line, "%s/" DBPATH "statpoint.txt", map->db_path);
 	fp=fopen(line,"r");
 	if(fp == NULL){
-		ShowWarning("Can't read '"CL_WHITE"%s"CL_RESET"'... Generating DB.\n",line);
+		ShowWarning("Can't read '" CL_WHITE "%s" CL_RESET "'... Generating DB.\n",line);
 		//return 1;
 	} else {
 		while(fgets(line, sizeof(line), fp))
@@ -10897,7 +10897,7 @@ int pc_readdb(void) {
 		}
 		fclose(fp);
 
-		ShowStatus("Done reading '"CL_WHITE"%u"CL_RESET"' entries in '"CL_WHITE"%s/"DBPATH"%s"CL_RESET"'.\n",count,map->db_path,"statpoint.txt");
+		ShowStatus("Done reading '" CL_WHITE "%u" CL_RESET "' entries in '" CL_WHITE "%s/" DBPATH "%s" CL_RESET "'.\n",count,map->db_path,"statpoint.txt");
 	}
 	// generate the remaining parts of the db if necessary
 	k = battle_config.use_statpoint_table; //save setting
@@ -10930,7 +10930,7 @@ void pc_itemcd_do(struct map_session_data *sd, bool load) {
 	struct item_cd* cd = NULL;
 
 	if( load ) {
-		if( !(cd = idb_get(pc->itemcd_db, sd->status.char_id)) ) {
+		if( !(cd = (struct item_cd*)idb_get(pc->itemcd_db, sd->status.char_id)) ) {
 			// no skill cooldown is associated with this character
 			return;
 		}
@@ -10943,7 +10943,7 @@ void pc_itemcd_do(struct map_session_data *sd, bool load) {
 		}
 		idb_remove(pc->itemcd_db,sd->status.char_id);
 	} else {
-		if( !(cd = idb_get(pc->itemcd_db,sd->status.char_id)) ) {
+		if( !(cd = (struct item_cd*)idb_get(pc->itemcd_db,sd->status.char_id)) ) {
 			// create a new skill cooldown object for map storage
 			CREATE( cd, struct item_cd, 1 );
 			idb_put( pc->itemcd_db, sd->status.char_id, cd );
@@ -11253,7 +11253,7 @@ void pc_autotrade_populate(struct map_session_data *sd) {
 	struct autotrade_vending *data;
 	int i, j, k, cursor = 0;
 
-	if( !(data = idb_get(pc->at_db,sd->status.char_id)) )
+	if( !(data = (struct autotrade_vending*)idb_get(pc->at_db,sd->status.char_id)) )
 		return;
 
 	for(i = 0; i < data->vend_num; i++) {
@@ -11291,7 +11291,7 @@ void pc_autotrade_populate(struct map_session_data *sd) {
  * @see DBApply
  */
 int pc_autotrade_final(DBKey key, DBData *data, va_list ap) {
-	struct autotrade_vending* at_v = DB->data2ptr(data);
+	struct autotrade_vending* at_v = (struct autotrade_vending*)DB->data2ptr(data);
 	return 0;
 }
 
@@ -11367,9 +11367,9 @@ void do_init_pc(bool minimal) {
 
 	pcg->init();
 
-	pc->sc_display_ers = ers_new(sizeof(struct sc_display_entry), "pc.c:sc_display_ers", ERS_OPT_FLEX_CHUNK);
-	pc->num_reg_ers = ers_new(sizeof(struct script_reg_num), "pc.c::num_reg_ers", ERS_OPT_CLEAN|ERS_OPT_FLEX_CHUNK);
-	pc->str_reg_ers = ers_new(sizeof(struct script_reg_str), "pc.c::str_reg_ers", ERS_OPT_CLEAN|ERS_OPT_FLEX_CHUNK);
+	pc->sc_display_ers = ers_new(sizeof(struct sc_display_entry), "pc.c:sc_display_ers", (ERSOptions)(ERS_OPT_FLEX_CHUNK));
+	pc->num_reg_ers = ers_new(sizeof(struct script_reg_num), "pc.c::num_reg_ers", (ERSOptions)(ERS_OPT_CLEAN|ERS_OPT_FLEX_CHUNK));
+	pc->str_reg_ers = ers_new(sizeof(struct script_reg_str), "pc.c::str_reg_ers", (ERSOptions)(ERS_OPT_CLEAN|ERS_OPT_FLEX_CHUNK));
 
 	ers_chunk_size(pc->sc_display_ers, 150);
 	ers_chunk_size(pc->num_reg_ers, 300);

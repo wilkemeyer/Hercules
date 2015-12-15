@@ -33,7 +33,7 @@ static int inter_auction_count(int char_id, bool buy)
 	struct auction_data *auction;
 	DBIterator *iter = db_iterator(inter_auction->db);
 
-	for( auction = dbi_first(iter); dbi_exists(iter); auction = dbi_next(iter) )
+	for( auction = (struct auction_data *)dbi_first(iter); dbi_exists(iter); auction = (struct auction_data *)dbi_next(iter) )
 	{
 		if ((buy && auction->buyer_id == char_id) || (!buy && auction->seller_id == char_id))
 			i++;
@@ -88,7 +88,7 @@ unsigned int inter_auction_create(struct auction_data *auction)
 	StrBuf->Printf(&buf, "INSERT INTO `%s` (`seller_id`,`seller_name`,`buyer_id`,`buyer_name`,`price`,`buynow`,`hours`,`timestamp`,`nameid`,`item_name`,`type`,`refine`,`attribute`,`unique_id`", auction_db);
 	for( j = 0; j < MAX_SLOTS; j++ )
 		StrBuf->Printf(&buf, ",`card%d`", j);
-	StrBuf->Printf(&buf, ") VALUES ('%d',?,'%d',?,'%d','%d','%d','%lu','%d',?,'%d','%d','%d','%"PRIu64"'",
+	StrBuf->Printf(&buf, ") VALUES ('%d',?,'%d',?,'%d','%d','%d','%lu','%d',?,'%d','%d','%d','%" PRIu64 "'",
 		auction->seller_id, auction->buyer_id, auction->price, auction->buynow, auction->hours, (unsigned long)auction->timestamp, auction->item.nameid, auction->type, auction->item.refine, auction->item.attribute, auction->item.unique_id);
 	for( j = 0; j < MAX_SLOTS; j++ )
 		StrBuf->Printf(&buf, ",'%d'", auction->item.card[j]);
@@ -171,7 +171,7 @@ void inter_auction_delete(struct auction_data *auction)
 		Sql_ShowDebug(inter->sql_handle);
 
 	if( auction->auction_end_timer != INVALID_TIMER )
-		timer->delete(auction->auction_end_timer, inter_auction->end_timer);
+		timer->_delete(auction->auction_end_timer, inter_auction->end_timer);
 
 	idb_remove(inter_auction->db, auction_id);
 }
@@ -270,7 +270,7 @@ void mapif_parse_auction_requestlist(int fd)
 
 	memcpy(searchtext, RFIFOP(fd,16), NAME_LENGTH);
 
-	for( auction = dbi_first(iter); dbi_exists(iter); auction = dbi_next(iter) )
+	for( auction = (struct auction_data *)dbi_first(iter); dbi_exists(iter); auction = (struct auction_data *)dbi_next(iter) )
 	{
 		if( (type == 0 && auction->type != IT_ARMOR && auction->type != IT_PETARMOR) ||
 			(type == 1 && auction->type != IT_WEAPON) ||

@@ -65,7 +65,7 @@ struct channel_data *channel_search(const char *name, struct map_session_data *s
 		return sd->guild->channel;
 	}
 
-	return strdb_get(channel->db, realname);
+	return (struct channel_data*)strdb_get(channel->db, realname);
 }
 
 /**
@@ -114,7 +114,7 @@ void channel_delete(struct channel_data *chan)
 		DBIterator *iter;
 		struct map_session_data *sd;
 		iter = db_iterator(chan->users);
-		for (sd = dbi_first(iter); dbi_exists(iter); sd = dbi_next(iter)) {
+		for (sd = (struct map_session_data *)dbi_first(iter); dbi_exists(iter); sd = (struct map_session_data *)dbi_next(iter)) {
 			channel->leave_sub(chan, sd);
 		}
 		dbi_destroy(iter);
@@ -177,7 +177,7 @@ enum channel_operation_status channel_ban(struct channel_data *chan, const struc
 		return HCS_STATUS_ALREADY;
 
 	if (!chan->banned)
-		chan->banned = idb_alloc(DB_OPT_BASE|DB_OPT_ALLOW_NULL_DATA|DB_OPT_RELEASE_DATA);
+		chan->banned = idb_alloc((DBOptions)(DB_OPT_BASE|DB_OPT_ALLOW_NULL_DATA|DB_OPT_RELEASE_DATA));
 
 	CREATE(entry, struct channel_ban_entry, 1);
 	safestrncpy(entry->name, tsd->status.name, NAME_LENGTH);
@@ -428,7 +428,7 @@ void channel_leave(struct channel_data *chan, struct map_session_data *sd)
 		sd->gcbind = NULL;
 
 	if (!db_size(chan->users) && chan->type == HCS_TYPE_PRIVATE) {
-		channel->delete(chan);
+		channel->_delete(chan);
 	} else if (!channel->config->closing && (chan->options & HCS_OPT_ANNOUNCE_JOIN)) {
 		char message[60];
 		sprintf(message, "#%s '%s' left",chan->name,sd->status.name);
@@ -789,7 +789,7 @@ int do_init_channel(bool minimal)
 	if (minimal)
 		return 0;
 
-	channel->db = stridb_alloc(DB_OPT_DUP_KEY|DB_OPT_RELEASE_DATA, HCS_NAME_LENGTH);
+	channel->db = stridb_alloc((DBOptions)(DB_OPT_DUP_KEY|DB_OPT_RELEASE_DATA), HCS_NAME_LENGTH);
 	channel->config->ally = channel->config->local = channel->config->irc = channel->config->ally_autojoin = channel->config->local_autojoin = channel->config->irc_autojoin = false;
 	channel->config_read();
 
@@ -802,8 +802,8 @@ void do_final_channel(void)
 	struct channel_data *chan;
 	unsigned char i;
 
-	for( chan = dbi_first(iter); dbi_exists(iter); chan = dbi_next(iter) ) {
-		channel->delete(chan);
+	for( chan = (struct channel_data *)dbi_first(iter); dbi_exists(iter); chan = (struct channel_data *)dbi_next(iter) ) {
+		channel->_delete(chan);
 	}
 
 	dbi_destroy(iter);
@@ -832,7 +832,7 @@ void channel_defaults(void)
 
 	channel->search = channel_search;
 	channel->create = channel_create;
-	channel->delete = channel_delete;
+	channel->_delete = channel_delete;
 
 	channel->set_password = channel_set_password;
 	channel->ban = channel_ban;

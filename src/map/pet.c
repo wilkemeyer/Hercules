@@ -264,7 +264,7 @@ int pet_hungry_timer_delete(struct pet_data *pd)
 {
 	nullpo_ret(pd);
 	if(pd->pet_hungry_timer != INVALID_TIMER) {
-		timer->delete(pd->pet_hungry_timer,pet->hungry);
+		timer->_delete(pd->pet_hungry_timer,pet->hungry);
 		pd->pet_hungry_timer = INVALID_TIMER;
 	}
 
@@ -723,12 +723,12 @@ int pet_unequipitem(struct map_session_data *sd, struct pet_data *pd) {
 			status_calc_pc(sd,SCO_NONE);
 		}
 		if (pd->s_skill && pd->s_skill->timer != INVALID_TIMER) {
-			timer->delete(pd->s_skill->timer, pet->skill_support_timer);
+			timer->_delete(pd->s_skill->timer, pet->skill_support_timer);
 			pd->s_skill->timer = INVALID_TIMER;
 		}
 		if( pd->bonus && pd->bonus->timer != INVALID_TIMER )
 		{
-			timer->delete(pd->bonus->timer, pet->skill_bonus_timer);
+			timer->_delete(pd->bonus->timer, pet->skill_bonus_timer);
 			pd->bonus->timer = INVALID_TIMER;
 		}
 	}

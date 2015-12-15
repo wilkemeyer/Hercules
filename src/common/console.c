@@ -340,7 +340,7 @@ void console_parse_list_subs(struct CParseEntry *cmd, unsigned char depth)
 	for (i = 0; i < VECTOR_LENGTH(cmd->u.children); i++) {
 		struct CParseEntry *child = VECTOR_INDEX(cmd->u.children, i);
 		memset(msg, '-', depth);
-		snprintf(msg + depth, (CP_CMD_LENGTH * 2) - depth, " '"CL_WHITE"%s"CL_RESET"'", child->cmd);
+		snprintf(msg + depth, (CP_CMD_LENGTH * 2) - depth, " '" CL_WHITE "%s" CL_RESET "'", child->cmd);
 		if (child->type == CPET_FUNCTION) {
 			ShowInfo("%s\n",msg);
 		} else {

@@ -9,7 +9,9 @@
 #include "showmsg.h"
 #include "timer.h" // gettick
 
+extern "C" {
 #include <mt19937ar/mt19937ar.h> // init_genrand, genrand_int32, genrand_res53
+}
 
 #if defined(WIN32)
 #	include "winapi.h"

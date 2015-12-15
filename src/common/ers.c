@@ -148,7 +148,7 @@ static ers_cache_t *ers_find_cache(unsigned int size, enum ERSOptions Options) {
 	cache->UsedObjs = 0;
 	cache->Max = 0;
 	cache->ChunkSize = ERS_BLOCK_ENTRIES;
-	cache->Options = (Options & ERS_CACHE_OPTIONS);
+	cache->Options = (ERSOptions)(Options & ERS_CACHE_OPTIONS);
 
 	if (CacheList == NULL)
 	{

@@ -34,7 +34,7 @@ struct itemdb_interface *itemdb;
  */
 int itemdb_searchname_sub(DBKey key, DBData *data, va_list ap)
 {
-	struct item_data *item = DB->data2ptr(data), **dst, **dst2;
+	struct item_data *item = (struct item_data *)DB->data2ptr(data), **dst, **dst2;
 	char *str;
 	str=va_arg(ap,char *);
 	nullpo_ret(str);
@@ -89,7 +89,7 @@ struct item_data* itemdb_searchname(const char *str) {
 }
 /* name to item data */
 struct item_data* itemdb_name2id(const char *str) {
-	return strdb_get(itemdb->names,str);
+	return (struct item_data *)strdb_get(itemdb->names,str);
 }
 
 /**
@@ -97,7 +97,7 @@ struct item_data* itemdb_name2id(const char *str) {
  */
 int itemdb_searchname_array_sub(DBKey key, DBData data, va_list ap)
 {
-	struct item_data *item = DB->data2ptr(&data);
+	struct item_data *item = (struct item_data *)DB->data2ptr(&data);
 	char *str;
 	str=va_arg(ap,char *);
 	nullpo_ret(str);
@@ -158,7 +158,7 @@ int itemdb_searchname_array(struct item_data** data, int size, const char *str, 
 		size -= count;
 		db_count = itemdb->other->getall(itemdb->other, (DBData**)&db_data, size, itemdb->searchname_array_sub, str);
 		for (i = 0; i < db_count; i++)
-			data[count++] = DB->data2ptr(db_data[i]);
+			data[count++] = (struct item_data *)DB->data2ptr(db_data[i]);
 		count += db_count;
 	}
 	return count;
@@ -636,7 +636,7 @@ void itemdb_read_groups(void) {
 		return;
 	}
 
-	gsize = aMalloc( libconfig->setting_length(item_group_conf.root) * sizeof(unsigned int) );
+	gsize = (unsigned int*)aMalloc( libconfig->setting_length(item_group_conf.root) * sizeof(unsigned int) );
 
 	for(i = 0; i < libconfig->setting_length(item_group_conf.root); i++)
 		gsize[i] = 0;
@@ -924,20 +924,15 @@ void itemdb_read_packages(void) {
 	unsigned int *must = NULL, *random = NULL, *rgroup = NULL, **rgroups = NULL;
 	struct item_package_rand_entry **prev = NULL;
 
-	if( HCache->check(config_filename) ) {
-		if( itemdb->read_cached_packages(config_filename) )
-			return;
-	}
-
 	if (libconfig->read_file(&item_packages_conf, config_filename)) {
 		ShowError("can't read %s\n", config_filename);
 		return;
 	}
 
-	must = aMalloc( libconfig->setting_length(item_packages_conf.root) * sizeof(unsigned int) );
-	random = aMalloc( libconfig->setting_length(item_packages_conf.root) * sizeof(unsigned int) );
-	rgroup = aMalloc( libconfig->setting_length(item_packages_conf.root) * sizeof(unsigned int) );
-	rgroups = aMalloc( libconfig->setting_length(item_packages_conf.root) * sizeof(unsigned int *) );
+	must = (unsigned int*)aMalloc( libconfig->setting_length(item_packages_conf.root) * sizeof(unsigned int) );
+	random = (unsigned int*)aMalloc( libconfig->setting_length(item_packages_conf.root) * sizeof(unsigned int) );
+	rgroup = (unsigned int*)aMalloc( libconfig->setting_length(item_packages_conf.root) * sizeof(unsigned int) );
+	rgroups = (unsigned int**)aMalloc( libconfig->setting_length(item_packages_conf.root) * sizeof(unsigned int *) );
 
 	for(i = 0; i < libconfig->setting_length(item_packages_conf.root); i++) {
 		must[i] = 0;
@@ -986,7 +981,7 @@ void itemdb_read_packages(void) {
 	}
 
 	for(i = 0; i < libconfig->setting_length(item_packages_conf.root); i++ ) {
-		rgroups[i] = aMalloc( rgroup[i] * sizeof(unsigned int) );
+		rgroups[i] = (unsigned int*)aMalloc( rgroup[i] * sizeof(unsigned int) );
 		for( c = 0; c < rgroup[i]; c++ ) {
 			rgroups[i][c] = 0;
 		}
@@ -1137,8 +1132,6 @@ void itemdb_read_packages(void) {
 
 	libconfig->destroy(&item_packages_conf);
 
-	if( HCache->enabled )
-		itemdb->write_cached_packages(config_filename);
 
 	ShowStatus("Done reading '"CL_WHITE"%d"CL_RESET"' entries in '"CL_WHITE"%s"CL_RESET"'.\n", count, config_filename);
 }
@@ -1922,7 +1915,7 @@ void itemdb_read(bool minimal) {
 	for( i = 0; i < ARRAYLENGTH(itemdb->array); ++i ) {
 		if( itemdb->array[i] ) {
 			if( itemdb->names->put(itemdb->names,DB->str2key(itemdb->array[i]->name),DB->ptr2data(itemdb->array[i]),&prev) ) {
-				struct item_data *data = DB->data2ptr(&prev);
+				struct item_data *data = (struct item_data*)DB->data2ptr(&prev);
 				ShowError("itemdb_read: duplicate AegisName '%s' in item ID %d and %d\n",itemdb->array[i]->name,itemdb->array[i]->nameid,data->nameid);
 			}
 		}
@@ -1988,7 +1981,7 @@ void destroy_item_data(struct item_data* self, int free_self)
  */
 int itemdb_final_sub(DBKey key, DBData *data, va_list ap)
 {
-	struct item_data *id = DB->data2ptr(data);
+	struct item_data *id = (struct item_data*)DB->data2ptr(data);
 
 	if( id != &itemdb->dummy )
 		itemdb->destroy_item_data(id, 1);
@@ -2129,7 +2122,7 @@ void itemdb_name_constants(void) {
 #ifdef ENABLE_CASE_CHECK
 	script->parser_current_file = "Item Database (Likely an invalid or conflicting AegisName)";
 #endif // ENABLE_CASE_CHECK
-	for( data = dbi_first(iter); dbi_exists(iter); data = dbi_next(iter) )
+	for( data = (struct item_data*)dbi_first(iter); dbi_exists(iter); data = (struct item_data*)dbi_next(iter) )
 		script->set_constant2(data->name,data->nameid,0);
 #ifdef ENABLE_CASE_CHECK
 	script->parser_current_file = NULL;
@@ -2207,7 +2200,7 @@ void itemdb_defaults(void) {
 	itemdb->searchname_sub = itemdb_searchname_sub;
 	itemdb->searchname_array_sub = itemdb_searchname_array_sub;
 	itemdb->searchrandomid = itemdb_searchrandomid;
-	itemdb->typename = itemdb_typename;
+	itemdb->_typename = itemdb_typename;
 	itemdb->jobid2mapid = itemdb_jobid2mapid;
 	itemdb->create_dummy_data = create_dummy_data;
 	itemdb->create_item_data = create_item_data;

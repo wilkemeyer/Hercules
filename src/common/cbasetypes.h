@@ -260,7 +260,8 @@ typedef uintptr_t uintptr;
 // keyword replacement
 #ifdef _MSC_VER
 // For MSVC (windows)
-#define inline __inline
+//#undef inline
+//#define inline __inline
 #define forceinline __forceinline
 #define ra_align(n) __declspec(align(n))
 #else
@@ -326,7 +327,16 @@ typedef char bool;
 #endif
 #endif
 
-#define swap_ptr(a,b) do { if ((a) != (b)) (a) = (void*)((intptr_t)(a) ^ (intptr_t)(b)); (b) = (void*)((intptr_t)(a) ^ (intptr_t)(b)); (a) = (void*)((intptr_t)(a) ^ (intptr_t)(b)); } while(0)
+#include <type_traits>
+//#define swap_ptr(a,b) do { if ((a) != (b)) (a) = (void*)((intptr_t)(a) ^ (intptr_t)(b)); (b) = (void*)((intptr_t)(a) ^ (intptr_t)(b)); (a) = (void*)((intptr_t)(a) ^ (intptr_t)(b)); } while(0)
+// FWI - 20151215 -> Deobfuscated version below:
+#define swap_ptr(a,b) \
+ { \
+	std::remove_reference<decltype(a)>::type tmp; \
+	tmp = a; \
+	a = b; \
+	b = tmp; \
+ }
 
 #ifndef max
 #define max(a,b) (((a) > (b)) ? (a) : (b))

@@ -368,7 +368,7 @@ int npc_event_export(struct npc_data *nd, int i)
 		ev->nd = nd;
 		ev->pos = pos;
 		strdb_put(npc->ev_db, buf, ev);
-		label_linkdb = strdb_ensure(npc->ev_label_db, lname, npc->event_export_create);
+		label_linkdb = (struct linkdb_node**)strdb_ensure(npc->ev_label_db, lname, npc->event_export_create);
 		linkdb_insert(label_linkdb, nd, ev);
 	}
 	return 0;
@@ -382,7 +382,7 @@ int npc_event_sub(struct map_session_data* sd, struct event_data* ev, const char
  */
 void npc_event_doall_sub(void *key, void *data, va_list ap)
 {
-	struct event_data* ev = data;
+	struct event_data* ev = (struct event_data*)data;
 	int* c;
 	const char* name;
 	int rid;
@@ -412,7 +412,7 @@ int npc_event_do(const char* name)
 		return npc->event_doall(name+2); // skip leading "::"
 	}
 	else {
-		struct event_data *ev = strdb_get(npc->ev_db, name);
+		struct event_data *ev = (struct event_data*)strdb_get(npc->ev_db, name);
 		if (ev) {
 			script->run_npc(ev->nd->u.scr.script, ev->pos, 0, ev->nd->bl.id);
 			return 1;
@@ -425,7 +425,7 @@ int npc_event_do(const char* name)
 int npc_event_doall_id(const char* name, int rid)
 {
 	int c = 0;
-	struct linkdb_node **label_linkdb = strdb_get(npc->ev_label_db, name);
+	struct linkdb_node **label_linkdb = (struct linkdb_node**)strdb_get(npc->ev_label_db, name);
 
 	if (label_linkdb == NULL)
 		return 0;
@@ -685,7 +685,7 @@ int npc_timerevent_stop(struct npc_data* nd)
 		const struct TimerData *td = timer->get(*tid);
 		if (td && td->data)
 			ers_free(npc->timer_event_ers, (void*)td->data);
-		timer->delete(*tid,npc->timerevent);
+		timer->_delete(*tid,npc->timerevent);
 		*tid = INVALID_TIMER;
 	}
 
@@ -717,7 +717,7 @@ void npc_timerevent_quit(struct map_session_data* sd)
 	// Delete timer
 	nd = (struct npc_data *)map->id2bl(td->id);
 	ted = (struct timer_event_data*)td->data;
-	timer->delete(sd->npc_timer_id, npc->timerevent);
+	timer->_delete(sd->npc_timer_id, npc->timerevent);
 	sd->npc_timer_id = INVALID_TIMER;
 
 	// Execute OnTimerQuit
@@ -1647,7 +1647,7 @@ void npc_trader_count_funds(struct npc_data *nd, struct map_session_data *sd) {
 
 	snprintf(evname, EVENT_NAME_LENGTH, "%s::OnCountFunds",nd->exname);
 
-	if ( (ev = strdb_get(npc->ev_db, evname)) )
+	if ( (ev = (struct event_data*)strdb_get(npc->ev_db, evname)) )
 		script->run_npc(ev->nd->u.scr.script, ev->pos, sd->bl.id, ev->nd->bl.id);
 	else
 		ShowError("npc_trader_count_funds: '%s' event '%s' not found, operation failed\n",nd->exname,evname);
@@ -1671,7 +1671,7 @@ bool npc_trader_pay(struct npc_data *nd, struct map_session_data *sd, int price,
 	npc->trader_ok = false;/* clear */
 
 	snprintf(evname, EVENT_NAME_LENGTH, "%s::OnPayFunds",nd->exname);
-	if ( (ev = strdb_get(npc->ev_db, evname)) ) {
+	if ( (ev = (struct event_data*)strdb_get(npc->ev_db, evname)) ) {
 		pc->setreg(sd,script->add_str("@price"),price);
 		pc->setreg(sd,script->add_str("@points"),points);
 		script->run_npc(ev->nd->u.scr.script, ev->pos, sd->bl.id, ev->nd->bl.id);
@@ -2192,7 +2192,7 @@ int npc_remove_map(struct npc_data* nd) {
  */
 int npc_unload_ev(DBKey key, DBData *data, va_list ap)
 {
-	struct event_data* ev = DB->data2ptr(data);
+	struct event_data* ev = (struct event_data*)DB->data2ptr(data);
 	char* npcname = va_arg(ap, char *);
 
 	if(strcmp(ev->nd->exname,npcname)==0){
@@ -2207,7 +2207,7 @@ int npc_unload_ev(DBKey key, DBData *data, va_list ap)
  */
 int npc_unload_ev_label(DBKey key, DBData *data, va_list ap)
 {
-	struct linkdb_node **label_linkdb = DB->data2ptr(data);
+	struct linkdb_node **label_linkdb = (struct linkdb_node**) DB->data2ptr(data);
 	struct npc_data* nd = va_arg(ap, struct npc_data *);
 
 	linkdb_erase(label_linkdb, nd);
@@ -2284,7 +2284,7 @@ int npc_unload(struct npc_data* nd, bool single)
 
 				if( td && td->data )
 					ers_free(npc->timer_event_ers, (void*)td->data);
-				timer->delete(sd->npc_timer_id, npc->timerevent);
+				timer->_delete(sd->npc_timer_id, npc->timerevent);
 				sd->npc_timer_id = INVALID_TIMER;
 			}
 		}
@@ -2295,7 +2295,7 @@ int npc_unload(struct npc_data* nd, bool single)
 			td = timer->get(nd->u.scr.timerid);
 			if (td && td->data)
 				ers_free(npc->timer_event_ers, (void*)td->data);
-			timer->delete(nd->u.scr.timerid, npc->timerevent);
+			timer->_delete(nd->u.scr.timerid, npc->timerevent);
 		}
 		if (nd->u.scr.timer_event)
 			aFree(nd->u.scr.timer_event);
@@ -2423,7 +2423,7 @@ const char *npc_retainpathreference(const char *filepath)
 		return npc_last_ref;
 	}
 
-	if ((npd = strdb_get(npc->path_db,filepath)) == NULL) {
+	if ((npd = (struct npc_path_data*)strdb_get(npc->path_db,filepath)) == NULL) {
 		CREATE(npd, struct npc_path_data, 1);
 		strdb_put(npc->path_db, filepath, npd);
 
@@ -2454,7 +2454,7 @@ void npc_releasepathreference(const char *filepath)
 	nullpo_retv(filepath);
 
 	if (filepath != npc_last_ref) {
-		npd = strdb_get(npc->path_db, filepath);
+		npd = (struct npc_path_data*)strdb_get(npc->path_db, filepath);
 	}
 
 	if (npd != NULL && --npd->references == 0) {
@@ -2727,7 +2727,7 @@ const char* npc_parse_shop(char* w1, char* w2, char* w3, char* w4, const char* s
 	else
 		type = SHOP;
 
-	items = aMalloc(sizeof(items[0])*items_count);
+	items = (struct npc_item_list*)aMalloc(sizeof(items[0])*items_count);
 
 	p = strchr(w4,',');
 	for( i = 0; p; ++i ) {
@@ -2736,7 +2736,7 @@ const char* npc_parse_shop(char* w1, char* w2, char* w3, char* w4, const char* s
 
 		if( i == items_count-1 ) { // Grow array
 			items_count *= 2;
-			items = aRealloc(items, sizeof(items[0])*items_count);
+			items = (struct npc_item_list*)aRealloc(items, sizeof(items[0])*items_count);
 		}
 
 		if( sscanf(p, ",%d:%d", &nameid, &value) != 2 ) {
@@ -3799,7 +3799,7 @@ const char* npc_parse_mapflag(char* w1, char* w2, char* w3, char* w4, const char
 			ShowWarning("npc_parse_mapflag: You can't set PvP and BattleGround flags for the same map! Removing BattleGround flag from %s in file '%s', line '%d'.\n", map->list[m].name, filepath, strline(buffer,start-buffer));
 			if (retval) *retval = EXIT_FAILURE;
 		}
-		if( state && (zone = strdb_get(map->zone_db, MAP_ZONE_PVP_NAME)) != NULL && map->list[m].zone != zone ) {
+		if( state && (zone = (struct map_zone_data*)strdb_get(map->zone_db, MAP_ZONE_PVP_NAME)) != NULL && map->list[m].zone != zone ) {
 			map->zone_change(m,zone,start,buffer,filepath);
 		} else if ( !state ) {
 			map->list[m].zone = &map->zone_all;
@@ -3851,7 +3851,7 @@ const char* npc_parse_mapflag(char* w1, char* w2, char* w3, char* w4, const char
 			ShowWarning("npc_parse_mapflag: You can't set GvG and BattleGround flags for the same map! Removing BattleGround flag from %s in file '%s', line '%d'.\n", map->list[m].name, filepath, strline(buffer,start-buffer));
 			if (retval) *retval = EXIT_FAILURE;
 		}
-		if( state && (zone = strdb_get(map->zone_db, MAP_ZONE_GVG_NAME)) != NULL && map->list[m].zone != zone ) {
+		if( state && (zone = (struct map_zone_data*)strdb_get(map->zone_db, MAP_ZONE_GVG_NAME)) != NULL && map->list[m].zone != zone ) {
 			map->zone_change(m,zone,start,buffer,filepath);
 		}
 	}
@@ -3889,7 +3889,7 @@ const char* npc_parse_mapflag(char* w1, char* w2, char* w3, char* w4, const char
 			if (retval) *retval = EXIT_FAILURE;
 		}
 
-		if( state && (zone = strdb_get(map->zone_db, MAP_ZONE_BG_NAME)) != NULL && map->list[m].zone != zone ) {
+		if( state && (zone = (struct map_zone_data*)strdb_get(map->zone_db, MAP_ZONE_BG_NAME)) != NULL && map->list[m].zone != zone ) {
 			map->zone_change(m,zone,start,buffer,filepath);
 		}
 	}
@@ -4090,7 +4090,7 @@ const char* npc_parse_mapflag(char* w1, char* w2, char* w3, char* w4, const char
 	} else if (!strcmpi(w3,"zone")) {
 		struct map_zone_data *zone;
 
-		if( !(zone = strdb_get(map->zone_db, w4)) ) {
+		if( !(zone = (struct map_zone_data*)strdb_get(map->zone_db, w4)) ) {
 			ShowWarning("npc_parse_mapflag: Invalid zone '%s'! removing flag from %s in file '%s', line '%d'.\n", w4, map->list[m].name, filepath, strline(buffer,start-buffer));
 			if (retval) *retval = EXIT_FAILURE;
 		} else if( map->list[m].zone != zone ) {
@@ -4371,7 +4371,7 @@ void npc_read_event_script(void)
 		for( data = iter->first(iter,&key); iter->exists(iter); data = iter->next(iter,&key) )
 		{
 			const char* p = key.str;
-			struct event_data* ed = DB->data2ptr(data);
+			struct event_data* ed = (struct event_data*)DB->data2ptr(data);
 			unsigned char count = script_event[i].event_count;
 
 			if( count >= ARRAYLENGTH(script_event[i].event) )
@@ -4406,7 +4406,7 @@ void npc_read_event_script(void)
  */
 int npc_path_db_clear_sub(DBKey key, DBData *data, va_list args)
 {
-	struct npc_path_data *npd = DB->data2ptr(data);
+	struct npc_path_data *npd = (struct npc_path_data *)DB->data2ptr(data);
 	if (npd->path)
 		aFree(npd->path);
 	return 0;
@@ -4417,7 +4417,7 @@ int npc_path_db_clear_sub(DBKey key, DBData *data, va_list args)
  */
 int npc_ev_label_db_clear_sub(DBKey key, DBData *data, va_list args)
 {
-	struct linkdb_node **label_linkdb = DB->data2ptr(data);
+	struct linkdb_node **label_linkdb = (struct linkdb_node **)DB->data2ptr(data);
 	linkdb_final(label_linkdb); // linked data (struct event_data*) is freed when clearing ev_db
 	return 0;
 }
@@ -4431,17 +4431,17 @@ void npc_process_files( int npc_min ) {
 
 	ShowStatus("Loading NPCs...\r");
 	for( file = npc->src_files; file != NULL; file = file->next ) {
-		ShowStatus("Loading NPC file: %s"CL_CLL"\r", file->name);
+		ShowStatus("Loading NPC file: %s" CL_CLL "\r", file->name);
 		if (npc->parsesrcfile(file->name, false) != EXIT_SUCCESS)
 			map->retval = EXIT_FAILURE;
 	}
-	ShowInfo ("Done loading '"CL_WHITE"%d"CL_RESET"' NPCs:"CL_CLL"\n"
-		"\t-'"CL_WHITE"%d"CL_RESET"' Warps\n"
-		"\t-'"CL_WHITE"%d"CL_RESET"' Shops\n"
-		"\t-'"CL_WHITE"%d"CL_RESET"' Scripts\n"
-		"\t-'"CL_WHITE"%d"CL_RESET"' Spawn sets\n"
-		"\t-'"CL_WHITE"%d"CL_RESET"' Mobs Cached\n"
-		"\t-'"CL_WHITE"%d"CL_RESET"' Mobs Not Cached\n",
+	ShowInfo ("Done loading '" CL_WHITE "%d" CL_RESET "' NPCs:" CL_CLL "\n"
+		"\t-'" CL_WHITE "%d" CL_RESET "' Warps\n"
+		"\t-'" CL_WHITE "%d" CL_RESET "' Shops\n"
+		"\t-'" CL_WHITE "%d" CL_RESET "' Scripts\n"
+		"\t-'" CL_WHITE "%d" CL_RESET "' Spawn sets\n"
+		"\t-'" CL_WHITE "%d" CL_RESET "' Mobs Cached\n"
+		"\t-'" CL_WHITE "%d" CL_RESET "' Mobs Not Cached\n",
 		npc_id - npc_min, npc_warp, npc_shop, npc_script, npc_mob, npc_cache_mob, npc_delay_mob);
 }
 
@@ -4493,7 +4493,7 @@ int npc_reload(void) {
 				}
 				if( map->list[m].mob_delete_timer != INVALID_TIMER )
 				{ // Mobs were removed anyway,so delete the timer [Inkfish]
-					timer->delete(map->list[m].mob_delete_timer, map->removemobs_timer);
+					timer->_delete(map->list[m].mob_delete_timer, map->removemobs_timer);
 					map->list[m].mob_delete_timer = INVALID_TIMER;
 				}
 			}
@@ -4549,7 +4549,7 @@ bool npc_unloadfile( const char* filepath ) {
 	struct npc_data* nd = NULL;
 	bool found = false;
 
-	for( nd = dbi_first(iter); dbi_exists(iter); nd = dbi_next(iter) ) {
+	for( nd = (struct npc_data*)dbi_first(iter); dbi_exists(iter); nd = (struct npc_data*)dbi_next(iter) ) {
 		if( nd->path && strcasecmp(nd->path,filepath) == 0 ) { // FIXME: This can break in case-sensitive file systems
 			found = true;
 			npc->unload_duplicates(nd);/* unload any npcs which could duplicate this but be in a different file */
@@ -4641,10 +4641,10 @@ int do_init_npc(bool minimal) {
 	for( i = MAX_NPC_CLASS2_START; i < MAX_NPC_CLASS2_END; i++ )
 		npc_viewdb2[i - MAX_NPC_CLASS2_START].class_ = i;
 
-	npc->ev_db = strdb_alloc(DB_OPT_DUP_KEY|DB_OPT_RELEASE_DATA, EVENT_NAME_LENGTH);
-	npc->ev_label_db = strdb_alloc(DB_OPT_DUP_KEY|DB_OPT_RELEASE_DATA, NAME_LENGTH);
-	npc->name_db = strdb_alloc(DB_OPT_BASE, NAME_LENGTH);
-	npc->path_db = strdb_alloc(DB_OPT_DUP_KEY|DB_OPT_RELEASE_DATA, 0);
+	npc->ev_db = strdb_alloc((DBOptions)(DB_OPT_DUP_KEY|DB_OPT_RELEASE_DATA), EVENT_NAME_LENGTH);
+	npc->ev_label_db = strdb_alloc((DBOptions)(DB_OPT_DUP_KEY|DB_OPT_RELEASE_DATA), NAME_LENGTH);
+	npc->name_db = strdb_alloc((DBOptions)(DB_OPT_BASE), NAME_LENGTH);
+	npc->path_db = strdb_alloc((DBOptions)(DB_OPT_DUP_KEY|DB_OPT_RELEASE_DATA), 0);
 
 	npc_last_npd = NULL;
 	npc_last_path = NULL;

@@ -65,7 +65,7 @@ void storage_sortitem(struct item* items, unsigned int size)
  */
 int storage_reconnect_sub(DBKey key, DBData *data, va_list ap)
 {
-	struct guild_storage *stor = DB->data2ptr(data);
+	auto stor = (struct guild_storage *)DB->data2ptr(data);
 	if (stor->dirty && stor->storage_status == 0) //Save closed storages.
 		gstorage->save(0, stor->guild_id,0);
 
@@ -362,7 +362,7 @@ struct guild_storage *guild2storage_ensure(int guild_id)
 {
 	struct guild_storage *gs = NULL;
 	if(guild->search(guild_id) != NULL)
-		gs = idb_ensure(gstorage->db,guild_id,gstorage->create);
+		gs = (struct guild_storage *)idb_ensure(gstorage->db,guild_id,gstorage->create);
 	return gs;
 }
 
@@ -395,7 +395,7 @@ int storage_guild_storageopen(struct map_session_data* sd)
 		return 1;
 	}
 
-	if((gstor = idb_get(gstorage->db,sd->status.guild_id)) == NULL) {
+	if((gstor = (struct guild_storage *)idb_get(gstorage->db,sd->status.guild_id)) == NULL) {
 		intif->request_guild_storage(sd->status.account_id,sd->status.guild_id);
 		return 0;
 	}
@@ -513,7 +513,7 @@ int storage_guild_storageadd(struct map_session_data* sd, int index, int amount)
 	struct guild_storage *stor;
 
 	nullpo_ret(sd);
-	nullpo_ret(stor=idb_get(gstorage->db,sd->status.guild_id));
+	nullpo_ret(stor=(struct guild_storage *)idb_get(gstorage->db,sd->status.guild_id));
 
 	if( !stor->storage_status || stor->storage_amount > MAX_GUILD_STORAGE )
 		return 0;
@@ -553,7 +553,7 @@ int storage_guild_storageget(struct map_session_data* sd, int index, int amount)
 	int flag;
 
 	nullpo_ret(sd);
-	nullpo_ret(stor=idb_get(gstorage->db,sd->status.guild_id));
+	nullpo_ret(stor=(struct guild_storage *)idb_get(gstorage->db,sd->status.guild_id));
 
 	if(!stor->storage_status)
 		return 0;
@@ -593,7 +593,7 @@ int storage_guild_storageaddfromcart(struct map_session_data* sd, int index, int
 	struct guild_storage *stor;
 
 	nullpo_ret(sd);
-	nullpo_ret(stor=idb_get(gstorage->db,sd->status.guild_id));
+	nullpo_ret(stor=(struct guild_storage *)idb_get(gstorage->db,sd->status.guild_id));
 
 	if( !stor->storage_status || stor->storage_amount > MAX_GUILD_STORAGE )
 		return 0;
@@ -625,7 +625,7 @@ int storage_guild_storagegettocart(struct map_session_data* sd, int index, int a
 	struct guild_storage *stor;
 
 	nullpo_ret(sd);
-	nullpo_ret(stor=idb_get(gstorage->db,sd->status.guild_id));
+	nullpo_ret(stor=(struct guild_storage *)idb_get(gstorage->db,sd->status.guild_id));
 
 	if(!stor->storage_status)
 		return 0;
@@ -653,7 +653,7 @@ int storage_guild_storagegettocart(struct map_session_data* sd, int index, int a
  *------------------------------------------*/
 int storage_guild_storagesave(int account_id, int guild_id, int flag)
 {
-	struct guild_storage *stor = idb_get(gstorage->db,guild_id);
+	struct guild_storage *stor = (struct guild_storage *)idb_get(gstorage->db,guild_id);
 
 	if(stor)
 	{
@@ -676,7 +676,7 @@ int storage_guild_storagesaved(int guild_id)
 {
 	struct guild_storage *stor;
 
-	if((stor=idb_get(gstorage->db,guild_id)) != NULL) {
+	if((stor=(struct guild_storage *)idb_get(gstorage->db,guild_id)) != NULL) {
 		if (stor->dirty && stor->storage_status == 0) {
 			//Storage has been correctly saved.
 			stor->dirty = 0;
@@ -691,7 +691,7 @@ int storage_guild_storageclose(struct map_session_data* sd) {
 	struct guild_storage *stor;
 
 	nullpo_ret(sd);
-	nullpo_ret(stor=idb_get(gstorage->db,sd->status.guild_id));
+	nullpo_ret(stor=(struct guild_storage *)idb_get(gstorage->db,sd->status.guild_id));
 
 	clif->storageclose(sd);
 	if (stor->storage_status) {
@@ -710,7 +710,7 @@ int storage_guild_storage_quit(struct map_session_data* sd, int flag) {
 	struct guild_storage *stor;
 
 	nullpo_ret(sd);
-	nullpo_ret(stor=idb_get(gstorage->db,sd->status.guild_id));
+	nullpo_ret(stor=(struct guild_storage *)idb_get(gstorage->db,sd->status.guild_id));
 
 	if(flag) {
 		//Only during a guild break flag is 1 (don't save storage)
@@ -768,7 +768,7 @@ void gstorage_defaults(void) {
 	gstorage->final = do_final_gstorage;
 	/* */
 	gstorage->ensure = guild2storage_ensure;
-	gstorage->delete = guild_storage_delete;
+	gstorage->_delete = guild_storage_delete;
 	gstorage->open = storage_guild_storageopen;
 	gstorage->additem = guild_storage_additem;
 	gstorage->delitem = guild_storage_delitem;

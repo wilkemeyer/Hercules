@@ -192,7 +192,7 @@ int elemental_summon_end_timer(int tid, int64 tick, int id, intptr_t data) {
 	}
 
 	ed->summon_timer = INVALID_TIMER;
-	elemental->delete(ed, 0); // Elemental's summon time is over.
+	elemental->_delete(ed, 0); // Elemental's summon time is over.
 
 	return 0;
 }
@@ -200,7 +200,7 @@ int elemental_summon_end_timer(int tid, int64 tick, int id, intptr_t data) {
 void elemental_summon_stop(struct elemental_data *ed) {
 	nullpo_retv(ed);
 	if( ed->summon_timer != INVALID_TIMER )
-		timer->delete(ed->summon_timer, elemental->summon_end_timer);
+		timer->_delete(ed->summon_timer, elemental->summon_end_timer);
 	ed->summon_timer = INVALID_TIMER;
 }
 
@@ -215,15 +215,15 @@ int elemental_delete(struct elemental_data *ed, int reply) {
 	elemental->summon_stop(ed);
 
 	if( !sd )
-		return unit->free(&ed->bl, 0);
+		return unit->free(&ed->bl, CLR_OUTSIGHT);
 
 	sd->ed = NULL;
 	sd->status.ele_id = 0;
 
 	if( !ed->bl.prev )
-		return unit->free(&ed->bl, 0);
+		return unit->free(&ed->bl, CLR_OUTSIGHT);
 
-	return unit->remove_map(&ed->bl, 0, ALC_MARK);
+	return unit->remove_map(&ed->bl, CLR_OUTSIGHT, ALC_MARK);
 }
 
 void elemental_summon_init(struct elemental_data *ed) {
@@ -329,10 +329,10 @@ int elemental_clean_single_effect(struct elemental_data *ed, uint16 skill_id) {
 			case SC_CIRCLE_OF_FIRE_OPTION:
 			case SC_TIDAL_WEAPON_OPTION:
 				if( bl ) status_change_end(bl,type,INVALID_TIMER); // Master
-				status_change_end(&ed->bl,type-1,INVALID_TIMER); // Elemental Spirit
+				status_change_end(&ed->bl,(sc_type)(type-1),INVALID_TIMER); // Elemental Spirit
 				break;
 			case SC_ZEPHYR:
-				if( bl ) status_change_end(bl,type,INVALID_TIMER);
+				if( bl ) status_change_end(bl,(sc_type)type,INVALID_TIMER);
 				break;
 			default:
 				ShowWarning("Invalid SC=%d in elemental_clean_single_effect\n",type);
@@ -557,7 +557,7 @@ void elemental_heal(struct elemental_data *ed, int hp, int sp) {
 }
 
 int elemental_dead(struct elemental_data *ed) {
-	elemental->delete(ed, 1);
+	elemental->_delete(ed, 1);
 	return 0;
 }
 
@@ -687,7 +687,7 @@ int elemental_ai_sub_timer(struct elemental_data *ed, struct map_session_data *s
 		}
 
 		if( status_get_sp(&sd->bl) < sp ){ // Can't sustain delete it.
-			elemental->delete(sd->ed,0);
+			elemental->_delete(sd->ed,0);
 			return 0;
 		}
 
@@ -992,7 +992,7 @@ void elemental_defaults(void) {
 	memset(elemental->db,0,sizeof(elemental->db));
 
 	/* funcs */
-	elemental->class = elemental_class;
+	elemental->_class = elemental_class;
 	elemental->get_viewdata = elemental_get_viewdata;
 
 	elemental->create = elemental_create;
@@ -1005,7 +1005,7 @@ void elemental_defaults(void) {
 	elemental->heal = elemental_heal;
 	elemental->dead = elemental_dead;
 
-	elemental->delete = elemental_delete;
+	elemental->_delete = elemental_delete;
 	elemental->summon_stop = elemental_summon_stop;
 
 	elemental->get_lifetime = elemental_get_lifetime;

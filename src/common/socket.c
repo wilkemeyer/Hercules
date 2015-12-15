@@ -1035,7 +1035,7 @@ static int connect_check_(uint32 ip)
 	}
 
 	// Inspect connection history
-	if( ( hist = uidb_get(connect_history, ip)) ) { //IP found
+	if( ( hist = (ConnectHistory *)uidb_get(connect_history, ip)) ) { //IP found
 		if( hist->ddos ) {// flagged as DDoS
 			return (connect_ok == 2 ? 1 : 0);
 		} else if( DIFF_TICK(timer->gettick(),hist->tick) < ddos_interval ) {// connection within ddos_interval
@@ -1073,7 +1073,7 @@ static int connect_check_clear(int tid, int64 tick, int id, intptr_t data) {
 
 	iter = db_iterator(connect_history);
 
-	for( hist = dbi_first(iter); dbi_exists(iter); hist = dbi_next(iter) ){
+	for( hist = (ConnectHistory *)dbi_first(iter); dbi_exists(iter); hist = (ConnectHistory *)dbi_next(iter) ){
 		if( (!hist->ddos && DIFF_TICK(tick,hist->tick) > ddos_interval*3) ||
 			(hist->ddos && DIFF_TICK(tick,hist->tick) > ddos_autoreset) )
 			{// Remove connection history

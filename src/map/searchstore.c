@@ -150,7 +150,7 @@ void searchstore_query(struct map_session_data* sd, unsigned char type, unsigned
 	s.max_price  = max_price;
 	iter         = db_iterator(vending->db);
 
-	for( pl_sd = dbi_first(iter); dbi_exists(iter);  pl_sd = dbi_next(iter) ) {
+	for( pl_sd = (struct map_session_data*)dbi_first(iter); dbi_exists(iter);  pl_sd = (struct map_session_data*)dbi_next(iter) ) {
 		if( sd == pl_sd ) {// skip own shop, if any
 			continue;
 		}

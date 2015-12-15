@@ -1383,7 +1383,7 @@ void map_clearflooritem(struct block_list *bl) {
 	struct flooritem_data* fitem = (struct flooritem_data*)bl;
 
 	if( fitem->cleartimer != INVALID_TIMER )
-		timer->delete(fitem->cleartimer,map->clearflooritem_timer);
+		timer->_delete(fitem->cleartimer,map->clearflooritem_timer);
 
 	clif->clearflooritem(fitem, 0);
 	map->deliddb(&fitem->bl);
@@ -1653,7 +1653,7 @@ void map_addnickdb(int charid, const char* nick)
 	if( map->charid2sd(charid) )
 		return;// already online
 
-	p = idb_ensure(map->nick_db, charid, map->create_charid2nick);
+	p = (struct charid2nick*)idb_ensure(map->nick_db, charid, map->create_charid2nick);
 	safestrncpy(p->nick, nick, sizeof(p->nick));
 
 	while (p->requests) {
@@ -1675,7 +1675,7 @@ void map_delnickdb(int charid, const char* name)
 	struct charid_request* req;
 	DBData data;
 
-	if (!map->nick_db->remove(map->nick_db, DB->i2key(charid), &data) || (p = DB->data2ptr(&data)) == NULL)
+	if (!map->nick_db->remove(map->nick_db, DB->i2key(charid), &data) || (p = (struct charid2nick*) DB->data2ptr(&data)) == NULL)
 		return;
 
 	while (p->requests) {
@@ -1707,7 +1707,7 @@ void map_reqnickdb(struct map_session_data * sd, int charid)
 		return;
 	}
 
-	p = idb_ensure(map->nick_db, charid, map->create_charid2nick);
+	p = (struct charid2nick*)idb_ensure(map->nick_db, charid, map->create_charid2nick);
 	if( *p->nick ) {
 		clif->solved_charname(sd->fd, charid, p->nick);
 		return;
@@ -1789,7 +1789,7 @@ int map_quit(struct map_session_data *sd) {
 	}
 
 	if( sd->expiration_tid != INVALID_TIMER )
-		timer->delete(sd->expiration_tid,pc->expiration_timer);
+		timer->_delete(sd->expiration_tid,pc->expiration_timer);
 
 	if (sd->npc_timer_id != INVALID_TIMER) //Cancel the event timer.
 		npc->timerevent_quit(sd);
@@ -1826,7 +1826,7 @@ int map_quit(struct map_session_data *sd) {
 	if( sd->sc.count ) {
 		//Status that are not saved...
 		for(i=0; i < SC_MAX; i++){
-			if ( status->get_sc_type(i)&SC_NO_SAVE ) {
+			if ( status->get_sc_type((sc_type)i)&SC_NO_SAVE ) {
 				if ( !sd->sc.data[i] )
 					continue;
 				switch( i ){
@@ -1936,7 +1936,7 @@ const char *map_charid2nick(int charid) {
 	if( sd )
 		return sd->status.name;// character is online, return it's name
 
-	p = idb_ensure(map->nick_db, charid, map->create_charid2nick);
+	p = (struct charid2nick*)idb_ensure(map->nick_db, charid, map->create_charid2nick);
 	if( *p->nick )
 		return p->nick;// name in nick_db
 
@@ -2084,7 +2084,7 @@ void map_vforeachpc(int (*func)(struct map_session_data* sd, va_list args), va_l
 	struct map_session_data* sd;
 
 	iter = db_iterator(map->pc_db);
-	for( sd = dbi_first(iter); dbi_exists(iter); sd = dbi_next(iter) )
+	for( sd = (struct map_session_data*)dbi_first(iter); dbi_exists(iter); sd = (struct map_session_data*)dbi_next(iter) )
 	{
 		va_list argscopy;
 		int ret;
@@ -2408,7 +2408,7 @@ void map_spawnmobs(int16 m) {
 	int i, k=0;
 	if (map->list[m].mob_delete_timer != INVALID_TIMER) {
 		//Mobs have not been removed yet [Skotlex]
-		timer->delete(map->list[m].mob_delete_timer, map->removemobs_timer);
+		timer->_delete(map->list[m].mob_delete_timer, map->removemobs_timer);
 		map->list[m].mob_delete_timer = INVALID_TIMER;
 		return;
 	}
@@ -2879,7 +2879,7 @@ void map_iwall_get(struct map_session_data *sd) {
 		return;
 
 	iter = db_iterator(map->iwall_db);
-	for( iwall = dbi_first(iter); dbi_exists(iter); iwall = dbi_next(iter) ) {
+	for( iwall = (struct iwall_data *)dbi_first(iter); dbi_exists(iter); iwall = (struct iwall_data *)dbi_next(iter) ) {
 		if( iwall->m != sd->bl.m )
 			continue;
 
@@ -2932,7 +2932,7 @@ int map_setipport(unsigned short map_index, uint32 ip, uint16 port)
 {
 	struct map_data_other_server *mdos;
 
-	mdos= uidb_ensure(map->map_db,(unsigned int)map_index, map->create_map_data_other_server);
+	mdos= (struct map_data_other_server *)uidb_ensure(map->map_db,(unsigned int)map_index, map->create_map_data_other_server);
 
 	if(mdos->cell) //Local map,Do nothing. Give priority to our own local maps over ones from another server. [Skotlex]
 		return 0;
@@ -2952,7 +2952,7 @@ int map_setipport(unsigned short map_index, uint32 ip, uint16 port)
  */
 int map_eraseallipport_sub(DBKey key, DBData *data, va_list va)
 {
-	struct map_data_other_server *mdos = DB->data2ptr(data);
+	struct map_data_other_server *mdos = (struct map_data_other_server *)DB->data2ptr(data);
 	if(mdos->cell == NULL) {
 		db_remove(map->map_db,key);
 		aFree(mdos);
@@ -3151,7 +3151,7 @@ void map_zone_db_clear(void) {
 	struct map_zone_data *zone;
 	DBIterator *iter = db_iterator(map->zone_db);
 
-	for(zone = dbi_first(iter); dbi_exists(iter); zone = dbi_next(iter)) {
+	for(zone = (struct map_zone_data *)dbi_first(iter); dbi_exists(iter); zone = (struct map_zone_data *)dbi_next(iter)) {
 		map->zone_clear_single(zone);
 	}
 
@@ -3173,7 +3173,7 @@ void map_clean(int i) {
 	if(battle_config.dynamic_mobs) { //Dynamic mobs flag by [random]
 		int j;
 		if(map->list[i].mob_delete_timer != INVALID_TIMER)
-			timer->delete(map->list[i].mob_delete_timer, map->removemobs_timer);
+			timer->_delete(map->list[i].mob_delete_timer, map->removemobs_timer);
 		for (j=0; j<MAX_MOB_LIST_PER_MAP; j++)
 			if (map->list[i].moblist[j]) aFree(map->list[i].moblist[j]);
 	}
@@ -3212,7 +3212,7 @@ void map_clean(int i) {
 	}
 
 	if( map->list[i].channel )
-		channel->delete(map->list[i].channel);
+		channel->_delete(map->list[i].channel);
 }
 void do_final_maps(void) {
 	int i, v = 0;
@@ -3226,7 +3226,7 @@ void do_final_maps(void) {
 		if(battle_config.dynamic_mobs) { //Dynamic mobs flag by [random]
 			int j;
 			if(map->list[i].mob_delete_timer != INVALID_TIMER)
-				timer->delete(map->list[i].mob_delete_timer, map->removemobs_timer);
+				timer->_delete(map->list[i].mob_delete_timer, map->removemobs_timer);
 			for (j=0; j<MAX_MOB_LIST_PER_MAP; j++)
 				if (map->list[i].moblist[j]) aFree(map->list[i].moblist[j]);
 		}
@@ -3271,7 +3271,7 @@ void do_final_maps(void) {
 			aFree(map->list[i].drop_list);
 
 		if( map->list[i].channel )
-			channel->delete(map->list[i].channel);
+			channel->_delete(map->list[i].channel);
 
 		if( map->list[i].qi_data )
 			aFree(map->list[i].qi_data);
@@ -3824,7 +3824,7 @@ struct map_zone_data *map_merge_zone(struct map_zone_data *main, struct map_zone
 
 	sprintf(newzone, "%s+%s",main->name,other->name);
 
-	if( (zone = strdb_get(map->zone_db, newzone)) )
+	if( (zone = (struct map_zone_data *)strdb_get(map->zone_db, newzone)) )
 		return zone;/* this zone has already been merged */
 
 	CREATE(zone, struct map_zone_data, 1);
@@ -3912,7 +3912,7 @@ struct map_zone_data *map_merge_zone(struct map_zone_data *main, struct map_zone
 }
 
 void map_zone_change2(int m, struct map_zone_data *zone) {
-	char empty[1] = "\0";
+	char *empty = "";
 
 	if( map->list[m].zone == zone )
 		return;
@@ -3941,7 +3941,7 @@ void map_zone_change(int m, struct map_zone_data *zone, const char* start, const
 void map_zone_remove(int m) {
 	char flag[MAP_ZONE_MAPFLAG_LENGTH], params[MAP_ZONE_MAPFLAG_LENGTH];
 	unsigned short k;
-	char empty[1] = "\0";
+	char *empty = "";
 	for(k = 0; k < map->list[m].zone_mf_count; k++) {
 		size_t len = strlen(map->list[m].zone_mf[k]),j;
 		params[0] = '\0';
@@ -4667,7 +4667,7 @@ bool map_zone_mf_cache(int m, char *flag, char *params) {
 }
 void map_zone_apply(int m, struct map_zone_data *zone, const char* start, const char* buffer, const char* filepath) {
 	int i;
-	char empty[1] = "\0";
+	char *empty = "";
 	char flag[MAP_ZONE_MAPFLAG_LENGTH], params[MAP_ZONE_MAPFLAG_LENGTH];
 	map->list[m].zone = zone;
 	for(i = 0; i < zone->mapflags_count; i++) {
@@ -4693,7 +4693,7 @@ void map_zone_apply(int m, struct map_zone_data *zone, const char* start, const 
 void map_zone_init(void) {
 	char flag[MAP_ZONE_MAPFLAG_LENGTH], params[MAP_ZONE_MAPFLAG_LENGTH];
 	struct map_zone_data *zone;
-	char empty[1] = "\0";
+	char *empty = "";
 	int i,k,j;
 
 	zone = &map->zone_all;
@@ -4777,7 +4777,7 @@ unsigned short map_zone_str2skillid(const char *name) {
 }
 enum bl_type map_zone_bl_type(const char *entry, enum map_zone_skill_subtype *subtype) {
 	char temp[200], *parse;
-	enum bl_type bl = BL_NUL;
+	uint32 bl = 0; // enum bl_type bl  -> FWI 20151215 - Use uint32 to unconfuse the C++ compiler, as bitshifts with enum .. are 'problematic'
 	*subtype = MZS_NONE;
 
 	if( !entry )
@@ -4799,17 +4799,17 @@ enum bl_type map_zone_bl_type(const char *entry, enum map_zone_skill_subtype *su
 			bl |= BL_MOB;
 		else if( strcmpi(parse,"clone") == 0 ) {
 			bl |= BL_MOB;
-			*subtype |= MZS_CLONE;
+			*subtype = (map_zone_skill_subtype)((uint32)*subtype | MZS_CLONE);
 		} else if( strcmpi(parse,"mob_boss") == 0 ) {
 			bl |= BL_MOB;
-			*subtype |= MZS_BOSS;
+			*subtype = (map_zone_skill_subtype)((uint32)*subtype | MZS_BOSS);
 		} else if( strcmpi(parse,"elemental") == 0 )
 			bl |= BL_ELEM;
 		else if( strcmpi(parse,"pet") == 0 )
 			bl |= BL_PET;
 		else if( strcmpi(parse,"all") == 0 ) {
 			bl |= BL_ALL;
-			*subtype |= MZS_ALL;
+			*subtype = (map_zone_skill_subtype)((uint32)*subtype | MZS_ALL);
 		} else if( strcmpi(parse,"none") == 0 ) {
 			bl = BL_NUL;
 		} else {
@@ -4817,7 +4817,7 @@ enum bl_type map_zone_bl_type(const char *entry, enum map_zone_skill_subtype *su
 		}
 		parse = strtok(NULL,"|");
 	}
-	return bl;
+	return (enum bl_type)bl;
 }
 /* [Ind/Hercules] */
 void read_map_zone_db(void) {
@@ -5091,7 +5091,7 @@ void read_map_zone_db(void) {
 				name = libconfig->setting_get_string_elem(inherit_tree, h);
 				libconfig->setting_lookup_string(zone_e, "name", &zonename);/* will succeed for we validated it earlier */
 
-				if( !(izone = strdb_get(map->zone_db, name)) ) {
+				if( !(izone = (struct map_zone_data*)strdb_get(map->zone_db, name)) ) {
 					ShowError("map_zone_db: Unknown zone '%s' being inherit by zone '%s', skipping...\n",name,zonename);
 					continue;
 				}
@@ -5101,7 +5101,7 @@ void read_map_zone_db(void) {
 				} else if( strncmpi(zonename,MAP_ZONE_PK_NAME,MAP_ZONE_NAME_LENGTH) == 0 ) {
 					zone = &map->zone_pk;
 				} else
-					zone = strdb_get(map->zone_db, zonename);/* will succeed for we just put it in here */
+					zone = (struct map_zone_data*)strdb_get(map->zone_db, zonename);/* will succeed for we just put it in here */
 
 				disabled_skills_count_i = izone->disabled_skills_count;
 				disabled_items_count_i = izone->disabled_items_count;
@@ -5232,14 +5232,14 @@ void read_map_zone_db(void) {
 			}
 		}
 
-		ShowStatus("Done reading '"CL_WHITE"%d"CL_RESET"' zones in '"CL_WHITE"%s"CL_RESET"'.\n", zone_count, config_filename);
+		ShowStatus("Done reading '" CL_WHITE "%d" CL_RESET "' zones in '" CL_WHITE "%s" CL_RESET "'.\n", zone_count, config_filename);
 
 		/* post-load processing */
-		if( (zone = strdb_get(map->zone_db, MAP_ZONE_PVP_NAME)) )
+		if( (zone = (struct map_zone_data*)strdb_get(map->zone_db, MAP_ZONE_PVP_NAME)) )
 			zone->merge_type = MZMT_MERGEABLE;
-		if( (zone = strdb_get(map->zone_db, MAP_ZONE_GVG_NAME)) )
+		if( (zone = (struct map_zone_data*)strdb_get(map->zone_db, MAP_ZONE_GVG_NAME)) )
 			zone->merge_type = MZMT_MERGEABLE;
-		if( (zone = strdb_get(map->zone_db, MAP_ZONE_BG_NAME)) )
+		if( (zone = (struct map_zone_data*)strdb_get(map->zone_db, MAP_ZONE_BG_NAME)) )
 			zone->merge_type = MZMT_MERGEABLE;
 	}
 	/* not supposed to go in here but in skill_final whatever */
@@ -5285,7 +5285,7 @@ bool map_remove_questinfo(int m, struct npc_data *nd) {
  * @see DBApply
  */
 int map_db_final(DBKey key, DBData *data, va_list ap) {
-	struct map_data_other_server *mdos = DB->data2ptr(data);
+	auto mdos = (struct map_data_other_server *)DB->data2ptr(data);
 
 	if(mdos && iMalloc->verify_ptr(mdos) && mdos->cell == NULL)
 		aFree(mdos);
@@ -5298,7 +5298,7 @@ int map_db_final(DBKey key, DBData *data, va_list ap) {
  */
 int nick_db_final(DBKey key, DBData *data, va_list args)
 {
-	struct charid2nick* p = DB->data2ptr(data);
+	struct charid2nick* p = (struct charid2nick*)DB->data2ptr(data);
 	struct charid_request* req;
 
 	if( p == NULL )
@@ -5344,7 +5344,7 @@ int cleanup_sub(struct block_list *bl, va_list ap) {
  * @see DBApply
  */
 int cleanup_db_sub(DBKey key, DBData *data, va_list va) {
-	return map->cleanup_sub(DB->data2ptr(data), va);
+	return map->cleanup_sub((block_list*)DB->data2ptr(data), va);
 }
 
 /*==========================================
@@ -5849,13 +5849,13 @@ int do_init(int argc, char *argv[])
 	map->nick_db   = idb_alloc(DB_OPT_BASE);
 	map->charid_db = idb_alloc(DB_OPT_BASE);
 	map->regen_db  = idb_alloc(DB_OPT_BASE); // efficient status_natural_heal processing
-	map->iwall_db  = strdb_alloc(DB_OPT_DUP_KEY|DB_OPT_RELEASE_DATA, 2*NAME_LENGTH+2+1); // [Zephyrus] Invisible Walls
-	map->zone_db   = strdb_alloc(DB_OPT_DUP_KEY|DB_OPT_RELEASE_DATA, MAP_ZONE_NAME_LENGTH);
+	map->iwall_db  = strdb_alloc((DBOptions)(DB_OPT_DUP_KEY|DB_OPT_RELEASE_DATA), 2*NAME_LENGTH+2+1); // [Zephyrus] Invisible Walls
+	map->zone_db   = strdb_alloc((DBOptions)(DB_OPT_DUP_KEY|DB_OPT_RELEASE_DATA), MAP_ZONE_NAME_LENGTH);
 
-	map->iterator_ers = ers_new(sizeof(struct s_mapiterator),"map.c::map_iterator_ers",ERS_OPT_CLEAN|ERS_OPT_FLEX_CHUNK);
+	map->iterator_ers = ers_new(sizeof(struct s_mapiterator),"map.c::map_iterator_ers",(ERSOptions)(ERS_OPT_CLEAN|ERS_OPT_FLEX_CHUNK));
 	ers_chunk_size(map->iterator_ers, 25);
 
-	map->flooritem_ers = ers_new(sizeof(struct flooritem_data),"map.c::map_flooritem_ers",ERS_OPT_CLEAN|ERS_OPT_FLEX_CHUNK);
+	map->flooritem_ers = ers_new(sizeof(struct flooritem_data),"map.c::map_flooritem_ers", (ERSOptions)(ERS_OPT_CLEAN|ERS_OPT_FLEX_CHUNK));
 	ers_chunk_size(map->flooritem_ers, 100);
 
 	if (!minimal) {

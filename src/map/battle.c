@@ -3209,7 +3209,7 @@ int64 battle_calc_damage(struct block_list *src,struct block_list *bl,struct Dam
 				short rate = 100;
 				if ( tsc->data[SC_POISONINGWEAPON]->val1 == 9 ) // Oblivion Curse gives a 2nd success chance after the 1st one passes which is reducible. [Rytech]
 					rate = 100 - tstatus->int_ * 4 / 5;
-				sc_start(src,bl,tsc->data[SC_POISONINGWEAPON]->val2,rate,tsc->data[SC_POISONINGWEAPON]->val1,skill->get_time2(GC_POISONINGWEAPON,1) - (tstatus->vit + tstatus->luk) / 2 * 1000);
+				sc_start(src,bl,(sc_type) tsc->data[SC_POISONINGWEAPON]->val2,rate,tsc->data[SC_POISONINGWEAPON]->val1,skill->get_time2(GC_POISONINGWEAPON,1) - (tstatus->vit + tstatus->luk) / 2 * 1000);
 			}
 		}
 		if( tsc->data[SC__DEADLYINFECT] && flag&BF_SHORT && damage > 0 && rnd()%100 < 30 + 10 * tsc->data[SC__DEADLYINFECT]->val1 && !is_boss(src) )

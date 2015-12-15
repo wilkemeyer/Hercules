@@ -574,7 +574,7 @@ struct itemdb_interface {
 	int (*searchname_sub) (DBKey key, DBData *data, va_list ap);
 	int (*searchname_array_sub) (DBKey key, DBData data, va_list ap);
 	int (*searchrandomid) (struct item_group *group);
-	const char* (*typename) (int type);
+	const char* (*_typename) (int type);
 	void (*jobid2mapid) (unsigned int *bclass, unsigned int jobmask);
 	void (*create_dummy_data) (void);
 	struct item_data* (*create_item_data) (int nameid);

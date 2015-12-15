@@ -49,7 +49,7 @@ int inter_guild_save_timer(int tid, int64 tick, int id, intptr_t data) {
 	if( last_id == 0 ) //Save the first guild in the list.
 		state = 1;
 
-	for( g = DB->data2ptr(iter->first(iter, &key)); dbi_exists(iter); g = DB->data2ptr(iter->next(iter, &key)) )
+	for( g = (struct guild*) DB->data2ptr(iter->first(iter, &key)); dbi_exists(iter); g = (struct guild*)DB->data2ptr(iter->next(iter, &key)) )
 	{
 		if (!g)
 			continue;
@@ -216,7 +216,7 @@ int inter_guild_tosql(struct guild *g,int flag)
 			else //last condition using add_coma setting
 				add_comma = true;
 #endif // 0
-			StrBuf->Printf(&buf, "`guild_lv`=%d, `skill_point`=%d, `exp`=%"PRIu64", `next_exp`=%u, `max_member`=%d", g->guild_lv, g->skill_point, g->exp, g->next_exp, g->max_member);
+			StrBuf->Printf(&buf, "`guild_lv`=%d, `skill_point`=%d, `exp`=%" PRIu64 ", `next_exp`=%u, `max_member`=%d", g->guild_lv, g->skill_point, g->exp, g->next_exp, g->max_member);
 		}
 		StrBuf->Printf(&buf, " WHERE `guild_id`=%d", g->guild_id);
 		if( SQL_ERROR == SQL->QueryStr(inter->sql_handle, StrBuf->Value(&buf)) )
@@ -236,7 +236,7 @@ int inter_guild_tosql(struct guild *g,int flag)
 				//Since nothing references guild member table as foreign keys, it's safe to use REPLACE INTO
 				SQL->EscapeStringLen(inter->sql_handle, esc_name, m->name, strnlen(m->name, NAME_LENGTH));
 				if( SQL_ERROR == SQL->Query(inter->sql_handle, "REPLACE INTO `%s` (`guild_id`,`account_id`,`char_id`,`hair`,`hair_color`,`gender`,`class`,`lv`,`exp`,`exp_payper`,`online`,`position`,`name`) "
-					"VALUES ('%d','%d','%d','%d','%d','%d','%d','%d','%"PRIu64"','%d','%d','%d','%s')",
+					"VALUES ('%d','%d','%d','%d','%d','%d','%d','%d','%" PRIu64 "','%d','%d','%d','%s')",
 					guild_member_db, g->guild_id, m->account_id, m->char_id,
 					m->hair, m->hair_color, m->gender,
 					m->class_, m->lv, m->exp, m->exp_payper, m->online, m->position, esc_name) )
@@ -549,7 +549,7 @@ struct guild_castle* inter_guild_castle_fromsql(int castle_id)
 	char *data;
 	int i;
 	StringBuf buf;
-	struct guild_castle *gc = idb_get(inter_guild->castle_db, castle_id);
+	auto gc = (struct guild_castle *)idb_get(inter_guild->castle_db, castle_id);
 
 	if (gc != NULL)
 		return gc;
@@ -734,7 +734,7 @@ int inter_guild_sql_init(void)
  */
 int inter_guild_db_final(DBKey key, DBData *data, va_list ap)
 {
-	struct guild *g = DB->data2ptr(data);
+	auto g = (struct guild *) DB->data2ptr(data);
 	nullpo_ret(g);
 	if (g->save_flag&GS_MASK) {
 		inter_guild->tosql(g, g->save_flag&GS_MASK);
@@ -1811,7 +1811,7 @@ int mapif_parse_GuildCastleDataSave(int fd, int castle_id, int index, int value)
 		case 1:
 			if (log_inter && gc->guild_id != value) {
 				int gid = (value) ? value : gc->guild_id;
-				struct guild *g = idb_get(inter_guild->guild_db, gid);
+				auto *g = (struct guild *) idb_get(inter_guild->guild_db, gid);
 				inter->log("guild %s (id=%d) %s castle id=%d\n",
 				          (g) ? g->name : "??", gid, (value) ? "occupy" : "abandon", castle_id);
 			}

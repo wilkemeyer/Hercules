@@ -246,7 +246,7 @@ bool bg_send_message(struct map_session_data *sd, const char *mes, int len) {
  * @see DBApply
  */
 int bg_send_xy_timer_sub(DBKey key, DBData *data, va_list ap) {
-	struct battleground_data *bgd = DB->data2ptr(data);
+	struct battleground_data *bgd = (struct battleground_data*)DB->data2ptr(data);
 	struct map_session_data *sd;
 	int i;
 	nullpo_ret(bgd);
@@ -269,9 +269,9 @@ int bg_send_xy_timer(int tid, int64 tick, int id, intptr_t data) {
 
 enum bg_queue_types bg_str2teamtype (const char *str) {
 	char temp[200], *parse;
-	enum bg_queue_types type = BGQT_INVALID;
+	uint32 type = (uint32)BGQT_INVALID; // enum bg_queue_types type = BGQT_INVALID;
 
-	nullpo_retr(type, str);
+	nullpo_retr((enum bg_queue_types)type, str);
 	safestrncpy(temp, str, 200);
 
 	parse = strtok(temp,"|");
@@ -292,7 +292,7 @@ enum bg_queue_types bg_str2teamtype (const char *str) {
 		parse = strtok(NULL,"|");
 	}
 
-	return type;
+	return (enum bg_queue_types)type;
 }
 
 void bg_config_read(void) {
@@ -517,7 +517,7 @@ void bg_queue_ready_ack(struct bg_arena *arena, struct map_session_data *sd, boo
 		}
 		/* check if all are ready then cancel timer, and start game  */
 		if (count == VECTOR_LENGTH(queue->entries)) {
-			timer->delete(arena->begin_timer,bg->begin_timer);
+			timer->_delete(arena->begin_timer,bg->begin_timer);
 			arena->begin_timer = INVALID_TIMER;
 			bg->begin(arena);
 		}
@@ -537,7 +537,7 @@ void bg_queue_player_cleanup(struct map_session_data *sd) {
 	sd->bg_queue.arena = NULL;
 	sd->bg_queue.ready = 0;
 	sd->bg_queue.client_has_bg_data = 0;
-	sd->bg_queue.type = 0;
+	sd->bg_queue.type = BGQT_INVALID; // = 0
 }
 void bg_match_over(struct bg_arena *arena, bool canceled) {
 	struct script_queue *queue = script->queue(arena->queue_id);
@@ -555,7 +555,7 @@ void bg_match_over(struct bg_arena *arena, bool canceled) {
 			continue;
 
 		if (sd->bg_queue.arena) {
-			bg->team_leave(sd, 0);
+			bg->team_leave(sd, BGTL_LEFT);
 			bg->queue_pc_cleanup(sd);
 		}
 		if (canceled)
@@ -684,7 +684,7 @@ void bg_queue_check(struct bg_arena *arena) {
 	count = VECTOR_LENGTH(queue->entries);
 	if( count == arena->max_players ) {
 		if( arena->fillup_timer != INVALID_TIMER ) {
-			timer->delete(arena->fillup_timer,bg->fillup_timer);
+			timer->_delete(arena->fillup_timer,bg->fillup_timer);
 			arena->fillup_timer = INVALID_TIMER;
 		}
 		bg->queue_pregame(arena);
@@ -891,7 +891,7 @@ void do_init_battleground(bool minimal) {
  * @see DBApply
  */
 int bg_team_db_final(DBKey key, DBData *data, va_list ap) {
-	struct battleground_data* bgd = DB->data2ptr(data);
+	struct battleground_data* bgd = (struct battleground_data*) DB->data2ptr(data);
 
 	return 0;
 }

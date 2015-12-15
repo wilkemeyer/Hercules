@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "common", "src\common\common.vcxproj", "{F62676E8-2B95-4F9C-B9CE-8B77D6BF45BE}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -29,6 +29,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "char-server", "src\char\cha
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "map-server", "src\map\map-server.vcxproj", "{1E4559A0-141F-4A0E-964F-DF6E6D1B0D21}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F62676E8-2B95-4F9C-B9CE-8B77D6BF45BE} = {F62676E8-2B95-4F9C-B9CE-8B77D6BF45BE}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

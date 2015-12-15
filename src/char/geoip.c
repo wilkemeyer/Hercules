@@ -137,7 +137,7 @@ void geoip_init(void)
 		geoip->final(false);
 		return;
 	}
-	geoip->data->cache = aMalloc(sizeof(unsigned char) * bufa.st_size);
+	geoip->data->cache = (unsigned char*)aMalloc(sizeof(unsigned char) * bufa.st_size);
 	if (fread(geoip->data->cache, sizeof(unsigned char), bufa.st_size, db) != bufa.st_size) {
 		ShowError("geoip_cache: Couldn't read all elements!\n");
 		fclose(db);

@@ -134,7 +134,7 @@ void log_pick_sub_sql(int id, int16 m, e_log_pick_type type, int amount, struct 
 	nullpo_retv(itm);
 	if( SQL_ERROR == SQL->Query(logs->mysql_handle,
 	    LOG_QUERY " INTO `%s` (`time`, `char_id`, `type`, `nameid`, `amount`, `refine`, `card0`, `card1`, `card2`, `card3`, `map`, `unique_id`) "
-	    "VALUES (NOW(), '%d', '%c', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%s', '%"PRIu64"')",
+	    "VALUES (NOW(), '%d', '%c', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%s', '%" PRIu64 "')",
 	    logs->config.log_pick, id, logs->picktype2char(type), itm->nameid, amount, itm->refine, itm->card[0], itm->card[1], itm->card[2], itm->card[3],
 	    map->list[m].name, itm->unique_id)
 	) {
@@ -152,7 +152,7 @@ void log_pick_sub_txt(int id, int16 m, e_log_pick_type type, int amount, struct 
 		return;
 	time(&curtime);
 	strftime(timestring, sizeof(timestring), "%m/%d/%Y %H:%M:%S", localtime(&curtime));
-	fprintf(logfp,"%s - %d\t%c\t%d,%d,%d,%d,%d,%d,%d,%s,'%"PRIu64"'\n",
+	fprintf(logfp,"%s - %d\t%c\t%d,%d,%d,%d,%d,%d,%d,%s,'%" PRIu64 "'\n",
 	        timestring, id, logs->picktype2char(type), itm->nameid, amount, itm->refine, itm->card[0], itm->card[1], itm->card[2], itm->card[3],
 		map->list[m].name, itm->unique_id);
 	fclose(logfp);

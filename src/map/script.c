@@ -711,7 +711,7 @@ const char* script_skip_space(const char* p)
 			for(;;)
 			{
 				if( *p == '\0' ) {
-					script->disp_warning_message("script:script->skip_space: end of file while parsing block comment. expected "CL_BOLD"*/"CL_NORM, p);
+					script->disp_warning_message("script:script->skip_space: end of file while parsing block comment. expected " CL_BOLD "*/" CL_NORM, p);
 					return p;
 				}
 				if( *p == '*' && p[1] == '/' )
@@ -1228,7 +1228,7 @@ const char* parse_simpleexpr(const char *p)
 
 		script_string_buf_addb(sbuf, 0);
 
-		if (!(script->syntax.translation_db && (st = strdb_get(script->syntax.translation_db, sbuf->ptr)) != NULL)) {
+		if (!(script->syntax.translation_db && (st = (string_translation*)strdb_get(script->syntax.translation_db, sbuf->ptr)) != NULL)) {
 			script->addc(C_STR);
 
 			if( script->pos+sbuf->pos >= script->size ) {
@@ -1273,7 +1273,7 @@ const char* parse_simpleexpr(const char *p)
 		/* When exporting we don't know what is a translation and what isn't */
 		if( script->lang_export_fp && sbuf->pos > 1 ) {//sbuf->pos will always be at least 1 because of the '\0'
 			if( !script->syntax.strings ) {
-				script->syntax.strings = strdb_alloc(DB_OPT_DUP_KEY|DB_OPT_ALLOW_NULL_DATA, 0);
+				script->syntax.strings = strdb_alloc((DBOptions)(DB_OPT_DUP_KEY|DB_OPT_ALLOW_NULL_DATA), 0);
 			}
 
 			if( !strdb_exists(script->syntax.strings,sbuf->ptr) ) {
@@ -2319,15 +2319,15 @@ const char* script_print_line(StringBuf* buf, const char* p, const char* mark, i
 		if( p + i != mark)
 			StrBuf->Printf(buf, "%*c", w, c);
 		else
-			StrBuf->Printf(buf, CL_BT_RED"%*c"CL_RESET, w, c);
+			StrBuf->Printf(buf, CL_BT_RED"%*c" CL_RESET, w, c);
 	}
 	StrBuf->AppendStr(buf, "\n");
 	if( mark ) {
-		StrBuf->AppendStr(buf, "        "CL_BT_CYAN); // len = 8
+		StrBuf->AppendStr(buf, "        " CL_BT_CYAN); // len = 8
 		for( ; mark_pos > 0; mark_pos-- ) {
 			StrBuf->AppendStr(buf, "~");
 		}
-		StrBuf->AppendStr(buf, CL_RESET CL_BT_GREEN"^"CL_RESET"\n");
+		StrBuf->AppendStr(buf, CL_RESET CL_BT_GREEN"^" CL_RESET "\n");
 	}
 	return p+i+(p[i] == '\n' ? 1 : 0);
 }
@@ -2356,7 +2356,7 @@ void script_errorwarning_sub(StringBuf *buf, const char* src, const char* file, 
 	error_linepos = p;
 
 	if( line >= 0 )
-		StrBuf->Printf(buf, "script error in file '%s' line %d column %"PRIdPTR"\n", file, line, error_pos-error_linepos+1);
+		StrBuf->Printf(buf, "script error in file '%s' line %d column %" PRIdPTR "\n", file, line, error_pos-error_linepos+1);
 	else
 		StrBuf->Printf(buf, "script error in file '%s' item ID %d\n", file, -line);
 
@@ -2424,7 +2424,7 @@ struct script_code* parse_script(const char *src,const char *file,int line,int o
 		if( !script->translation_db )
 			script->load_translations();
 		if( script->translation_db )
-			script->syntax.translation_db = strdb_get(script->translation_db, script->parser_current_npc_name);
+			script->syntax.translation_db = (DBMap*)strdb_get(script->translation_db, script->parser_current_npc_name);
 	}
 
 	if( !script->buf ) {
@@ -2595,7 +2595,7 @@ struct script_code* parse_script(const char *src,const char *file,int line,int o
 			i += j+1;
 			break;
 		}
-		ShowMessage(CL_CLL"\n");
+		ShowMessage(CL_CLL "\n");
 	}
 #endif
 
@@ -2824,7 +2824,7 @@ void script_array_ensure_zero(struct script_state *st, struct map_session_data *
 	}
 
 	if (src && src->arrays) {
-		struct script_array *sa = idb_get(src->arrays, script_getvarid(uid));
+		struct script_array *sa = (struct script_array*)idb_get(src->arrays, script_getvarid(uid));
 		if (sa) {
 			unsigned int i;
 
@@ -2848,7 +2848,7 @@ unsigned int script_array_size(struct script_state *st, struct map_session_data 
 	struct reg_db *src = script->array_src(st, sd, name, ref);
 
 	if( src && src->arrays )
-		sa = idb_get(src->arrays, script->search_str(name));
+		sa = (struct script_array*)idb_get(src->arrays, script->search_str(name));
 
 	return sa ? sa->size : 0;
 }
@@ -2864,7 +2864,7 @@ unsigned int script_array_highest_key(struct script_state *st, struct map_sessio
 
 		script->array_ensure_zero(st,sd,reference_uid(key, 0),ref);
 
-		if( ( sa = idb_get(src->arrays, key) ) ) {
+		if( ( sa = (struct script_array*)idb_get(src->arrays, key) ) ) {
 			unsigned int i, highest_key = 0;
 
 			for(i = 0; i < sa->size; i++) {
@@ -2877,7 +2877,7 @@ unsigned int script_array_highest_key(struct script_state *st, struct map_sessio
 	return 0;
 }
 int script_free_array_db(DBKey key, DBData *data, va_list ap) {
-	struct script_array *sa = DB->data2ptr(data);
+	struct script_array *sa = (struct script_array*)DB->data2ptr(data);
 	aFree(sa->members);
 	ers_free(script->array_ers, sa);
 	return 0;
@@ -2979,7 +2979,7 @@ void script_array_update(struct reg_db *src, int64 num, bool empty) {
 	if (!src->arrays) {
 		src->arrays = idb_alloc(DB_OPT_BASE);
 	} else {
-		sa = idb_get(src->arrays, id);
+		sa = (struct script_array*)idb_get(src->arrays, id);
 	}
 
 	if( sa ) {
@@ -3190,7 +3190,7 @@ const char* conv_str(struct script_state* st, struct script_data* data)
 	else if( data_isint(data) )
 	{// int -> string
 		CREATE(p, char, ITEM_NAME_LENGTH);
-		snprintf(p, ITEM_NAME_LENGTH, "%"PRId64"", data->u.num);
+		snprintf(p, ITEM_NAME_LENGTH, "%" PRId64 "", data->u.num);
 		p[ITEM_NAME_LENGTH-1] = '\0';
 		data->type = C_STR;
 		data->u.str = p;
@@ -3495,7 +3495,7 @@ void script_free_state(struct script_state* st) {
 		}
 
 		if( st->sleep.timer != INVALID_TIMER )
-			timer->delete(st->sleep.timer, script->run_timer);
+			timer->_delete(st->sleep.timer, script->run_timer);
 		if( st->stack ) {
 			script->free_vars(st->stack->scope.vars);
 			if( st->stack->scope.arrays )
@@ -4080,7 +4080,7 @@ void script_stop_instances(struct script_code *code) {
 
 	iter = db_iterator(script->st_db);
 
-	for( st = dbi_first(iter); dbi_exists(iter); st = dbi_next(iter) ) {
+	for( st = (struct script_state*)dbi_first(iter); dbi_exists(iter); st = (struct script_state*)dbi_next(iter) ) {
 		if( st->script == code ) {
 			script->free_state(st);
 		}
@@ -4093,7 +4093,7 @@ void script_stop_instances(struct script_code *code) {
  * Timer function for sleep
  *------------------------------------------*/
 int run_script_timer(int tid, int64 tick, int id, intptr_t data) {
-	struct script_state *st     = idb_get(script->st_db,(int)data);
+	struct script_state *st     = (struct script_state*)idb_get(script->st_db,(int)data);
 	if( st ) {
 		TBL_PC *sd = map->id2sd(st->rid);
 
@@ -4128,7 +4128,7 @@ void script_detach_state(struct script_state* st, bool dequeue_event) {
 #ifdef SECURE_NPCTIMEOUT
 			// We're done with this NPC session, so we cancel the timer (if existent) and move on
 			if( sd->npc_idle_timer != INVALID_TIMER ) {
-				timer->delete(sd->npc_idle_timer,npc->secure_timeout_timer);
+				timer->_delete(sd->npc_idle_timer,npc->secure_timeout_timer);
 				sd->npc_idle_timer = INVALID_TIMER;
 			}
 #endif
@@ -4405,7 +4405,7 @@ int script_config_read(char *cfgName) {
  */
 int db_script_free_code_sub(DBKey key, DBData *data, va_list ap)
 {
-	struct script_code *code = DB->data2ptr(data);
+	struct script_code *code = (struct script_code*)DB->data2ptr(data);
 	if (code)
 		script->free_code(code);
 	return 0;
@@ -4446,7 +4446,7 @@ void script_cleararray_pc(struct map_session_data* sd, const char* varname, void
 	if( value )
 		script->array_ensure_zero(NULL,sd,reference_uid(key,0),NULL);
 
-	if( !(sa = idb_get(src->arrays, key)) ) /* non-existent array, nothing to empty */
+	if( !(sa = (struct script_array*)idb_get(src->arrays, key)) ) /* non-existent array, nothing to empty */
 		return;
 
 	size = sa->size;
@@ -4485,7 +4485,7 @@ int script_reg_destroy(DBKey key, DBData *data, va_list ap) {
 	if( data->type != DB_DATA_PTR )/* got no need for those! */
 		return 0;
 
-	src = DB->data2ptr(data);
+	src = (struct script_reg_state*)DB->data2ptr(data);
 
 	if( src->type ) {
 		struct script_reg_str *p = (struct script_reg_str *)src;
@@ -4591,7 +4591,7 @@ void do_final_script(void) {
 
 	iter = db_iterator(script->st_db);
 
-	for( st = dbi_first(iter); dbi_exists(iter); st = dbi_next(iter) ) {
+	for( st = (struct script_state*)dbi_first(iter); dbi_exists(iter); st = (struct script_state*)dbi_next(iter) ) {
 		script->free_state(st);
 	}
 
@@ -4734,9 +4734,9 @@ void script_load_translations(void) {
 		script->translation_buf_size = total;
 
 		main_iter = db_iterator(script->translation_db);
-		for( string_db = dbi_first(main_iter); dbi_exists(main_iter); string_db = dbi_next(main_iter) ) {
+		for( string_db = (DBMap*)dbi_first(main_iter); dbi_exists(main_iter); string_db = (DBMap*)dbi_next(main_iter) ) {
 			sub_iter = db_iterator(string_db);
-			for( st = dbi_first(sub_iter); dbi_exists(sub_iter); st = dbi_next(sub_iter) ) {
+			for( st = (struct string_translation*)dbi_first(sub_iter); dbi_exists(sub_iter); st = (struct string_translation*)dbi_next(sub_iter) ) {
 				script->translation_buf[j++] = st->buf;
 			}
 			dbi_destroy(sub_iter);
@@ -4864,12 +4864,12 @@ void script_load_translation(const char *file, uint8 lang_id, uint32 *total) {
 			} else {
 				struct string_translation *st = NULL;
 
-				if( !( string_db = strdb_get(script->translation_db, msgctxt) ) ) {
+				if( !( string_db = (DBMap*)strdb_get(script->translation_db, msgctxt) ) ) {
 					string_db = strdb_alloc(DB_OPT_DUP_KEY, 0);
 					strdb_put(script->translation_db, msgctxt, string_db);
 				}
 
-				if( !(st = strdb_get(string_db, msgid.ptr) ) ) {
+				if( !(st = (struct string_translation*)strdb_get(string_db, msgid.ptr) ) ) {
 					CREATE(st, struct string_translation, 1);
 					st->string_id = script->string_dup(msgid.ptr);
 					strdb_put(string_db, msgid.ptr, st);
@@ -4895,7 +4895,7 @@ void script_load_translation(const char *file, uint8 lang_id, uint32 *total) {
 	script_string_buf_destroy(&msgid);
 	script_string_buf_destroy(&msgstr);
 
-	ShowStatus("Done reading '"CL_WHITE"%u"CL_RESET"' translations in '"CL_WHITE"%s"CL_RESET"'.\n", translations, file);
+	ShowStatus("Done reading '" CL_WHITE "%u" CL_RESET "' translations in '" CL_WHITE "%s" CL_RESET "'.\n", translations, file);
 }
 
 /**
@@ -4941,13 +4941,13 @@ void script_clear_translations(bool reload) {
  *
  **/
 int script_translation_db_destroyer(DBKey key, DBData *data, va_list ap) {
-	DBMap *string_db = DB->data2ptr(data);
+	DBMap *string_db = (DBMap*)DB->data2ptr(data);
 
 	if( db_size(string_db) ) {
 		struct string_translation *st = NULL;
 		DBIterator *iter = db_iterator(string_db);
 
-		for( st = dbi_first(iter); dbi_exists(iter); st = dbi_next(iter) ) {
+		for( st = (struct string_translation*)dbi_first(iter); dbi_exists(iter); st = (struct string_translation*)dbi_next(iter) ) {
 			aFree(st);
 		}
 		dbi_destroy(iter);
@@ -5003,9 +5003,9 @@ void do_init_script(bool minimal) {
 	script->userfunc_db = strdb_alloc(DB_OPT_DUP_KEY,0);
 	script->autobonus_db = strdb_alloc(DB_OPT_DUP_KEY,0);
 
-	script->st_ers = ers_new(sizeof(struct script_state), "script.c::st_ers", ERS_OPT_CLEAN|ERS_OPT_FLEX_CHUNK);
-	script->stack_ers = ers_new(sizeof(struct script_stack), "script.c::script_stack", ERS_OPT_NONE|ERS_OPT_FLEX_CHUNK);
-	script->array_ers = ers_new(sizeof(struct script_array), "script.c::array_ers", ERS_OPT_CLEAN|ERS_OPT_CLEAR);
+	script->st_ers = ers_new(sizeof(struct script_state), "script.c::st_ers", (ERSOptions)(ERS_OPT_CLEAN|ERS_OPT_FLEX_CHUNK));
+	script->stack_ers = ers_new(sizeof(struct script_stack), "script.c::script_stack", (ERSOptions)(ERS_OPT_NONE|ERS_OPT_FLEX_CHUNK));
+	script->array_ers = ers_new(sizeof(struct script_array), "script.c::array_ers", (ERSOptions)(ERS_OPT_CLEAN|ERS_OPT_CLEAR));
 
 	ers_chunk_size(script->st_ers, 10);
 	ers_chunk_size(script->stack_ers, 10);
@@ -5035,7 +5035,7 @@ int script_reload(void) {
 
 	iter = db_iterator(script->st_db);
 
-	for( st = dbi_first(iter); dbi_exists(iter); st = dbi_next(iter) ) {
+	for( st = (struct script_state*)dbi_first(iter); dbi_exists(iter); st = (struct script_state*)dbi_next(iter) ) {
 		script->free_state(st);
 	}
 
@@ -5058,7 +5058,7 @@ int script_reload(void) {
 	script->clear_translations(true);
 
 	if( script->parse_cleanup_timer_id != INVALID_TIMER ) {
-		timer->delete(script->parse_cleanup_timer_id,script->parse_cleanup_timer);
+		timer->_delete(script->parse_cleanup_timer_id,script->parse_cleanup_timer);
 		script->parse_cleanup_timer_id = INVALID_TIMER;
 	}
 
@@ -6578,7 +6578,7 @@ BUILDIN(deletearray)
 
 	script->array_ensure_zero(st,NULL,data->u.num,reference_getref(data));
 
-	if ( !(sa = idb_get(src->arrays, id)) ) { /* non-existent array, nothing to empty */
+	if ( !(sa = (struct script_array*)idb_get(src->arrays, id)) ) { /* non-existent array, nothing to empty */
 		return true;// not a variable
 	}
 
@@ -8449,7 +8449,7 @@ BUILDIN(getequippercentrefinery) {
 	if (num > 0 && num <= ARRAYLENGTH(script->equip))
 		i=pc->checkequip(sd,script->equip[num-1]);
 	if(i >= 0 && sd->status.inventory[i].nameid && sd->status.inventory[i].refine < MAX_REFINE)
-		script_pushint(st,status->get_refine_chance(itemdb_wlv(sd->status.inventory[i].nameid), (int)sd->status.inventory[i].refine));
+		script_pushint(st,status->get_refine_chance((refine_type)itemdb_wlv(sd->status.inventory[i].nameid), (int)sd->status.inventory[i].refine));
 	else
 		script_pushint(st,0);
 
@@ -11744,8 +11744,8 @@ BUILDIN(setmapflag) {
 			case MF_NIGHTMAREDROP:      map->list[m].flag.pvp_nightmaredrop = 1; break;
 			case MF_ZONE:
 				if( val2 ) {
-					char zone[6] = "zone\0";
-					char empty[1] = "\0";
+					char *zone = "zone\0";
+					char *empty = "";
 					char params[MAP_ZONE_MAPFLAG_LENGTH];
 					memcpy(params, val2, MAP_ZONE_MAPFLAG_LENGTH);
 					npc->parse_mapflag(map->list[m].name, empty, zone, params, empty, empty, empty, NULL);
@@ -11878,7 +11878,7 @@ BUILDIN(pvpon) {
 		return true;
 	}
 
-	map->zone_change2(m, strdb_get(map->zone_db, MAP_ZONE_PVP_NAME));
+	map->zone_change2(m, (struct map_zone_data*)strdb_get(map->zone_db, MAP_ZONE_PVP_NAME));
 	map->list[m].flag.pvp = 1;
 	clif->map_property_mapall(m, MAPPROPERTY_FREEPVPZONE);
 	bl.type = BL_NUL;
@@ -11911,7 +11911,7 @@ int buildin_pvpoff_sub(struct block_list *bl,va_list ap)
 	TBL_PC* sd = (TBL_PC*)bl;
 	clif->pvpset(sd, 0, 0, 2);
 	if (sd->pvp_timer != INVALID_TIMER) {
-		timer->delete(sd->pvp_timer, pc->calc_pvprank_timer);
+		timer->_delete(sd->pvp_timer, pc->calc_pvprank_timer);
 		sd->pvp_timer = INVALID_TIMER;
 	}
 	return 0;
@@ -11955,7 +11955,7 @@ BUILDIN(gvgon) {
 			return true;
 		}
 
-		map->zone_change2(m, strdb_get(map->zone_db, MAP_ZONE_GVG_NAME));
+		map->zone_change2(m, (struct map_zone_data*)strdb_get(map->zone_db, MAP_ZONE_GVG_NAME));
 		map->list[m].flag.gvg = 1;
 		clif->map_property_mapall(m, MAPPROPERTY_AGITZONE);
 		bl.type = BL_NUL;
@@ -12940,7 +12940,7 @@ BUILDIN(petskillbonus)
 	if (pd->bonus)
 	{ //Clear previous bonus
 		if (pd->bonus->timer != INVALID_TIMER)
-			timer->delete(pd->bonus->timer, pet->skill_bonus_timer);
+			timer->_delete(pd->bonus->timer, pet->skill_bonus_timer);
 	} else //init
 		pd->bonus = (struct pet_bonus *) aMalloc(sizeof(struct pet_bonus));
 
@@ -13335,7 +13335,7 @@ BUILDIN(petrecovery)
 	if (pd->recovery)
 	{ //Halt previous bonus
 		if (pd->recovery->timer != INVALID_TIMER)
-			timer->delete(pd->recovery->timer, pet->recovery_timer);
+			timer->_delete(pd->recovery->timer, pet->recovery_timer);
 	} else //Init
 		pd->recovery = (struct pet_recovery *)aMalloc(sizeof(struct pet_recovery));
 
@@ -13387,7 +13387,7 @@ BUILDIN(petskillsupport) {
 	if (pd->s_skill) {
 		//Clear previous skill
 		if (pd->s_skill->timer != INVALID_TIMER) {
-			timer->delete(pd->s_skill->timer, pet->skill_support_timer);
+			timer->_delete(pd->s_skill->timer, pet->skill_support_timer);
 		}
 	} else {
 		//init memory
@@ -14264,7 +14264,7 @@ BUILDIN(summon)
 		md->master_id=sd->bl.id;
 		md->special_state.ai = AI_ATTACK;
 		if( md->deletetimer != INVALID_TIMER )
-			timer->delete(md->deletetimer, mob->timer_delete);
+			timer->_delete(md->deletetimer, mob->timer_delete);
 		md->deletetimer = timer->add(tick+(timeout>0?timeout*1000:60000),mob->timer_delete,md->bl.id,0);
 		mob->spawn (md); //Now it is ready for spawning.
 		clif->specialeffect(&md->bl,344,AREA);
@@ -16677,7 +16677,7 @@ BUILDIN(awake) {
 
 	iter = db_iterator(script->st_db);
 
-	for( tst = dbi_first(iter); dbi_exists(iter); tst = dbi_next(iter) ) {
+	for( tst = (struct script_state*)dbi_first(iter); dbi_exists(iter); tst = (struct script_state*)dbi_next(iter) ) {
 		if( tst->oid == nd->bl.id ) {
 			TBL_PC* sd = map->id2sd(tst->rid);
 
@@ -16690,7 +16690,7 @@ BUILDIN(awake) {
 				tst->rid = 0;
 			}
 
-			timer->delete(tst->sleep.timer, script->run_timer);
+			timer->_delete(tst->sleep.timer, script->run_timer);
 			tst->sleep.timer = INVALID_TIMER;
 			if(tst->state != RERUNLINE)
 				tst->sleep.tick = 0;
@@ -16883,7 +16883,7 @@ BUILDIN(mercenary_create)
 
 	class_ = script_getnum(st,2);
 
-	if( !mercenary->class(class_) )
+	if( !mercenary->_class(class_) )
 		return true;
 
 	contract_time = script_getnum(st,3);
@@ -17151,10 +17151,10 @@ BUILDIN(erasequest)
 			return false;
 		}
 		for (quest_id = script_getnum(st, 2); quest_id < script_getnum(st, 3); quest_id++) {
-			quest->delete(sd, quest_id);
+			quest->_delete(sd, quest_id);
 		}
 	} else {
-		quest->delete(sd, script_getnum(st, 2));
+		quest->_delete(sd, script_getnum(st, 2));
 	}
 
 	return true;

@@ -32,7 +32,7 @@ struct mapreg_interface *mapreg;
  * @return variable's integer value
  */
 int mapreg_readreg(int64 uid) {
-	struct mapreg_save *m = i64db_get(mapreg->regs.vars, uid);
+	struct mapreg_save *m = (struct mapreg_save *) i64db_get(mapreg->regs.vars, uid);
 	return m?m->u.i:0;
 }
 
@@ -43,7 +43,7 @@ int mapreg_readreg(int64 uid) {
  * @return variable's string value
  */
 char* mapreg_readregstr(int64 uid) {
-	struct mapreg_save *m = i64db_get(mapreg->regs.vars, uid);
+	struct mapreg_save *m = (struct mapreg_save *) i64db_get(mapreg->regs.vars, uid);
 	return m?m->u.str:NULL;
 }
 
@@ -61,7 +61,7 @@ bool mapreg_setreg(int64 uid, int val) {
 	const char* name = script->get_str(num);
 
 	if( val != 0 ) {
-		if( (m = i64db_get(mapreg->regs.vars, uid)) ) {
+		if( (m = (struct mapreg_save *)i64db_get(mapreg->regs.vars, uid)) ) {
 			m->u.i = val;
 			if(name[1] != '@') {
 				m->save = true;
@@ -89,7 +89,7 @@ bool mapreg_setreg(int64 uid, int val) {
 	} else { // val == 0
 		if( i )
 			script->array_update(&mapreg->regs, uid, true);
-		if( (m = i64db_get(mapreg->regs.vars, uid)) ) {
+		if( (m = (struct mapreg_save *) i64db_get(mapreg->regs.vars, uid)) ) {
 			ers_free(mapreg->ers, m);
 		}
 		i64db_remove(mapreg->regs.vars, uid);
@@ -123,14 +123,14 @@ bool mapreg_setregstr(int64 uid, const char* str) {
 			if( SQL_ERROR == SQL->Query(map->mysql_handle, "DELETE FROM `%s` WHERE `varname`='%s' AND `index`='%d'", mapreg->table, name, i) )
 				Sql_ShowDebug(map->mysql_handle);
 		}
-		if( (m = i64db_get(mapreg->regs.vars, uid)) ) {
+		if( (m = (struct mapreg_save *)i64db_get(mapreg->regs.vars, uid)) ) {
 			if( m->u.str != NULL )
 				aFree(m->u.str);
 			ers_free(mapreg->ers, m);
 		}
 		i64db_remove(mapreg->regs.vars, uid);
 	} else {
-		if( (m = i64db_get(mapreg->regs.vars, uid)) ) {
+		if( (m = (struct mapreg_save *)i64db_get(mapreg->regs.vars, uid)) ) {
 			if( m->u.str != NULL )
 				aFree(m->u.str);
 			m->u.str = aStrdup(str);
@@ -224,7 +224,7 @@ void script_save_mapreg(void) {
 	if (mapreg->dirty) {
 		DBIterator *iter = db_iterator(mapreg->regs.vars);
 		struct mapreg_save *m;
-		for (m = dbi_first(iter); dbi_exists(iter); m = dbi_next(iter)) {
+		for (m = (struct mapreg_save *)dbi_first(iter); dbi_exists(iter); m = (struct mapreg_save *)dbi_next(iter)) {
 			if (m->save) {
 				int num = script_getvarid(m->uid);
 				int i   = script_getvaridx(m->uid);
@@ -267,7 +267,7 @@ int mapreg_destroyreg(DBKey key, DBData *data, va_list ap) {
 	if (data->type != DB_DATA_PTR) // Sanity check
 		return 0;
 
-	m = DB->data2ptr(data);
+	m = (struct mapreg_save *)DB->data2ptr(data);
 
 	if (m->is_string) {
 		if (m->u.str)

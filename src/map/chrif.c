@@ -451,7 +451,7 @@ void chrif_connectack(int fd) {
  * @see DBApply
  */
 int chrif_reconnect(DBKey key, DBData *data, va_list ap) {
-	struct auth_node *node = DB->data2ptr(data);
+	struct auth_node *node = (struct auth_node *)DB->data2ptr(data);
 
 	nullpo_ret(node);
 	switch (node->state) {
@@ -661,7 +661,7 @@ void chrif_authfail(int fd) {/* HELLO WORLD. ip in RFIFOL 15 is not being used (
  * @see DBApply
  */
 int auth_db_cleanup_sub(DBKey key, DBData *data, va_list ap) {
-	struct auth_node *node = DB->data2ptr(data);
+	struct auth_node *node = (struct auth_node *)DB->data2ptr(data);
 
 	nullpo_retr(1, node);
 	if(DIFF_TICK(timer->gettick(),node->node_created)>60000) {
@@ -1588,7 +1588,7 @@ void chrif_del_scdata_single(int account_id, int char_id, short type)
  * @see DBApply
  */
 int auth_db_final(DBKey key, DBData *data, va_list ap) {
-	struct auth_node *node = DB->data2ptr(data);
+	struct auth_node *node = (struct auth_node *)DB->data2ptr(data);
 
 	nullpo_ret(node);
 	if (node->sd) {

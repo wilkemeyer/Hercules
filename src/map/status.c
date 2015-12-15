@@ -6301,9 +6301,9 @@ void status_set_viewdata(struct block_list *bl, int class_)
 		vd = npc->get_viewdata(class_);
 	else if (homdb_checkid(class_))
 		vd = homun->get_viewdata(class_);
-	else if (mercenary->class(class_))
+	else if (mercenary->_class(class_))
 		vd = mercenary->get_viewdata(class_);
-	else if (elemental->class(class_))
+	else if (elemental->_class(class_))
 		vd = elemental->get_viewdata(class_);
 	else
 		vd = NULL;
@@ -7657,7 +7657,7 @@ int status_change_start(struct block_list *src, struct block_list *bl, enum sc_t
 				//Kaahi overwrites previous level regardless of existing level.
 				//Delete timer if it exists.
 				if (sce->val4 != INVALID_TIMER) {
-					timer->delete(sce->val4,status->kaahi_heal_timer);
+					timer->_delete(sce->val4,status->kaahi_heal_timer);
 					sce->val4 = INVALID_TIMER;
 				}
 				break;
@@ -8260,7 +8260,7 @@ int status_change_start(struct block_list *src, struct block_list *bl, enum sc_t
 						sc_start4(src,src2,SC_RG_CCONFINE_M,100,val1,1,0,0,tick+1000);
 					else { //Increase count of locked enemies and refresh time.
 						(sce2->val2)++;
-						timer->delete(sce2->timer, status->change_timer);
+						timer->_delete(sce2->timer, status->change_timer);
 						sce2->timer = timer->add(timer->gettick()+tick+1000, status->change_timer, src2->id, SC_RG_CCONFINE_M);
 					}
 				} else //Status failed.
@@ -8771,7 +8771,7 @@ int status_change_start(struct block_list *src, struct block_list *bl, enum sc_t
 					if (homun_alive(sd->hd))
 						homun->vaporize(sd,HOM_ST_REST);
 					if (sd->md)
-						mercenary->delete(sd->md,3);
+						mercenary->_delete(sd->md,3);
 				}
 				break;
 			case SC__LAZINESS:
@@ -9687,7 +9687,7 @@ int status_change_start(struct block_list *src, struct block_list *bl, enum sc_t
 	//Don't trust the previous sce assignment, in case the SC ended somewhere between there and here.
 	if((sce=sc->data[type])) {// reuse old sc
 		if( sce->timer != INVALID_TIMER )
-			timer->delete(sce->timer, status->change_timer);
+			timer->_delete(sce->timer, status->change_timer);
 	} else {// new sc
 		++(sc->count);
 		sce = sc->data[type] = ers_alloc(status->data_ers, struct status_change_entry);
@@ -9821,7 +9821,7 @@ int status_change_clear(struct block_list* bl, int type) {
 			continue;
 
 		if(type == 0){
-			if( status->get_sc_type(i)&SC_NO_REM_DEATH ) {
+			if( status->get_sc_type((sc_type)i)&SC_NO_REM_DEATH ) {
 				switch (i) {
 					case SC_ARMOR_PROPERTY://Only when its Holy or Dark that it doesn't dispell on death
 						if( sc->data[i]->val2 != ELE_HOLY && sc->data[i]->val2 != ELE_DARK )
@@ -9831,7 +9831,7 @@ int status_change_clear(struct block_list* bl, int type) {
 				}
 			}
 		}
-		if( type == 3 && status->get_sc_type(i)&SC_NO_CLEAR )
+		if( type == 3 && status->get_sc_type((sc_type)i)&SC_NO_CLEAR )
 			continue;
 
 		status_change_end(bl, (sc_type)i, INVALID_TIMER);
@@ -9840,7 +9840,7 @@ int status_change_clear(struct block_list* bl, int type) {
 			//If for some reason status_change_end decides to still keep the status when quitting. [Skotlex]
 			(sc->count)--;
 			if (sc->data[i]->timer != INVALID_TIMER)
-				timer->delete(sc->data[i]->timer, status->change_timer);
+				timer->_delete(sc->data[i]->timer, status->change_timer);
 			ers_free(status->data_ers, sc->data[i]);
 			sc->data[i] = NULL;
 		}
@@ -9897,7 +9897,7 @@ int status_change_end_(struct block_list* bl, enum sc_type type, int tid, const 
 			//Do not end infinite endure.
 				return 0;
 		if (sce->timer != INVALID_TIMER) //Could be a SC with infinite duration
-			timer->delete(sce->timer,status->change_timer);
+			timer->_delete(sce->timer,status->change_timer);
 		if (sc->opt1)
 			switch (type) {
 				//"Ugly workaround"  [Skotlex]
@@ -10201,7 +10201,7 @@ int status_change_end_(struct block_list* bl, enum sc_type type, int tid, const 
 		case SC_KAAHI:
 			//Delete timer if it exists.
 			if (sce->val4 != INVALID_TIMER)
-				timer->delete(sce->val4,status->kaahi_heal_timer);
+				timer->_delete(sce->val4,status->kaahi_heal_timer);
 			break;
 		case SC_JAILED:
 			if(tid == INVALID_TIMER)
@@ -11819,16 +11819,16 @@ int status_change_clear_buffs (struct block_list* bl, int type) {
 			status_change_end(bl, (sc_type)i, INVALID_TIMER);
 
 	for( i = SC_COMMON_MAX+1; i < SC_MAX; i++ ) {
-		if( !sc->data[i] || !status->get_sc_type(i) )
+		if( !sc->data[i] || !status->get_sc_type((sc_type)i) )
 			continue;
 
-		if( type&3 && !(status->get_sc_type(i)&SC_BUFF) && !(status->get_sc_type(i)&SC_DEBUFF) )
+		if( type&3 && !(status->get_sc_type((sc_type)i)&SC_BUFF) && !(status->get_sc_type((sc_type)i)&SC_DEBUFF) )
 			continue;
 
 		if( type < 3 ) {
-			if( type&1 && !(status->get_sc_type(i)&SC_BUFF) )
+			if( type&1 && !(status->get_sc_type((sc_type)i)&SC_BUFF) )
 				continue;
-			if( type&2 && !(status->get_sc_type(i)&SC_DEBUFF) )
+			if( type&2 && !(status->get_sc_type((sc_type)i)&SC_DEBUFF) )
 				continue;
 		}
 		switch (i) {
@@ -12575,7 +12575,7 @@ bool status_readdb_scconfig(char* fields[], int columns, int current) {
 		return false;
 	}
 
-	status->dbs->sc_conf[val] = (int)strtol(fields[1], NULL, 0);
+	status->dbs->sc_conf[val] = (sc_conf_type)strtol(fields[1], NULL, 0);
 
 	return true;
 }

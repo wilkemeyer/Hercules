@@ -83,7 +83,7 @@ const char* atcommand_msgsd(struct map_session_data *sd, int msg_number) {
 }
 
 const char* atcommand_msgfd(int fd, int msg_number) {
-	struct map_session_data *sd = sockt->session_is_valid(fd) ? sockt->session[fd]->session_data : NULL;
+	struct map_session_data *sd = (struct map_session_data*) (sockt->session_is_valid(fd) ? sockt->session[fd]->session_data : NULL);
 	Assert_retr("??", msg_number >= 0 && msg_number < MAX_MSG && atcommand->msg_table[0][msg_number] != NULL);
 	if (!sd || sd->lang_id >= atcommand->max_message_table || !atcommand->msg_table[sd->lang_id][msg_number])
 		return atcommand->msg_table[0][msg_number];
@@ -954,7 +954,7 @@ ACMD(hide) {
 
 		if( map->list[sd->bl.m].flag.pvp && !map->list[sd->bl.m].flag.pvp_nocalcrank && sd->pvp_timer != INVALID_TIMER ) {
 			// unregister the player for ranking
-			timer->delete( sd->pvp_timer, pc->calc_pvprank_timer );
+			timer->_delete( sd->pvp_timer, pc->calc_pvprank_timer );
 			sd->pvp_timer = INVALID_TIMER;
 		}
 	}
@@ -1501,7 +1501,7 @@ ACMD(help) {
 		StrBuf->AppendStr(&buf, msg_fd(fd,990)); // Available aliases:
 		command_info = atcommand->get_info_byname(command_name);
 		iter = db_iterator(atcommand->alias_db);
-		for (alias_info = dbi_first(iter); dbi_exists(iter); alias_info = dbi_next(iter)) {
+		for (alias_info = (AliasInfo*)dbi_first(iter); dbi_exists(iter); alias_info = (AliasInfo*)dbi_next(iter)) {
 			if (alias_info->command == command_info) {
 				StrBuf->Printf(&buf, " %s", alias_info->alias);
 				has_aliases = true;
@@ -1551,7 +1551,7 @@ int atcommand_pvpoff_sub(struct block_list *bl,va_list ap)
 	nullpo_ret(bl);
 	clif->pvpset(sd, 0, 0, 2);
 	if (sd->pvp_timer != INVALID_TIMER) {
-		timer->delete(sd->pvp_timer, pc->calc_pvprank_timer);
+		timer->_delete(sd->pvp_timer, pc->calc_pvprank_timer);
 		sd->pvp_timer = INVALID_TIMER;
 	}
 	return 0;
@@ -1602,7 +1602,7 @@ ACMD(pvpon)
 		return false;
 	}
 
-	map->zone_change2(sd->bl.m,strdb_get(map->zone_db, MAP_ZONE_PVP_NAME));
+	map->zone_change2(sd->bl.m, (struct map_zone_data*) strdb_get(map->zone_db, MAP_ZONE_PVP_NAME));
 	map->list[sd->bl.m].flag.pvp = 1;
 
 	if (!battle_config.pk_mode) {// display pvp circle and rank
@@ -1646,7 +1646,7 @@ ACMD(gvgon)
 		return false;
 	}
 
-	map->zone_change2(sd->bl.m,strdb_get(map->zone_db, MAP_ZONE_GVG_NAME));
+	map->zone_change2(sd->bl.m, (struct map_zone_data*) strdb_get(map->zone_db, MAP_ZONE_GVG_NAME));
 	map->list[sd->bl.m].flag.gvg = 1;
 	clif->map_property_mapall(sd->bl.m, MAPPROPERTY_AGITZONE);
 	clif->maptypeproperty2(&sd->bl,ALL_SAMEMAP);
@@ -5183,7 +5183,7 @@ ACMD(cleargstorage)
 		return false;
 	}
 
-	guild_storage = idb_get(gstorage->db,sd->status.guild_id);
+	guild_storage = (struct guild_storage*)idb_get(gstorage->db,sd->status.guild_id);
 	if (guild_storage == NULL) {// Doesn't have opened @gstorage yet, so we skip the deletion since *shouldn't* have any item there.
 		return false;
 	}
@@ -5760,7 +5760,7 @@ ACMD(autolootitem)
  *------------------------------------------*/
 ACMD(autoloottype) {
 	uint8 action = 3; // 1=add, 2=remove, 3=help+list (default), 4=reset
-	enum item_types type = -1;
+	enum item_types type = (enum item_types)0; // FWI: 20151215 -> ???? -1;
 	int ITEM_NONE = 0;
 
 	if (*message) {
@@ -5808,7 +5808,7 @@ ACMD(autoloottype) {
 				return false;
 			}
 			sd->state.autoloottype |= (1<<type); // Stores the type
-			safesnprintf(atcmd_output, sizeof(atcmd_output), msg_fd(fd,1492), itemdb->typename(type)); // Autolooting item type: '%s'
+			safesnprintf(atcmd_output, sizeof(atcmd_output), msg_fd(fd,1492), itemdb->_typename(type)); // Autolooting item type: '%s'
 			clif->message(fd, atcmd_output);
 			break;
 		case 2:
@@ -5817,7 +5817,7 @@ ACMD(autoloottype) {
 				return false;
 			}
 			sd->state.autoloottype &= ~(1<<type);
-			safesnprintf(atcmd_output, sizeof(atcmd_output), msg_fd(fd,1494), itemdb->typename(type)); // Removed item type: '%s' from your autoloottype list.
+			safesnprintf(atcmd_output, sizeof(atcmd_output), msg_fd(fd,1494), itemdb->_typename(type)); // Removed item type: '%s' from your autoloottype list.
 			clif->message(fd, atcmd_output);
 			break;
 		case 3:
@@ -5836,7 +5836,7 @@ ACMD(autoloottype) {
 				clif->message(fd, msg_fd(fd,1496)); // Item types on your autoloottype list:
 				for(i=0; i < IT_MAX; i++) {
 					if (sd->state.autoloottype&(1<<i)) {
-						safesnprintf(atcmd_output, sizeof(atcmd_output), " '%s'", itemdb->typename(i));
+						safesnprintf(atcmd_output, sizeof(atcmd_output), " '%s'", itemdb->_typename(i));
 						clif->message(fd, atcmd_output);
 					}
 				}
@@ -7134,7 +7134,7 @@ ACMD(iteminfo)
 		struct item_data *item_data = item_array[i];
 		safesnprintf(atcmd_output, sizeof(atcmd_output), msg_fd(fd,1277), // Item: '%s'/'%s'[%d] (%d) Type: %s | Extra Effect: %s
 				item_data->name,item_data->jname,item_data->slot,item_data->nameid,
-				itemdb->typename(item_data->type),
+				itemdb->_typename(item_data->type),
 				(item_data->script==NULL)? msg_fd(fd,1278) : msg_fd(fd,1279) // None / With script
 				);
 		clif->message(fd, atcmd_output);
@@ -7541,17 +7541,17 @@ ACMD(mapflag) {
 
 	if (strcmp( flag_name , "gvg" ) == 0) {
 		if( flag && !map->list[sd->bl.m].flag.gvg )
-			map->zone_change2(sd->bl.m,strdb_get(map->zone_db, MAP_ZONE_GVG_NAME));
+			map->zone_change2(sd->bl.m, (struct map_zone_data*)strdb_get(map->zone_db, MAP_ZONE_GVG_NAME));
 		else if ( !flag && map->list[sd->bl.m].flag.gvg )
 			map->zone_change2(sd->bl.m,map->list[sd->bl.m].prev_zone);
 	} else if ( strcmp( flag_name , "pvp" ) == 0 ) {
 		if ( flag && !map->list[sd->bl.m].flag.pvp )
-			map->zone_change2(sd->bl.m,strdb_get(map->zone_db, MAP_ZONE_PVP_NAME));
+			map->zone_change2(sd->bl.m, (struct map_zone_data*)strdb_get(map->zone_db, MAP_ZONE_PVP_NAME));
 		else if ( !flag && map->list[sd->bl.m].flag.pvp )
 			map->zone_change2(sd->bl.m,map->list[sd->bl.m].prev_zone);
 	} else if ( strcmp( flag_name , "battleground" ) == 0 ) {
 		if ( flag && !map->list[sd->bl.m].flag.battleground )
-			map->zone_change2(sd->bl.m,strdb_get(map->zone_db, MAP_ZONE_BG_NAME));
+			map->zone_change2(sd->bl.m, (struct map_zone_data*)strdb_get(map->zone_db, MAP_ZONE_BG_NAME));
 		else if ( !flag && map->list[sd->bl.m].flag.battleground )
 			map->zone_change2(sd->bl.m,map->list[sd->bl.m].prev_zone);
 	}
@@ -8333,7 +8333,7 @@ void atcommand_commands_sub(struct map_session_data* sd, const int fd, AtCommand
 
 	clif->message(fd, msg_fd(fd,273)); // "Available commands:"
 
-	for (cmd = dbi_first(iter); dbi_exists(iter); cmd = dbi_next(iter)) {
+	for (cmd = (AtCommandInfo*)dbi_first(iter); dbi_exists(iter); cmd = (AtCommandInfo*)dbi_next(iter)) {
 		size_t slen;
 
 		switch( type ) {
@@ -8806,7 +8806,7 @@ ACMD(channel) {
 				safesnprintf(atcmd_output, sizeof(atcmd_output), msg_fd(fd,1409), channel->config->ally_name, db_size(g->channel->users));// - #%s ( %d users )
 				clif->message(fd, atcmd_output);
 			}
-			for (chan = dbi_first(iter); dbi_exists(iter); chan = dbi_next(iter)) {
+			for (chan = (struct channel_data*)dbi_first(iter); dbi_exists(iter); chan = (struct channel_data*)dbi_next(iter)) {
 				if (show_all || chan->type == HCS_TYPE_PUBLIC || chan->type == HCS_TYPE_IRC) {
 					safesnprintf(atcmd_output, sizeof(atcmd_output), msg_fd(fd,1409), chan->name, db_size(chan->users));// - #%s ( %d users )
 					clif->message(fd, atcmd_output);
@@ -9051,7 +9051,7 @@ ACMD(channel) {
 
 		iter = db_iterator(chan->banned);
 		for (data = iter->first(iter,&key); iter->exists(iter); data = iter->next(iter,&key)) {
-			struct channel_ban_entry *entry = DB->data2ptr(data);
+			struct channel_ban_entry *entry = (struct channel_ban_entry*)DB->data2ptr(data);
 
 			if (!isA)
 				safesnprintf(atcmd_output, sizeof(atcmd_output), msg_fd(fd,1444), entry->name);// - %s %s
@@ -9240,7 +9240,7 @@ ACMD(costume){
 			if( sd->sc.data[name2id[k]] ) {
 				safesnprintf(atcmd_output, sizeof(atcmd_output),msg_fd(fd,1473),names[k]);//Costume '%s' removed.
 				clif->message(sd->fd,atcmd_output);
-				status_change_end(&sd->bl,name2id[k],INVALID_TIMER);
+				status_change_end(&sd->bl, (sc_type) name2id[k],INVALID_TIMER);
 				return true;
 			}
 		}
@@ -9270,7 +9270,7 @@ ACMD(costume){
 		return false;
 	}
 
-	sc_start(NULL,&sd->bl, name2id[k], 100, 0, -1);
+	sc_start(NULL,&sd->bl, (sc_type) name2id[k], 100, 0, -1);
 
 	return true;
 }
@@ -9294,7 +9294,7 @@ ACMD(cddebug) {
 	int i;
 	struct skill_cd* cd = NULL;
 
-	if (!(cd = idb_get(skill->cd_db,sd->status.char_id))) {
+	if (!(cd = (struct skill_cd*)idb_get(skill->cd_db,sd->status.char_id))) {
 		clif->message(fd,"No cool down list found");
 	} else {
 		clif->messages(fd,"Found %d registered cooldowns",cd->cursor);
@@ -9320,7 +9320,7 @@ ACMD(cddebug) {
 		if( cd ) {//reset
 			for(i = 0; i < cd->cursor; i++) {
 				if( !cd->entry[i] ) continue;
-				timer->delete(cd->entry[i]->timer,skill->blockpc_end);
+				timer->_delete(cd->entry[i]->timer,skill->blockpc_end);
 				ers_free(skill->cd_entry_ers, cd->entry[i]);
 			}
 
@@ -9679,12 +9679,12 @@ bool atcommand_add(char *name, AtCommandFunc func, bool replace) {
  * Command lookup functions
  *------------------------------------------*/
 AtCommandInfo* atcommand_exists(const char* name) {
-	return strdb_get(atcommand->db, name);
+	return (AtCommandInfo*)strdb_get(atcommand->db, name);
 }
 
 AtCommandInfo* get_atcommandinfo_byname(const char *name) {
 	AtCommandInfo *cmd;
-	if ((cmd = strdb_get(atcommand->db, name)))
+	if ((cmd = (AtCommandInfo*)strdb_get(atcommand->db, name)))
 		return cmd;
 	return NULL;
 }
@@ -9716,7 +9716,7 @@ void atcommand_get_suggestions(struct map_session_data* sd, const char *name, bo
 	alias_iter = db_iterator(atcommand->alias_db);
 
 	// Build the matches
-	for (command_info = dbi_first(atcommand_iter); dbi_exists(atcommand_iter); command_info = dbi_next(atcommand_iter))     {
+	for (command_info = (AtCommandInfo*)dbi_first(atcommand_iter); dbi_exists(atcommand_iter); command_info = (AtCommandInfo*)dbi_next(atcommand_iter))     {
 		match = strstr(command_info->command, name);
 		can_use = atcommand->can_use2(sd, command_info->command, type);
 		if ( prefix_count < MAX_SUGGESTIONS && match == command_info->command && can_use ) {
@@ -9729,7 +9729,7 @@ void atcommand_get_suggestions(struct map_session_data* sd, const char *name, bo
 		}
 	}
 
-	for (alias_info = dbi_first(alias_iter); dbi_exists(alias_iter); alias_info = dbi_next(alias_iter)) {
+	for (alias_info = (AliasInfo*)dbi_first(alias_iter); dbi_exists(alias_iter); alias_info = (AliasInfo*)dbi_next(alias_iter)) {
 		match = strstr(alias_info->alias, name);
 		can_use = atcommand->can_use2(sd, alias_info->command->command,type);
 		if ( prefix_count < MAX_SUGGESTIONS && match == alias_info->alias && can_use) {
@@ -10082,14 +10082,14 @@ void atcommand_config_read(const char* config_filename) {
 				if( commandinfo->help == NULL ) {
 					const char *str = libconfig->setting_get_string(command);
 					size_t len = strlen(str);
-					commandinfo->help = aMalloc( len * sizeof(char) );
+					commandinfo->help = (char*)aMalloc( len * sizeof(char) );
 					safestrncpy(commandinfo->help, str, len);
 				}
 			}
 		}
 	}
 
-	ShowStatus("Done reading '"CL_WHITE"%d"CL_RESET"' command aliases in '"CL_WHITE"%s"CL_RESET"'.\n", num_aliases, config_filename);
+	ShowStatus("Done reading '" CL_WHITE "%d" CL_RESET "' command aliases in '" CL_WHITE "%s" CL_RESET "'.\n", num_aliases, config_filename);
 
 	libconfig->destroy(&atcommand_config);
 	return;
@@ -10120,7 +10120,7 @@ void atcommand_db_load_groups(GroupSettings **groups, config_setting_t **command
 
 	nullpo_retv(groups);
 	nullpo_retv(commands_);
-	for (atcmd = dbi_first(iter); dbi_exists(iter); atcmd = dbi_next(iter)) {
+	for (atcmd = (AtCommandInfo*)dbi_first(iter); dbi_exists(iter); atcmd = (AtCommandInfo*)dbi_next(iter)) {
 		int i;
 		CREATE(atcmd->at_groups, char, sz);
 		CREATE(atcmd->char_groups, char, sz);
@@ -10217,7 +10217,7 @@ bool atcommand_hp_add(char *name, AtCommandFunc func) {
  * @see DBApply
  */
 int atcommand_db_clear_sub(DBKey key, DBData *data, va_list args) {
-	AtCommandInfo *cmd = DB->data2ptr(data);
+	AtCommandInfo *cmd = (AtCommandInfo*)DB->data2ptr(data);
 	aFree(cmd->at_groups);
 	aFree(cmd->char_groups);
 	if (cmd->help != NULL)
@@ -10240,9 +10240,9 @@ void atcommand_doload(void) {
 	if( core->runflag >= MAPSERVER_ST_RUNNING )
 		atcommand->cmd_db_clear();
 	if( atcommand->db == NULL )
-		atcommand->db = stridb_alloc(DB_OPT_DUP_KEY|DB_OPT_RELEASE_DATA, ATCOMMAND_LENGTH);
+		atcommand->db = stridb_alloc((DBOptions)(DB_OPT_DUP_KEY|DB_OPT_RELEASE_DATA), ATCOMMAND_LENGTH);
 	if( atcommand->alias_db == NULL )
-		atcommand->alias_db = stridb_alloc(DB_OPT_DUP_KEY|DB_OPT_RELEASE_DATA, ATCOMMAND_LENGTH);
+		atcommand->alias_db = stridb_alloc((DBOptions)(DB_OPT_DUP_KEY|DB_OPT_RELEASE_DATA), ATCOMMAND_LENGTH);
 	atcommand->base_commands(); //fills initial atcommand_db with known commands
 	atcommand->config_read(map->ATCOMMAND_CONF_FILENAME);
 }

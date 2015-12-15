@@ -41,7 +41,7 @@
 \*****************************************************************************/
 #ifndef COMMON_DB_H
 #define COMMON_DB_H
-
+#include <type_traits>
 #include "hercules.h"
 
 #include <stdarg.h>
@@ -1161,9 +1161,9 @@ HPShared struct db_interface *DB;
 		if ((_n) > VECTOR_CAPACITY(_vec)) { \
 			/* increase size */ \
 			if (VECTOR_CAPACITY(_vec) == 0) \
-				VECTOR_DATA(_vec) = aMalloc((_n)*sizeof(VECTOR_FIRST(_vec))); /* allocate new */ \
+				VECTOR_DATA(_vec) = (std::remove_reference<decltype(VECTOR_DATA(_vec))>::type) aMalloc((_n)*sizeof(VECTOR_FIRST(_vec))); /* allocate new */ \
 			else \
-				VECTOR_DATA(_vec) = aRealloc(VECTOR_DATA(_vec), (_n)*sizeof(VECTOR_FIRST(_vec))); /* reallocate */ \
+				VECTOR_DATA(_vec) = (std::remove_reference<decltype(VECTOR_DATA(_vec))>::type)aRealloc(VECTOR_DATA(_vec), (_n)*sizeof(VECTOR_FIRST(_vec))); /* reallocate */ \
 			memset(VECTOR_DATA(_vec)+VECTOR_LENGTH(_vec), 0, (VECTOR_CAPACITY(_vec)-VECTOR_LENGTH(_vec))*sizeof(VECTOR_FIRST(_vec))); /* clear new data */ \
 			VECTOR_CAPACITY(_vec) = (_n); /* update capacity */ \
 		} else if ((_n) == 0 && VECTOR_CAPACITY(_vec) > 0) { \
@@ -1173,7 +1173,7 @@ HPShared struct db_interface *DB;
 			VECTOR_LENGTH(_vec) = 0; /* clear length */ \
 		} else if ((_n) < VECTOR_CAPACITY(_vec)) { \
 			/* reduce size */ \
-			VECTOR_DATA(_vec) = aRealloc(VECTOR_DATA(_vec), (_n)*sizeof(VECTOR_FIRST(_vec))); /* reallocate */ \
+			VECTOR_DATA(_vec) = (std::remove_reference<decltype(VECTOR_DATA(_vec))>::type)aRealloc(VECTOR_DATA(_vec), (_n)*sizeof(VECTOR_FIRST(_vec))); /* reallocate */ \
 			VECTOR_CAPACITY(_vec) = (_n); /* update capacity */ \
 			if ((_n) - VECTOR_LENGTH(_vec) > 0) \
 				VECTOR_LENGTH(_vec) = (_n); /* update length */ \

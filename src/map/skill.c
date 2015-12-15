@@ -2029,7 +2029,7 @@ int skill_strip_equip(struct block_list *bl, unsigned short where, int rate, int
 	struct status_change *sc;
 	const int pos[5]             = {EQP_WEAPON, EQP_SHIELD, EQP_ARMOR, EQP_HELM, EQP_ACC};
 	const enum sc_type sc_atk[5] = {SC_NOEQUIPWEAPON, SC_NOEQUIPSHIELD, SC_NOEQUIPARMOR, SC_NOEQUIPHELM, SC__STRIPACCESSARY};
-	const enum sc_type sc_def[5] = {SC_PROTECTWEAPON, SC_PROTECTSHIELD, SC_PROTECTARMOR, SC_PROTECTHELM, 0};
+	const enum sc_type sc_def[5] = {SC_PROTECTWEAPON, SC_PROTECTSHIELD, SC_PROTECTARMOR, SC_PROTECTHELM, (sc_type)0};
 	int i;
 
 	if (rnd()%100 >= rate)
@@ -2359,7 +2359,7 @@ int skill_attack(int attack_type, struct block_list* src, struct block_list *dsr
 					sce->val1 = skill_id; //Update combo-skill
 					sce->val3 = skill_id;
 					if( sce->timer != INVALID_TIMER )
-						timer->delete(sce->timer, status->change_timer);
+						timer->_delete(sce->timer, status->change_timer);
 					sce->timer = timer->add(tick+sce->val4, status->change_timer, src->id, SC_COMBOATTACK);
 					break;
 				}
@@ -2811,7 +2811,7 @@ int skill_attack(int attack_type, struct block_list* src, struct block_list *dsr
 					short rate = 100;
 					if ( ssc->data[SC_POISONINGWEAPON]->val1 == 9 )// Oblivion Curse gives a 2nd success chance after the 1st one passes which is reducible. [Rytech]
 						rate = 100 - tstatus->int_ * 4 / 5;
-					sc_start(src, bl,ssc->data[SC_POISONINGWEAPON]->val2,rate,ssc->data[SC_POISONINGWEAPON]->val1,skill->get_time2(GC_POISONINGWEAPON,1) - (tstatus->vit + tstatus->luk) / 2 * 1000);
+					sc_start(src, bl,(sc_type) ssc->data[SC_POISONINGWEAPON]->val2,rate,ssc->data[SC_POISONINGWEAPON]->val1,skill->get_time2(GC_POISONINGWEAPON,1) - (tstatus->vit + tstatus->luk) / 2 * 1000);
 					status_change_end(src,SC_POISONINGWEAPON,-1);
 					clif->skill_nodamage(src,bl,skill_id,skill_lv,1);
 				}
@@ -3477,7 +3477,7 @@ int skill_cleartimerskill (struct block_list *src)
 					if(skill->cleartimerskill_exception(ud->skilltimerskill[i]->skill_id))
 						continue;
 			}
-			timer->delete(ud->skilltimerskill[i]->timer, skill->timerskill);
+			timer->_delete(ud->skilltimerskill[i]->timer, skill->timerskill);
 			ers_free(skill->timer_ers, ud->skilltimerskill[i]);
 			ud->skilltimerskill[i]=NULL;
 		}
@@ -4742,7 +4742,7 @@ int skill_castend_damage_id(struct block_list* src, struct block_list *bl, uint1
 				struct status_change *esc = status->get_sc(&ele->bl);
 				struct status_change *tsc = status->get_sc(bl);
 				sc_type type = status->skill2sc(skill_id), type2;
-				type2 = type-1;
+				type2 = (sc_type)(type-1);
 
 				clif->skill_nodamage(src,battle->get_master(src),skill_id,skill_lv,1);
 				clif->skill_damage(src, src, tick, status_get_amotion(src), 0, -30000, 1, skill_id, skill_lv, BDT_SKILL);
@@ -5303,7 +5303,7 @@ int skill_castend_nodamage_id(struct block_list *src, struct block_list *bl, uin
 				x1 = sd->bl.x + range;
 				y1 = sd->bl.y + range;
 
-				elemental->delete(sd->ed,0);
+				elemental->_delete(sd->ed,0);
 
 				if(!skill->check_unit_range(src,src->x,src->y,skill_id,skill_lv))
 					ret = skill->castend_pos2(src,src->x,src->y,skill_id,skill_lv,tick,flag);
@@ -7020,7 +7020,7 @@ int skill_castend_nodamage_id(struct block_list *src, struct block_list *bl, uin
 					if ( !tsc->data[i] )
 							continue;
 					if( SC_COMMON_MAX < i ) {
-						if ( status->get_sc_type(i)&SC_NO_DISPELL )
+						if ( status->get_sc_type((sc_type)i)&SC_NO_DISPELL )
 							continue;
 					}
 					switch (i) {
@@ -8476,7 +8476,7 @@ int skill_castend_nodamage_id(struct block_list *src, struct block_list *bl, uin
 					if ( !tsc->data[i] )
 						continue;
 					if( SC_COMMON_MAX > i )
-						if ( status->get_sc_type(i)&SC_NO_CLEARANCE )
+						if ( status->get_sc_type((sc_type)i)&SC_NO_CLEARANCE )
 							continue;
 					switch (i) {
 						case SC_ASSUMPTIO:
@@ -9371,7 +9371,7 @@ int skill_castend_nodamage_id(struct block_list *src, struct block_list *bl, uin
 
 				// Remove previous elemental first.
 				if( sd->ed )
-					elemental->delete(sd->ed,0);
+					elemental->_delete(sd->ed,0);
 
 				// Summoning the new one.
 				if( !elemental->create(sd,elemental_class,skill->get_time(skill_id,skill_lv)) ) {
@@ -9389,7 +9389,7 @@ int skill_castend_nodamage_id(struct block_list *src, struct block_list *bl, uin
 				if( !sd->ed ) break;
 
 				if( skill_lv == 4 ) {// At level 4 delete elementals.
-					elemental->delete(sd->ed, 0);
+					elemental->_delete(sd->ed, 0);
 					break;
 				}
 				switch( skill_lv ) {// Select mode based on skill level used.
@@ -9506,7 +9506,7 @@ int skill_castend_nodamage_id(struct block_list *src, struct block_list *bl, uin
 						else
 							skill->attack(BF_WEAPON,src,src,bl,GN_SLINGITEM_RANGEMELEEATK,skill_lv,tick,flag);
 					} else //Otherwise, it fails, shows animation and removes items.
-						clif->skill_fail(sd,GN_SLINGITEM_RANGEMELEEATK,0xa,0);
+						clif->skill_fail(sd,GN_SLINGITEM_RANGEMELEEATK, USESKILL_FAIL,0);
 				} else if( itemdb_is_GNthrowable(ammo_id) ) {
 					struct script_code *scriptroot = sd->inventory_data[equip_idx]->script;
 					if( !scriptroot )
@@ -9556,7 +9556,7 @@ int skill_castend_nodamage_id(struct block_list *src, struct block_list *bl, uin
 		{
 			struct elemental_data *ele = BL_CAST(BL_ELEM, src);
 			if( ele ) {
-				sc_type type2 = type-1;
+				sc_type type2 = (sc_type)(type-1);
 				struct status_change *sc = status->get_sc(&ele->bl);
 
 				if( (sc && sc->data[type2]) || (tsc && tsc->data[type]) ) {
@@ -9587,7 +9587,7 @@ int skill_castend_nodamage_id(struct block_list *src, struct block_list *bl, uin
 			struct elemental_data *ele = BL_CAST(BL_ELEM, src);
 			if( ele ) {
 				struct status_change *sc = status->get_sc(&ele->bl);
-				sc_type type2 = type-1;
+				sc_type type2 = (sc_type)(type-1);
 
 				clif->skill_nodamage(src,src,skill_id,skill_lv,1);
 				if( (sc && sc->data[type2]) || (tsc && tsc->data[type]) ) {
@@ -9622,7 +9622,7 @@ int skill_castend_nodamage_id(struct block_list *src, struct block_list *bl, uin
 					summon_md->master_id = src->id;
 					summon_md->special_state.ai = AI_ZANZOU;
 					if( summon_md->deletetimer != INVALID_TIMER )
-						timer->delete(summon_md->deletetimer, mob->timer_delete);
+						timer->_delete(summon_md->deletetimer, mob->timer_delete);
 					summon_md->deletetimer = timer->add(timer->gettick() + skill->get_time(skill_id, skill_lv), mob->timer_delete, summon_md->bl.id, 0);
 					mob->spawn( summon_md );
 					pc->setinvincibletimer(sd,500);// unlock target lock
@@ -9793,7 +9793,7 @@ int skill_castend_nodamage_id(struct block_list *src, struct block_list *bl, uin
 				if (summon_md) {
 					summon_md->master_id = src->id;
 					if (summon_md->deletetimer != INVALID_TIMER)
-						timer->delete(summon_md->deletetimer, mob->timer_delete);
+						timer->_delete(summon_md->deletetimer, mob->timer_delete);
 					summon_md->deletetimer = timer->add(timer->gettick() + skill->get_time(skill_id, skill_lv), mob->timer_delete, summon_md->bl.id, 0);
 					mob->spawn(summon_md); //Now it is ready for spawning.
 					sc_start4(src,&summon_md->bl, SC_MODECHANGE, 100, 1, 0, MD_CANATTACK|MD_AGGRESSIVE, 0, 60000);
@@ -10518,7 +10518,7 @@ int skill_castend_pos2(struct block_list* src, int x, int y, uint16 skill_id, ui
 					md->master_id = src->id;
 					md->special_state.ai = (skill_id == AM_SPHEREMINE) ? AI_SPHERE : AI_FLORA;
 					if( md->deletetimer != INVALID_TIMER )
-						timer->delete(md->deletetimer, mob->timer_delete);
+						timer->_delete(md->deletetimer, mob->timer_delete);
 					md->deletetimer = timer->add(timer->gettick() + skill->get_time(skill_id,skill_lv), mob->timer_delete, md->bl.id, 0);
 					mob->spawn (md); //Now it is ready for spawning.
 				}
@@ -10617,7 +10617,7 @@ int skill_castend_pos2(struct block_list* src, int x, int y, uint16 skill_id, ui
 					if ((i = skill->get_time(skill_id, skill_lv)) > 0)
 					{
 						if( md->deletetimer != INVALID_TIMER )
-							timer->delete(md->deletetimer, mob->timer_delete);
+							timer->_delete(md->deletetimer, mob->timer_delete);
 						md->deletetimer = timer->add(tick + i, mob->timer_delete, md->bl.id, 0);
 					}
 					mob->spawn (md);
@@ -10764,7 +10764,7 @@ int skill_castend_pos2(struct block_list* src, int x, int y, uint16 skill_id, ui
 					md->master_id = src->id;
 					md->special_state.ai = AI_FLORA;
 					if( md->deletetimer != INVALID_TIMER )
-						timer->delete(md->deletetimer, mob->timer_delete);
+						timer->_delete(md->deletetimer, mob->timer_delete);
 					md->deletetimer = timer->add(timer->gettick() + skill->get_time(skill_id, skill_lv), mob->timer_delete, md->bl.id, 0);
 					mob->spawn( md );
 				}
@@ -11712,7 +11712,7 @@ int skill_unit_onplace(struct skill_unit *src, struct block_list *bl, int64 tick
 			else if (battle_config.song_timer_reset && sce->val4 == 1) {
 				//Readjust timers since the effect will not last long.
 				sce->val4 = 0;
-				timer->delete(sce->timer, status->change_timer);
+				timer->_delete(sce->timer, status->change_timer);
 				sce->timer = timer->add(tick+sg->limit, status->change_timer, bl->id, type);
 			}
 
@@ -12298,7 +12298,7 @@ int skill_unit_onplace_timer(struct skill_unit *src, struct block_list *bl, int6
 				short rate = 100;
 				if ( sg->val1 == 9 )//Oblivion Curse gives a 2nd success chance after the 1st one passes which is reducible. [Rytech]
 					rate = 100 - tstatus->int_ * 4 / 5 ;
-				sc_start(ss,bl,sg->val2,rate,sg->val1,skill->get_time2(GC_POISONINGWEAPON,1) - (tstatus->vit + tstatus->luk) / 2 * 1000);
+				sc_start(ss,bl,(sc_type) (sg->val2),rate,sg->val1,skill->get_time2(GC_POISONINGWEAPON,1) - (tstatus->vit + tstatus->luk) / 2 * 1000);
 			}
 			break;
 
@@ -12338,9 +12338,9 @@ int skill_unit_onplace_timer(struct skill_unit *src, struct block_list *bl, int6
 
 		case UNT_DIMENSIONDOOR:
 			if( tsd && !map->list[bl->m].flag.noteleport )
-				pc->randomwarp(tsd,3);
+				pc->randomwarp(tsd, CLR_TELEPORT);
 			else if( bl->type == BL_MOB && battle_config.mob_warp&8 )
-				unit->warp(bl,-1,-1,-1,3);
+				unit->warp(bl,-1,-1,-1, CLR_TELEPORT);
 			break;
 
 		case UNT_REVERBERATION:
@@ -12671,7 +12671,7 @@ int skill_unit_onleft(uint16 skill_id, struct block_list *bl, int64 tick) {
 			if ((battle_config.song_timer_reset && sce) // athena style
 			  || (!battle_config.song_timer_reset && sce && sce->val4 != 1)
 			) {
-				timer->delete(sce->timer, status->change_timer);
+				timer->_delete(sce->timer, status->change_timer);
 				//NOTE: It'd be nice if we could get the skill_lv for a more accurate extra time, but alas...
 				//not possible on our current implementation.
 				sce->val4 = 1; //Store the fact that this is a "reduced" duration effect.
@@ -12685,7 +12685,7 @@ int skill_unit_onleft(uint16 skill_id, struct block_list *bl, int64 tick) {
 					if (bl->type == BL_PC) //Players get blind ended immediately, others have it still for 30 secs. [Skotlex]
 						status_change_end(bl, SC_BLIND, INVALID_TIMER);
 					else {
-						timer->delete(sce->timer, status->change_timer);
+						timer->_delete(sce->timer, status->change_timer);
 						sce->timer = timer->add(30000+tick, status->change_timer, bl->id, SC_BLIND);
 					}
 				}
@@ -15159,7 +15159,7 @@ void skill_weaponrefine (struct map_session_data *sd, int idx)
 				return;
 			}
 
-			per = status->get_refine_chance(ditem->wlv, (int)item->refine) * 10;
+			per = status->get_refine_chance((refine_type)(ditem->wlv), (int)item->refine) * 10;
 
 			// Aegis leaked formula. [malufett]
 			if( sd->status.class_ == JOB_MECHANIC_T )
@@ -16371,7 +16371,7 @@ int skill_unit_timer_sub_onplace(struct block_list* bl, va_list ap) {
  * @see DBApply
  */
 int skill_unit_timer_sub(DBKey key, DBData *data, va_list ap) {
-	struct skill_unit* su = DB->data2ptr(data);
+	struct skill_unit* su = (struct skill_unit*)DB->data2ptr(data);
 	struct skill_unit_group* group = su->group;
 	int64 tick = va_arg(ap,int64);
 	bool dissonance;
@@ -17594,7 +17594,7 @@ int skill_magicdecoy(struct map_session_data *sd, int nameid) {
 		md->master_id = sd->bl.id;
 		md->special_state.ai = AI_FLORA;
 		if( md->deletetimer != INVALID_TIMER )
-			timer->delete(md->deletetimer, mob->timer_delete);
+			timer->_delete(md->deletetimer, mob->timer_delete);
 		md->deletetimer = timer->add(timer->gettick() + skill->get_time(NC_MAGICDECOY,skill_id), mob->timer_delete, md->bl.id, 0);
 		mob->spawn(md);
 		md->status.matk_min = md->status.matk_max = 250 + (50 * skill_id);
@@ -17665,7 +17665,7 @@ int skill_select_menu(struct map_session_data *sd,uint16 skill_id) {
 
 	if( skill_id >= GS_GLITTERING || skill->get_type(skill_id) != BF_MAGIC ||
 		(id = sd->status.skill[idx].id) == 0 || sd->status.skill[idx].flag != SKILL_FLAG_PLAGIARIZED ) {
-		clif->skill_fail(sd,SC_AUTOSHADOWSPELL,0,0);
+		clif->skill_fail(sd,SC_AUTOSHADOWSPELL, USESKILL_FAIL_LEVEL,0);
 		return 0;
 	}
 
@@ -17836,7 +17836,7 @@ int skill_blockpc_end(int tid, int64 tick, int id, intptr_t data) {
 	if (!sd || !sd->blockskill[data])
 		return 0;
 
-	if( ( cd = idb_get(skill->cd_db,sd->status.char_id) ) ) {
+	if( ( cd = (struct skill_cd *)idb_get(skill->cd_db,sd->status.char_id) ) ) {
 		int i;
 
 		for( i = 0; i < cd->cursor; i++ ) {
@@ -17845,7 +17845,7 @@ int skill_blockpc_end(int tid, int64 tick, int id, intptr_t data) {
 		}
 
 		if (i == cd->cursor) {
-			ShowError("skill_blockpc_end: '%s': no data found for '%"PRIdPTR"'\n", sd->status.name, data);
+			ShowError("skill_blockpc_end: '%s': no data found for '%" PRIdPTR "'\n", sd->status.name, data);
 		} else {
 			int cursor = 0;
 
@@ -17897,7 +17897,7 @@ int skill_blockpc_start_(struct map_session_data *sd, uint16 skill_id, int tick)
 	if( battle_config.display_status_timers )
 		clif->skill_cooldown(sd, skill_id, tick);
 
-	if( !(cd = idb_get(skill->cd_db,sd->status.char_id)) ) {// create a new skill cooldown object for map storage
+	if( !(cd = (struct skill_cd *)idb_get(skill->cd_db,sd->status.char_id)) ) {// create a new skill cooldown object for map storage
 		cd = ers_alloc(skill->cd_ers, struct skill_cd);
 
 		idb_put( skill->cd_db, sd->status.char_id, cd );
@@ -18031,7 +18031,7 @@ void skill_usave_add(struct map_session_data * sd, uint16 skill_id, uint16 skill
 void skill_usave_trigger(struct map_session_data *sd) {
 	struct skill_unit_save * sus = NULL;
 
-	if( ! (sus = idb_get(skill->usave_db,sd->status.char_id)) ) {
+	if( ! (sus = (struct skill_unit_save*)idb_get(skill->usave_db,sd->status.char_id)) ) {
 		return;
 	}
 
@@ -18535,7 +18535,7 @@ void skill_cooldown_save(struct map_session_data * sd) {
 	// always check to make sure the session properly exists
 	nullpo_retv(sd);
 
-	if( !(cd = idb_get(skill->cd_db, sd->status.char_id)) ) {// no skill cooldown is associated with this character
+	if( !(cd = (struct skill_cd *)idb_get(skill->cd_db, sd->status.char_id)) ) {// no skill cooldown is associated with this character
 		return;
 	}
 
@@ -18545,7 +18545,7 @@ void skill_cooldown_save(struct map_session_data * sd) {
 	for( i = 0; i < cd->cursor; i++ ) {
 		cd->entry[i]->duration = DIFF_TICK32(cd->entry[i]->started+cd->entry[i]->duration,now);
 		if( cd->entry[i]->timer != INVALID_TIMER ) {
-			timer->delete(cd->entry[i]->timer,skill->blockpc_end);
+			timer->_delete(cd->entry[i]->timer,skill->blockpc_end);
 			cd->entry[i]->timer = INVALID_TIMER;
 		}
 	}
@@ -18563,7 +18563,7 @@ void skill_cooldown_load(struct map_session_data * sd) {
 	// always check to make sure the session properly exists
 	nullpo_retv(sd);
 
-	if( !(cd = idb_get(skill->cd_db, sd->status.char_id)) ) {// no skill cooldown is associated with this character
+	if( !(cd = (struct skill_cd *)idb_get(skill->cd_db, sd->status.char_id)) ) {// no skill cooldown is associated with this character
 		return;
 	}
 
@@ -19051,7 +19051,7 @@ void skill_reload (void) {
  *
  *------------------------------------------*/
 int do_init_skill(bool minimal) {
-	skill->name2id_db = strdb_alloc(DB_OPT_DUP_KEY|DB_OPT_RELEASE_DATA, MAX_SKILL_NAME_LENGTH);
+	skill->name2id_db = strdb_alloc((DBOptions)(DB_OPT_DUP_KEY|DB_OPT_RELEASE_DATA), MAX_SKILL_NAME_LENGTH);
 	skill->read_db(minimal);
 
 	if (minimal)
@@ -19062,10 +19062,10 @@ int do_init_skill(bool minimal) {
 	skill->cd_db = idb_alloc(DB_OPT_BASE);
 	skill->usave_db = idb_alloc(DB_OPT_RELEASE_DATA);
 	skill->bowling_db = idb_alloc(DB_OPT_BASE);
-	skill->unit_ers = ers_new(sizeof(struct skill_unit_group),"skill.c::skill_unit_ers",ERS_OPT_CLEAN|ERS_OPT_FLEX_CHUNK);
-	skill->timer_ers  = ers_new(sizeof(struct skill_timerskill),"skill.c::skill_timer_ers",ERS_OPT_NONE|ERS_OPT_FLEX_CHUNK);
-	skill->cd_ers = ers_new(sizeof(struct skill_cd),"skill.c::skill_cd_ers",ERS_OPT_CLEAR|ERS_OPT_CLEAN|ERS_OPT_FLEX_CHUNK);
-	skill->cd_entry_ers = ers_new(sizeof(struct skill_cd_entry),"skill.c::skill_cd_entry_ers",ERS_OPT_CLEAR|ERS_OPT_CLEAN|ERS_OPT_FLEX_CHUNK);
+	skill->unit_ers = ers_new(sizeof(struct skill_unit_group),"skill.c::skill_unit_ers",(ERSOptions)(ERS_OPT_CLEAN|ERS_OPT_FLEX_CHUNK));
+	skill->timer_ers  = ers_new(sizeof(struct skill_timerskill),"skill.c::skill_timer_ers", (ERSOptions)(ERS_OPT_NONE|ERS_OPT_FLEX_CHUNK));
+	skill->cd_ers = ers_new(sizeof(struct skill_cd),"skill.c::skill_cd_ers", (ERSOptions)(ERS_OPT_CLEAR|ERS_OPT_CLEAN|ERS_OPT_FLEX_CHUNK));
+	skill->cd_entry_ers = ers_new(sizeof(struct skill_cd_entry),"skill.c::skill_cd_entry_ers", (ERSOptions)(ERS_OPT_CLEAR|ERS_OPT_CLEAN|ERS_OPT_FLEX_CHUNK));
 
 	ers_chunk_size(skill->cd_ers, 25);
 	ers_chunk_size(skill->cd_entry_ers, 100);

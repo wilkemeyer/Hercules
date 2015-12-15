@@ -98,7 +98,7 @@ TBL_PC* party_sd_check(int party_id, int account_id, int char_id) {
 int party_db_final(DBKey key, DBData *data, va_list ap) {
 	struct party_data *p;
 
-	if ((p = DB->data2ptr(data))) {
+	if ((p = (struct party_data *)DB->data2ptr(data))) {
 		if (p->instance)
 			aFree(p->instance);
 
@@ -119,7 +119,7 @@ struct party_data* party_searchname(const char* str)
 	struct party_data* p;
 
 	DBIterator *iter = db_iterator(party->db);
-	for( p = dbi_first(iter); dbi_exists(iter); p = dbi_next(iter) )
+	for( p = (struct party_data *)dbi_first(iter); dbi_exists(iter); p = (struct party_data *)dbi_next(iter) )
 	{
 		if( strncmpi(p->party.name,str,NAME_LENGTH) == 0 )
 			break;
@@ -845,7 +845,7 @@ int party_send_xy_timer(int tid, int64 tick, int id, intptr_t data) {
 
 	DBIterator *iter = db_iterator(party->db);
 	// for each existing party,
-	for( p = dbi_first(iter); dbi_exists(iter); p = dbi_next(iter) )
+	for( p = (struct party_data *)dbi_first(iter); dbi_exists(iter); p = (struct party_data *)dbi_next(iter) )
 	{
 		int i;
 
@@ -1279,7 +1279,7 @@ void party_booking_search(struct map_session_data *sd, short level, short mapid,
 
 	memset(result_list, 0, sizeof(result_list));
 
-	for( pb_ad = dbi_first(iter); dbi_exists(iter); pb_ad = dbi_next(iter) ) {
+	for( pb_ad = (struct party_booking_ad_info *)dbi_first(iter); dbi_exists(iter); pb_ad = (struct party_booking_ad_info *)dbi_next(iter) ) {
 		if (pb_ad->index < lastindex || (level && (pb_ad->p_detail.level < level-15 || pb_ad->p_detail.level > level)))
 			continue;
 		if (count >= PARTY_BOOKING_RESULTS){

@@ -80,7 +80,7 @@ struct elemental_interface {
 	int (*init) (bool minimal);
 	void (*final) (void);
 	/* funcs */
-	bool (*class) (int class_);
+	bool (*_class) (int class_);
 	struct view_data * (*get_viewdata) (int class_);
 
 	int (*create) (struct map_session_data *sd, int class_, unsigned int lifetime);
@@ -93,7 +93,7 @@ struct elemental_interface {
 	void (*heal) (struct elemental_data *ed, int hp, int sp);
 	int (*dead) (struct elemental_data *ed);
 
-	int (*delete) (struct elemental_data *ed, int reply);
+	int (*_delete) (struct elemental_data *ed, int reply);
 	void (*summon_stop) (struct elemental_data *ed);
 
 	int (*get_lifetime) (struct elemental_data *ed);

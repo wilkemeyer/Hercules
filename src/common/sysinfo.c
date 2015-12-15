@@ -226,14 +226,14 @@ bool sysinfo_svn_get_revision(char **out) {
 	// - ignores database file structure
 	// - assumes the data in NODES.dav_cache column ends with "!svn/ver/<revision>/<path>)"
 	// - since it's a cache column, the data might not even exist
-	if ((fp = fopen(".svn"PATHSEP_STR"wc.db", "rb")) != NULL || (fp = fopen(".."PATHSEP_STR".svn"PATHSEP_STR"wc.db", "rb")) != NULL) {
+	if ((fp = fopen(".svn" PATHSEP_STR "wc.db", "rb")) != NULL || (fp = fopen(".." PATHSEP_STR ".svn" PATHSEP_STR "wc.db", "rb")) != NULL) {
 
 #ifndef SVNNODEPATH //not sure how to handle branches, so I'll leave this overridable define until a better solution comes up
 #define SVNNODEPATH trunk
 #endif // SVNNODEPATH
 
 		const char* prefix = "!svn/ver/";
-		const char* postfix = "/"EXPAND_AND_QUOTE(SVNNODEPATH)")"; // there should exist only 1 entry like this
+		const char* postfix = "/" EXPAND_AND_QUOTE(SVNNODEPATH) ")"; // there should exist only 1 entry like this
 		size_t prefix_len = strlen(prefix);
 		size_t postfix_len = strlen(postfix);
 		size_t i,j,flen;
@@ -261,7 +261,7 @@ bool sysinfo_svn_get_revision(char **out) {
 			// done
 			if (*out != NULL)
 				aFree(*out);
-			*out = aCalloc(1, 8);
+			*out = (char*)aCalloc(1, 8);
 			snprintf(*out, 8, "%d", atoi(buffer + j));
 			break;
 		}
@@ -284,7 +284,7 @@ bool sysinfo_svn_get_revision(char **out) {
 				if (sscanf(line," %*[^\"]\"%d%*[^\n]", &rev) == 1) {
 					if (*out != NULL)
 						aFree(*out);
-					*out = aCalloc(1, 8);
+					*out = (char*)aCalloc(1, 8);
 					snprintf(*out, 8, "%d", rev);
 				}
 			} else {
@@ -294,7 +294,7 @@ bool sysinfo_svn_get_revision(char **out) {
 				if (fgets(line, sizeof(line), fp)) { // Get the rev numver
 					if (*out != NULL)
 						aFree(*out);
-					*out = aCalloc(1, 8);
+					*out = (char*)aCalloc(1, 8);
 					snprintf(*out, 8, "%d", atoi(line));
 				}
 			}
