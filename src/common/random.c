@@ -9,9 +9,10 @@
 #include "showmsg.h"
 #include "timer.h" // gettick
 
-extern "C" {
-#include <mt19937ar/mt19937ar.h> // init_genrand, genrand_int32, genrand_res53
-}
+#include "../3rdparty/sfmt/SFMT.h"
+
+static sfmt_t g_sfmt;
+
 
 #if defined(WIN32)
 #	include "winapi.h"
@@ -19,6 +20,7 @@ extern "C" {
 #	include <sys/types.h>
 #	include <unistd.h>
 #endif
+
 
 
 /// Initializes the random number generator with an appropriate seed.
@@ -37,21 +39,22 @@ void rnd_init(void)
 	seed += (unsigned long)gettid();
 #endif // HAVE_GETTID
 #endif
-	init_genrand(seed);
+	
+	sfmt_init_gen_rand(&g_sfmt, seed);
 }
 
 
 /// Initializes the random number generator.
 void rnd_seed(uint32 seed)
 {
-	init_genrand(seed);
+	sfmt_init_gen_rand(&g_sfmt, seed);
 }
 
 
 /// Generates a random number in the interval [0, SINT32_MAX]
 int32 rnd(void)
 {
-	return (int32)genrand_int31();
+	return (int32)sfmt_genrand_uint32(&g_sfmt);
 }
 
 
@@ -77,7 +80,7 @@ int32 rnd_value(int32 min, int32 max)
 /// NOTE: interval is open ended, so 1.0 is excluded
 double rnd_uniform(void)
 {
-	return ((uint32)genrand_int32())*(1.0/4294967296.0);// divided by 2^32
+	return sfmt_genrand_real2(&g_sfmt);
 }
 
 
@@ -86,5 +89,5 @@ double rnd_uniform(void)
 /// NOTE: 53 bits is the maximum precision of a double
 double rnd_uniform53(void)
 {
-	return genrand_res53();
+	return sfmt_genrand_res53(&g_sfmt);
 }
