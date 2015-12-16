@@ -14,7 +14,7 @@
 #define aMalloc(sz)				roalloc(sz)
 #define aCalloc(m, n)			rocalloc(m, n)
 #define aRealloc(ptr, newsz)	rorealloc(ptr, newsz)
-#define aReallocz(ptr, newsz)	rorealloc(ptr, newsz)
+#define aReallocz(ptr, newsz)	roreallocz(ptr, newsz)
 #define aStrdup(ptr)			rostrdup(ptr)
 #define aFree(ptr)				rofree(ptr)
 #define aVerify(ptr)			(true)	// Checks if the given ptr is a valid pointer

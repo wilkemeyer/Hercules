@@ -22,7 +22,7 @@ char *_rostrdup(const char *pStr, const char *file, unsigned int line, const cha
 #define roalloc(sz) _roalloc(sz, false)
 #define rocalloc(szmemb, num) _roalloc((szmemb * num), true)
 #define rorealloc(oldptr, newsz) _rorealloc(oldptr, newsz, false)
-#define roreallocz(oldptr, newz) _roreallocz(oldbtr, newsz, true)
+#define roreallocz(oldptr, newsz) _rorealloc(oldptr, newsz, true)
 #define rofree(ptr) _rofree(ptr) //ptr = NULL
 #define rostrdup(pcstring) _rostrdup(pcstring)
 void *_roalloc(size_t sz, bool zeroed);
