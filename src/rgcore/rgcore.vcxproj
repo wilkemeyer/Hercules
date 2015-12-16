@@ -27,6 +27,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="tick.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\config\rgcore.h" />
@@ -46,6 +47,7 @@
     <ClInclude Include="rgcore.h" />
     <ClInclude Include="roalloc.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="tick.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{D929B830-77CC-4ED4-AF01-59602A081EE3}</ProjectGuid>

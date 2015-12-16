@@ -22,6 +22,9 @@
 //
 #include "arch.h"
 
+// Time/Tick
+#include "tick.h"
+
 // Exception/Error(Fatal)
 #include "exception/Exception.hpp"
 #include "exception/fatal.h"

@@ -24,6 +24,12 @@
     <Filter Include="Header Files\Exception">
       <UniqueIdentifier>{053cf740-bfd7-4e71-8403-1c6154e4c3e8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\time">
+      <UniqueIdentifier>{a0e8d326-789e-4201-ba2f-2bd68c5c0e87}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\time">
+      <UniqueIdentifier>{cf3d4e54-2d03-4a8d-a8ad-d01e101908d7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="rgcore.cpp">
@@ -34,6 +40,9 @@
     </ClCompile>
     <ClCompile Include="roalloc.cpp">
       <Filter>Source Files\allocator</Filter>
+    </ClCompile>
+    <ClCompile Include="tick.cpp">
+      <Filter>Source Files\time</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -87,6 +96,9 @@
     </ClInclude>
     <ClInclude Include="exception\fatal.h">
       <Filter>Header Files\Exception</Filter>
+    </ClInclude>
+    <ClInclude Include="tick.h">
+      <Filter>Header Files\time</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

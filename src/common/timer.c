@@ -12,6 +12,8 @@
 #include "showmsg.h"
 #include "utils.h"
 
+#include "../rgcore/rgcore.h" // Time::getTick()
+
 #ifdef WIN32
 #	include "winapi.h" // GetTickCount()
 #else
@@ -104,100 +106,13 @@ char* search_timer_func_list(TimerFunc func)
  * Get tick time
  *----------------------------*/
 
-#if defined(ENABLE_RDTSC)
-static uint64 RDTSC_BEGINTICK = 0,   RDTSC_CLOCK = 0;
-
-static __inline uint64 rdtsc_(void) {
-	register union {
-		uint64 qw;
-		uint32 dw[2];
-	} t;
-
-	asm volatile("rdtsc":"=a"(t.dw[0]), "=d"(t.dw[1]) );
-
-	return t.qw;
-}
-
-static void rdtsc_calibrate(void){
-	uint64 t1, t2;
-	int32 i;
-
-	ShowStatus("Calibrating Timer Source, please wait... ");
-
-	RDTSC_CLOCK = 0;
-
-	for(i = 0; i < 5; i++){
-		t1 = rdtsc_();
-		usleep(1000000); //1000 MS
-		t2 = rdtsc_();
-		RDTSC_CLOCK += (t2 - t1) / 1000;
-	}
-	RDTSC_CLOCK /= 5;
-
-	RDTSC_BEGINTICK = rdtsc_();
-
-	ShowMessage(" done. (Frequency: %u Mhz)\n", (uint32)(RDTSC_CLOCK/1000) );
-}
-
-#endif
 
 /**
  * platform-abstracted tick retrieval
  * @return server's current tick
  */
 static int64 sys_tick(void) {
-#if defined(WIN32)
-	// Windows: GetTickCount/GetTickCount64: Return the number of
-	//   milliseconds that have elapsed since the system was started.
-
-	// TODO: GetTickCount/GetTickCount64 has a resolution of only 10~15ms.
-	//       Ai4rei recommends that we replace it with either performance
-	//       counters or multimedia timers if we want it to be more accurate.
-	//       I'm leaving this for a future follow-up patch.
-
-	// GetTickCount64 is only available in Windows Vista / Windows Server
-	//   2008 or newer. Since we still support older versions, this runtime
-	//   check is required in order not to crash.
-	// http://msdn.microsoft.com/en-us/library/windows/desktop/ms724411%28v=vs.85%29.aspx
-	static bool first = true;
-	static ULONGLONG (WINAPI *pGetTickCount64)(void) = NULL;
-
-	if( first ) {
-		HMODULE hlib = GetModuleHandle(TEXT("KERNEL32.DLL"));
-		if( hlib != NULL )
-			pGetTickCount64 = (ULONGLONG (WINAPI *)(void))GetProcAddress(hlib, "GetTickCount64");
-		first = false;
-	}
-	if (pGetTickCount64)
-		return (int64)pGetTickCount64();
-	// 32-bit fall back. Note: This will wrap around every ~49 days since system startup!!!
-	return (int64)GetTickCount();
-#elif defined(ENABLE_RDTSC)
-	// RDTSC: Returns the number of CPU cycles since reset. Unreliable if
-	//   the CPU frequency is variable.
-	return (int64)((rdtsc_() - RDTSC_BEGINTICK) / RDTSC_CLOCK);
-#elif defined(HAVE_MONOTONIC_CLOCK)
-	// Monotonic clock: Implementation-defined.
-	//   Clock that cannot be set and represents monotonic time since some
-	//   unspecified starting point.  This clock is not affected by
-	//   discontinuous jumps in the system time (e.g., if the system
-	//   administrator manually changes the  clock),  but  is  affected by
-	//   the  incremental adjustments performed by adjtime(3) and NTP.
-	struct timespec tval;
-	clock_gettime(CLOCK_MONOTONIC, &tval);
-	// int64 cast to avoid overflows on platforms where time_t is 32 bit
-	return (int64)tval.tv_sec * 1000 + tval.tv_nsec / 1000000;
-#else
-	// Fall back, regular clock: Number of milliseconds since epoch.
-	//   The time returned by gettimeofday() is affected by discontinuous
-	//   jumps in the system time (e.g., if the system  administrator
-	//   manually  changes  the system time).  If you need a monotonically
-	//   increasing clock, see clock_gettime(2).
-	struct timeval tval;
-	gettimeofday(&tval, NULL);
-	// int64 cast to avoid overflows on platforms where time_t is 32 bit
-	return (int64)tval.tv_sec * 1000 + tval.tv_usec / 1000;
-#endif
+	return rgCore::Time::tick_get();
 }
 
 //////////////////////////////////////////////////////////////////////////
