@@ -144,8 +144,8 @@ CPCMD(help)
  * Displays current malloc usage
  */
 CPCMD_C(malloc_usage,server) {
-	unsigned int val = (unsigned int)iMalloc->usage();
-	ShowInfo("malloc_usage: %.2f MB\n",(double)(val)/1024);
+	//unsigned int val = (unsigned int)iMalloc->usage();
+	//ShowInfo("malloc_usage: %.2f MB\n",(double)(val)/1024);
 }
 
 /**

@@ -121,9 +121,6 @@
     <ClCompile Include="md5calc.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="memmgr.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="mutex.c">
       <Filter>Source Files</Filter>
     </ClCompile>

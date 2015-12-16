@@ -4906,7 +4906,11 @@ void read_map_zone_db(void) {
 						--disabled_skills_count;
 				}
 				/* all ok, process */
-				CREATE( zone->disabled_skills, struct map_zone_disabled_skill_entry *, disabled_skills_count );
+				zone->disabled_skills = NULL;
+				if(disabled_skills_count > 0){
+					CREATE( zone->disabled_skills, struct map_zone_disabled_skill_entry *, disabled_skills_count );
+				}
+
 				for(h = 0, v = 0; h < libconfig->setting_length(skills); h++) {
 					config_setting_t *skillinfo = libconfig->setting_get_elem(skills, h);
 					struct map_zone_disabled_skill_entry * entry;
@@ -4944,7 +4948,10 @@ void read_map_zone_db(void) {
 						--disabled_items_count;
 				}
 				/* all ok, process */
-				CREATE( zone->disabled_items, int, disabled_items_count );
+				zone->disabled_items = NULL;
+				if(disabled_items_count > 0){
+					CREATE( zone->disabled_items, int, disabled_items_count );
+				}
 				if( (libconfig->setting_length(items) - disabled_items_count) > 0 ) { //Some are forcefully enabled
 					zone->cant_disable_items_count = libconfig->setting_length(items) - disabled_items_count;
 					CREATE(zone->cant_disable_items, int, zone->cant_disable_items_count);
@@ -4966,7 +4973,10 @@ void read_map_zone_db(void) {
 			if( (mapflags = libconfig->setting_get_member(zone_e, "mapflags")) != NULL ) {
 				mapflags_count = libconfig->setting_length(mapflags);
 				/* mapflags are not validated here, so we save all anyway */
-				CREATE( zone->mapflags, char *, mapflags_count );
+				zone->mapflags = NULL;
+				if(mapflags_count > 0){
+					CREATE( zone->mapflags, char *, mapflags_count );
+				}		
 				for(h = 0; h < mapflags_count; h++) {
 					CREATE( zone->mapflags[h], char, MAP_ZONE_MAPFLAG_LENGTH );
 
@@ -4995,7 +5005,11 @@ void read_map_zone_db(void) {
 						--disabled_commands_count;
 				}
 				/* all ok, process */
-				CREATE( zone->disabled_commands, struct map_zone_disabled_command_entry *, disabled_commands_count );
+				zone->disabled_commands = NULL;
+				if(disabled_commands_count > 0){
+					CREATE(zone->disabled_commands, struct map_zone_disabled_command_entry *, disabled_commands_count);
+				}
+				
 				for(h = 0, v = 0; h < libconfig->setting_length(commands); h++) {
 					config_setting_t *command = libconfig->setting_get_elem(commands, h);
 					struct map_zone_disabled_command_entry * entry;
@@ -5031,7 +5045,10 @@ void read_map_zone_db(void) {
 						--capped_skills_count;
 				}
 				/* all ok, process */
-				CREATE( zone->capped_skills, struct map_zone_skill_damage_cap_entry *, capped_skills_count );
+				zone->capped_skills = NULL;
+				if(capped_skills_count > 0){
+					CREATE(zone->capped_skills, struct map_zone_skill_damage_cap_entry *, capped_skills_count);
+				}
 				for(h = 0, v = 0; h < libconfig->setting_length(caps); h++) {
 					config_setting_t *cap = libconfig->setting_get_elem(caps, h);
 					struct map_zone_skill_damage_cap_entry * entry;
@@ -5287,7 +5304,7 @@ bool map_remove_questinfo(int m, struct npc_data *nd) {
 int map_db_final(DBKey key, DBData *data, va_list ap) {
 	auto mdos = (struct map_data_other_server *)DB->data2ptr(data);
 
-	if(mdos && iMalloc->verify_ptr(mdos) && mdos->cell == NULL)
+	if(mdos && aVerify(mdos) && mdos->cell == NULL)
 		aFree(mdos);
 
 	return 0;

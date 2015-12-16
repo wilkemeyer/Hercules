@@ -41,6 +41,10 @@ static __forceinline void mbackend_freeAligned(void *ptr) {
 	return scalable_aligned_free(ptr);
 }//end: mbackend_freeAligned()
 
+static __forceinline size_t mbackend_msize(void *ptr){
+	return scalable_msize(ptr);
+}//end: mbackend_msize()
+
 #else
 
 static __forceinline void mbackend_init() {}
@@ -80,7 +84,7 @@ typedef struct __declspec(align(ARCH_MEMALIGN)) RC_DBG_MEMBLOCK{
 
 
 	enum{
-		ALLOC=0, REALLOC, STRDUP
+		ALLOC=0, REALLOC, STRDUP, CALLOC, REALLOCZ
 	} last_action;
 	
 	
@@ -102,7 +106,7 @@ static RC_DBG_MEMBLOCK *g_blockList = NULL;
 //static RBDB_DBT *g_memblockDB = NULL;
 
 
-void *_roalloc(size_t sz, const char *file, unsigned int line, const char *func, void *callee){
+void *_roalloc(size_t sz, const char *file, unsigned int line, const char *func, void *callee, bool zeroed){
 	size_t szBlock;
 	void *block;
 
@@ -162,7 +166,11 @@ void *_roalloc(size_t sz, const char *file, unsigned int line, const char *func,
 	RC_DBG_MEMBLOCK *dbg = (RC_DBG_MEMBLOCK*)block;
 	dbg->user_ptr	=  (void*) ( ((char*)block) + sizeof(RC_DBG_MEMBLOCK) );
 	
-	dbg->last_action = RC_DBG_MEMBLOCK::ALLOC;
+	if(zeroed)
+		dbg->last_action = RC_DBG_MEMBLOCK::CALLOC;
+	else
+		dbg->last_action = RC_DBG_MEMBLOCK::ALLOC;
+
 	dbg->currentSize = sz;
 	
 	dbg->func = func;
@@ -192,6 +200,11 @@ void *_roalloc(size_t sz, const char *file, unsigned int line, const char *func,
 
 	g_lock->unlock();
 
+	// For CALLOC implementation
+	if(zeroed == true){
+		memset(dbg->user_ptr, 0x00, dbg->currentSize);
+	}
+
 	return dbg->user_ptr;
 }//end: _roalloc()
 
@@ -203,7 +216,7 @@ void *_roalloc(size_t sz, const char *file, unsigned int line, const char *func,
 //	oldptr = given,	newsz = 0 -> free()
 //	
 //
-void *_rorealloc(void *oldptr, size_t newsz, const char *file, unsigned int line, const char *func, void *callee){
+void *_rorealloc(void *oldptr, size_t newsz, const char *file, unsigned int line, const char *func, void *callee, bool zeroed){
 
 	if(g_initialized != true){
 		FatalError("%s:%u @ %s -> call to realloc() before subsystem has been initialized!\n", file, line, func);
@@ -221,7 +234,7 @@ void *_rorealloc(void *oldptr, size_t newsz, const char *file, unsigned int line
 
 		}else{
 			// call to realloc to allocate memory!
-			return _roalloc(newsz, file, line, func, callee);
+			return _roalloc(newsz, file, line, func, callee, zeroed);
 
 		}
 
@@ -332,11 +345,19 @@ void *_rorealloc(void *oldptr, size_t newsz, const char *file, unsigned int line
 			}
 
 
+			// zero the new range if requested
+			if(zeroed == true && newsz > dbg->currentSize){
+				memset(((char*)dbg->user_ptr) + dbg->currentSize, 0x00, (newsz - dbg->currentSize));
+			}
+
 			// 
 			// Update DBG info!
 			//
 			dbg->currentSize	= newsz;
-			dbg->last_action	= RC_DBG_MEMBLOCK::REALLOC;
+			if(zeroed)
+				dbg->last_action	= RC_DBG_MEMBLOCK::REALLOCZ;
+			else
+				dbg->last_action	= RC_DBG_MEMBLOCK::REALLOC;
 			dbg->magic			= 0xDEADBEEF;
 
 			dbg->func = func;
@@ -362,6 +383,7 @@ void *_rorealloc(void *oldptr, size_t newsz, const char *file, unsigned int line
 			//
 			g_lock->unlock();
 
+
 			//
 			return dbg->user_ptr;
 
@@ -373,13 +395,18 @@ void *_rorealloc(void *oldptr, size_t newsz, const char *file, unsigned int line
 }//end: _rorealloc()
 
 
-
 void _rofree(void *ptr, const char *file, unsigned int line, const char *func){
 	RC_DBG_MEMBLOCK *dbg;
 	void *block;
 
 	if(g_initialized != true){
 		FatalError("%s:%u @ %s -> call to free() before subsystem has been initialized!\n", file, line, func);
+		return;
+	}
+
+	if(ptr == NULL){
+		showmsg->showDebug("%s:%u @ %s -> tried to free NULL \n", file, line, func);
+		FatalError("%s:%u @ %s -> tried to free NULL  \n", file, line, func);
 		return;
 	}
 
@@ -459,7 +486,7 @@ char *_rostrdup(const char *pStr, const char *file, unsigned int line, const cha
 
 	// the lazy way ..
 	size_t len = strlen(pStr) + 1;
-	void *user_ptr = _roalloc( len, file, line, func, callee );
+	void *user_ptr = _roalloc( len, file, line, func, callee, false );
 
 	memcpy(user_ptr, pStr, len);
 
@@ -505,7 +532,15 @@ static void report_memleak(FILE *fp, RC_DBG_MEMBLOCK *block){
 
 	case RC_DBG_MEMBLOCK::STRDUP:
 		lastActionStr = "strdup";
-		break;
+	break;
+
+	case RC_DBG_MEMBLOCK::CALLOC:
+		lastActionStr = "calloc";
+	break;
+
+	case RC_DBG_MEMBLOCK::REALLOCZ:
+		lastActionStr = "reallocz";
+	break;
 
 	default:
 		lastActionStr = "unknown";
@@ -619,7 +654,7 @@ void roalloc_final(){
 // WIN32 - NON Tracing Allocator
 //
 
-void *_roalloc(size_t sz){
+void *_roalloc(size_t sz, bool zeroed){
 	register size_t i;
 	void *ptr;
 
@@ -643,6 +678,10 @@ void *_roalloc(size_t sz){
 
 		}else{
 			// got memory:
+			if(zeroed == true) {
+				memset(ptr, 0x00, sz);
+			}
+
 			return ptr;
 		}
 	}
@@ -653,7 +692,7 @@ void *_roalloc(size_t sz){
 
 
 
-void *_rorealloc(void *ptr, size_t newSize){
+void *_rorealloc(void *ptr, size_t newSize, bool zeroed){
 	size_t i;
 	void *ret;
 
@@ -662,7 +701,11 @@ void *_rorealloc(void *ptr, size_t newSize){
 		if(newSize < ROALLOC_MINBLOCKSIZE)
 			newSize = ROALLOC_MINBLOCKSIZE;
 
-		return mbackend_allocAligned(newSize);
+		ret = mbackend_allocAligned(newSize);
+		
+		if(zeroed == true){
+			memset(ret, 0x00, newSize);
+		}
 
 	}else{
 		if(newSize == 0){
@@ -682,6 +725,11 @@ void *_rorealloc(void *ptr, size_t newSize){
 	
 	i = 0;
 	while(1){
+
+		size_t oldSize = mbackend_msize(ptr);
+		if(newSize <= oldSize)	// ignore shrink requests!
+			return ptr;
+
 		ret = mbackend_reallocAligned( ptr, newSize );
 		if(ret == NULL){
 			if(++i == 20){
@@ -695,6 +743,12 @@ void *_rorealloc(void *ptr, size_t newSize){
 			Sleep(16);
 		}else{
 			//got memory:
+
+			if(zeroed == true && newSize > oldSize){
+				memset(((char*)ret) + oldSize, 0x00, (newSize - oldSize));
+				
+			}
+
 			return ret;
 
 		}
@@ -712,7 +766,7 @@ void *_rorealloc(void *ptr, size_t newSize){
 
  char *_rostrdup(const char *pStr){
 	 size_t len = strlen(pStr) + 1;
-	 char *ptr = (char*)_roalloc(len);
+	 char *ptr = (char*)_roalloc(len, false);
 
 	 memcpy(ptr, pStr, len);
 

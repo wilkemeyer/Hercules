@@ -981,6 +981,11 @@ void itemdb_read_packages(void) {
 	}
 
 	for(i = 0; i < libconfig->setting_length(item_packages_conf.root); i++ ) {
+		if(rgroup[i] == 0){
+			rgroups[i] = NULL;
+			continue;
+		}
+
 		rgroups[i] = (unsigned int*)aMalloc( rgroup[i] * sizeof(unsigned int) );
 		for( c = 0; c < rgroup[i]; c++ ) {
 			rgroups[i][c] = 0;
@@ -1124,7 +1129,8 @@ void itemdb_read_packages(void) {
 	aFree(must);
 	aFree(random);
 	for(i = 0; i < libconfig->setting_length(item_packages_conf.root); i++ ) {
-		aFree(rgroups[i]);
+		if(rgroups[i] != NULL)
+			aFree(rgroups[i]);
 	}
 	aFree(rgroups);
 	aFree(rgroup);

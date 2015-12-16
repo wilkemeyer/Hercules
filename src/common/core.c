@@ -181,7 +181,6 @@ void core_defaults(void) {
 	sysinfo_defaults();
 	console_defaults();
 	strlib_defaults();
-	malloc_defaults();
 	showmsg_defaults();
 	cmdline_defaults();
 #ifndef MINICORE
@@ -396,14 +395,11 @@ int main (int argc, char **argv) {
 	
 	rgCore_init();
 
-	iMalloc->init();// needed for Show* in display_title() [FlavioJS]
 	showmsg->init();
 
 	cmdline->init();
 
 	cmdline->exec(argc, argv, CMDLINE_OPT_SILENT);
-
-	iMalloc->init_messages(); // Initialization messages (after buying us some time to suppress them if needed)
 
 	sysinfo->init();
 
@@ -455,10 +451,8 @@ int main (int argc, char **argv) {
 	ers_final();
 #endif
 	cmdline->final();
-	//sysinfo->final(); Called by iMalloc->final()
-
-	iMalloc->final();
-	showmsg->final(); // Should be after iMalloc->final()
+	sysinfo->final(); 
+	showmsg->final(); 
 
 	rgCore_final();
 

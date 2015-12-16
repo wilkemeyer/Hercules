@@ -2237,8 +2237,12 @@ static int db_obj_vdestroy(DBMap* self, DBApply func, va_list args)
 	db_free_lock(db);
 	db->global_lock = 1;
 	sum = self->vclear(self, func, args);
-	aFree(db->free_list);
-	db->free_list = NULL;
+	
+	if(db->free_list != NULL){
+		aFree(db->free_list);
+		db->free_list = NULL;
+	}
+
 	db->free_max = 0;
 	ers_destroy(db->nodes);
 	db_free_unlock(db);
