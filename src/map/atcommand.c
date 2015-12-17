@@ -1,7 +1,23 @@
-// Copyright (c) Hercules Dev Team, licensed under GNU GPL.
-// See the LICENSE file
-// Portions Copyright (c) Athena Dev Teams
-
+/**
+ * This file is part of Hercules.
+ * http://herc.ws - http://github.com/HerculesWS/Hercules
+ *
+ * Copyright (C) 2012-2015  Hercules Dev Team
+ * Copyright (C)  Athena Dev Teams
+ *
+ * Hercules is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 #define HERCULES_CORE
 
 #include "../config/core.h" // AUTOLOOTITEM_SIZE, AUTOTRADE_PERSISTENCY, MAX_SUGGESTIONS, MOB_FLEE(), MOB_HIT(), RENEWAL, RENEWAL_DROP, RENEWAL_EXP
@@ -6110,9 +6126,7 @@ ACMD(npctalk)
 	bool ifcolor=(*(info->command + 7) != 'c' && *(info->command + 7) != 'C')?0:1;
 	unsigned int color = 0;
 
-	if (sd->sc.count && //no "chatting" while muted.
-		(sd->sc.data[SC_BERSERK] || (sd->sc.data[SC_DEEP_SLEEP] && sd->sc.data[SC_DEEP_SLEEP]->val2) ||
-		 (sd->sc.data[SC_NOCHAT] && sd->sc.data[SC_NOCHAT]->val1&MANNER_NOCHAT)))
+	if (!pc->can_talk(sd))
 		return false;
 
 	if(!ifcolor) {
@@ -6159,9 +6173,7 @@ ACMD(pettalk)
 		return false;
 	}
 
-	if (sd->sc.count && //no "chatting" while muted.
-		(sd->sc.data[SC_BERSERK] || (sd->sc.data[SC_DEEP_SLEEP] && sd->sc.data[SC_DEEP_SLEEP]->val2) ||
-		 (sd->sc.data[SC_NOCHAT] && sd->sc.data[SC_NOCHAT]->val1&MANNER_NOCHAT)))
+	if (!pc->can_talk(sd))
 		return false;
 
 	if (!*message || sscanf(message, "%99[^\n]", mes) < 1) {
@@ -6966,9 +6978,7 @@ ACMD(homtalk)
 		sd->cantalk_tick = timer->gettick() + battle_config.min_chat_delay;
 	}
 
-	if (sd->sc.count && //no "chatting" while muted.
-		(sd->sc.data[SC_BERSERK] || (sd->sc.data[SC_DEEP_SLEEP] && sd->sc.data[SC_DEEP_SLEEP]->val2) ||
-		 (sd->sc.data[SC_NOCHAT] && sd->sc.data[SC_NOCHAT]->val1&MANNER_NOCHAT)))
+	if (!pc->can_talk(sd))
 		return false;
 
 	if (!homun_alive(sd->hd)) {
@@ -7333,9 +7343,7 @@ ACMD(me)
 	memset(tempmes, '\0', sizeof(tempmes));
 	memset(atcmd_output, '\0', sizeof(atcmd_output));
 
-	if (sd->sc.count && //no "chatting" while muted.
-		(sd->sc.data[SC_BERSERK] || (sd->sc.data[SC_DEEP_SLEEP] && sd->sc.data[SC_DEEP_SLEEP]->val2) ||
-		 (sd->sc.data[SC_NOCHAT] && sd->sc.data[SC_NOCHAT]->val1&MANNER_NOCHAT)))
+	if (!pc->can_talk(sd))
 		return false;
 
 	if (!*message || sscanf(message, "%199[^\n]", tempmes) < 0) {
@@ -9794,7 +9802,7 @@ bool atcommand_exec(const int fd, struct map_session_data *sd, const char *messa
 		return false;
 
 	//Block NOCHAT but do not display it as a normal message
-	if ( sd->sc.data[SC_NOCHAT] && sd->sc.data[SC_NOCHAT]->val1&MANNER_NOCOMMAND )
+	if (pc_ismuted(&sd->sc, MANNER_NOCOMMAND))
 		return true;
 
 	// skip 10/11-langtype's codepage indicator, if detected

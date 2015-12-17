@@ -1,7 +1,23 @@
-// Copyright (c) Hercules Dev Team, licensed under GNU GPL.
-// See the LICENSE file
-// Portions Copyright (c) Athena Dev Teams
-
+/**
+ * This file is part of Hercules.
+ * http://herc.ws - http://github.com/HerculesWS/Hercules
+ *
+ * Copyright (C) 2012-2015  Hercules Dev Team
+ * Copyright (C)  Athena Dev Teams
+ *
+ * Hercules is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 #ifndef MAP_NPC_H
 #define MAP_NPC_H
 
@@ -232,18 +248,18 @@ struct npc_interface {
 	bool (*viewisid) (const char *viewid);
 	struct npc_data *(*create_npc) (enum npc_subtype subtype, int m, int x, int y, uint8 dir, int16 class_);
 	struct npc_data* (*add_warp) (char *name, short from_mapid, short from_x, short from_y, short xs, short ys, unsigned short to_mapindex, short to_x, short to_y);
-	const char* (*parse_warp) (char *w1, char *w2, char *w3, char *w4, const char *start, const char *buffer, const char *filepath, int *retval);
-	const char* (*parse_shop) (char *w1, char *w2, char *w3, char *w4, const char *start, const char *buffer, const char *filepath, int *retval);
-	const char* (*parse_unknown_object) (char *w1, char *w2, char *w3, char *w4, const char *start, const char *buffer, const char *filepath, int *retval);
+	const char *(*parse_warp) (const char *w1, const char *w2, const char *w3, const char *w4, const char *start, const char *buffer, const char *filepath, int *retval);
+	const char *(*parse_shop) (const char *w1, const char *w2, const char *w3, const char *w4, const char *start, const char *buffer, const char *filepath, int *retval);
+	const char *(*parse_unknown_object) (const char *w1, const char *w2, const char *w3, const char *w4, const char *start, const char *buffer, const char *filepath, int *retval);
 	void (*convertlabel_db) (struct npc_label_list *label_list, const char *filepath);
 	const char* (*skip_script) (const char *start, const char *buffer, const char *filepath, int *retval);
-	const char* (*parse_script) (char *w1, char *w2, char *w3, char *w4, const char *start, const char *buffer, const char *filepath, int options, int *retval);
+	const char *(*parse_script) (const char *w1, const char *w2, const char *w3, const char *w4, const char *start, const char *buffer, const char *filepath, int options, int *retval);
 	void (*add_to_location) (struct npc_data *nd);
 	bool (*duplicate_script_sub) (struct npc_data *nd, const struct npc_data *snd, int xs, int ys, int options);
 	bool (*duplicate_shop_sub) (struct npc_data *nd, const struct npc_data *snd, int xs, int ys, int options);
 	bool (*duplicate_warp_sub) (struct npc_data *nd, const struct npc_data *snd, int xs, int ys, int options);
 	bool (*duplicate_sub) (struct npc_data *nd, const struct npc_data *snd, int xs, int ys, int options);
-	const char* (*parse_duplicate) (char* w1, char* w2, char* w3, char* w4, const char* start, const char* buffer, const char* filepath, int options, int *retval);
+	const char *(*parse_duplicate) (const char *w1, const char *w2, const char *w3, const char *w4, const char *start, const char *buffer, const char *filepath, int options, int *retval);
 	int (*duplicate4instance) (struct npc_data *snd, int16 m);
 	void (*setcells) (struct npc_data *nd);
 	int (*unsetcells_sub) (struct block_list *bl, va_list ap);
@@ -252,11 +268,11 @@ struct npc_interface {
 	void (*setdisplayname) (struct npc_data *nd, const char *newname);
 	void (*setclass) (struct npc_data *nd, short class_);
 	int (*do_atcmd_event) (struct map_session_data *sd, const char *command, const char *message, const char *eventname);
-	const char* (*parse_function) (char *w1, char *w2, char *w3, char *w4, const char *start, const char *buffer, const char *filepath, int *retval);
+	const char *(*parse_function) (const char *w1, const char *w2, const char *w3, const char *w4, const char *start, const char *buffer, const char *filepath, int *retval);
 	void (*parse_mob2) (struct spawn_data *mobspawn);
-	const char* (*parse_mob) (char *w1, char *w2, char *w3, char *w4, const char *start, const char *buffer, const char *filepath, int *retval);
-	const char* (*parse_mapflag) (char *w1, char *w2, char *w3, char *w4, const char *start, const char *buffer, const char *filepath, int *retval);
-	void (*parse_unknown_mapflag) (const char *name, char *w3, char *w4, const char *start, const char *buffer, const char *filepath, int *retval);
+	const char *(*parse_mob) (const char *w1, const char *w2, const char *w3, const char *w4, const char *start, const char *buffer, const char *filepath, int *retval);
+	const char *(*parse_mapflag) (const char *w1, const char *w2, const char *w3, const char *w4, const char *start, const char *buffer, const char *filepath, int *retval);
+	void (*parse_unknown_mapflag) (const char *name, const char *w3, const char *w4, const char *start, const char *buffer, const char *filepath, int *retval);
 	int (*parsesrcfile) (const char *filepath, bool runOnInit);
 	int (*script_event) (struct map_session_data *sd, enum npce_event type);
 	void (*read_event_script) (void);

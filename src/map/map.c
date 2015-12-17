@@ -1,7 +1,23 @@
-// Copyright (c) Hercules Dev Team, licensed under GNU GPL.
-// See the LICENSE file
-// Portions Copyright (c) Athena Dev Teams
-
+/**
+ * This file is part of Hercules.
+ * http://herc.ws - http://github.com/HerculesWS/Hercules
+ *
+ * Copyright (C) 2012-2015  Hercules Dev Team
+ * Copyright (C)  Athena Dev Teams
+ *
+ * Hercules is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 #define HERCULES_CORE
 
 #include "../config/core.h" // CELL_NOSTACK, CIRCULAR_AREA, CONSOLE_INPUT, DBPATH, RENEWAL
@@ -3911,8 +3927,9 @@ struct map_zone_data *map_merge_zone(struct map_zone_data *main, struct map_zone
 	return zone;
 }
 
-void map_zone_change2(int m, struct map_zone_data *zone) {
-	char *empty = "";
+void map_zone_change2(int m, struct map_zone_data *zone)
+{
+	const char *empty = "";
 
 	if( map->list[m].zone == zone )
 		return;
@@ -3938,10 +3955,12 @@ void map_zone_change(int m, struct map_zone_data *zone, const char* start, const
 	map->zone_apply(m,zone,start,buffer,filepath);
 }
 /* removes previous mapflags from this map */
-void map_zone_remove(int m) {
+void map_zone_remove(int m)
+{
 	char flag[MAP_ZONE_MAPFLAG_LENGTH], params[MAP_ZONE_MAPFLAG_LENGTH];
 	unsigned short k;
-	char *empty = "";
+	const char *empty = "";
+
 	for(k = 0; k < map->list[m].zone_mf_count; k++) {
 		size_t len = strlen(map->list[m].zone_mf[k]),j;
 		params[0] = '\0';
@@ -4665,9 +4684,11 @@ bool map_zone_mf_cache(int m, char *flag, char *params) {
 
 	return false;
 }
-void map_zone_apply(int m, struct map_zone_data *zone, const char* start, const char* buffer, const char* filepath) {
+void map_zone_apply(int m, struct map_zone_data *zone, const char* start, const char* buffer, const char* filepath)
+{
 	int i;
-	char *empty = "";
+	const char *empty = "";
+
 	char flag[MAP_ZONE_MAPFLAG_LENGTH], params[MAP_ZONE_MAPFLAG_LENGTH];
 	map->list[m].zone = zone;
 	for(i = 0; i < zone->mapflags_count; i++) {
@@ -4690,10 +4711,11 @@ void map_zone_apply(int m, struct map_zone_data *zone, const char* start, const 
 	}
 }
 /* used on npc load and reload to apply all "Normal" and "PK Mode" zones */
-void map_zone_init(void) {
+void map_zone_init(void)
+{
 	char flag[MAP_ZONE_MAPFLAG_LENGTH], params[MAP_ZONE_MAPFLAG_LENGTH];
 	struct map_zone_data *zone;
-	char *empty = "";
+	const char *empty = "";
 	int i,k,j;
 
 	zone = &map->zone_all;
@@ -5960,6 +5982,8 @@ int do_init(int argc, char *argv[])
 
 #ifdef CONSOLE_INPUT
 	console->input->setSQL(map->mysql_handle);
+	if (!minimal && core->runflag != CORE_ST_STOP)
+		console->display_gplnotice();
 #endif
 
 	ShowStatus("Server is '"CL_GREEN"ready"CL_RESET"' and listening on port '"CL_WHITE"%d"CL_RESET"'.\n\n", map->port);

@@ -1,7 +1,23 @@
-// Copyright (c) Hercules Dev Team, licensed under GNU GPL.
-// See the LICENSE file
-// Portions Copyright (c) Athena Dev Teams
-
+/**
+ * This file is part of Hercules.
+ * http://herc.ws - http://github.com/HerculesWS/Hercules
+ *
+ * Copyright (C) 2012-2015  Hercules Dev Team
+ * Copyright (C)  Athena Dev Teams
+ *
+ * Hercules is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 #define HERCULES_CORE
 
 #include "../config/core.h" // ANTI_MAYAP_CHEAT, DBPATH, DEFTYPE_MAX, DEFTYPE_MIN, DEVOTION_REFLECT_DAMAGE, RENEWAL, RENEWAL_ASPD, RENEWAL_EDP
@@ -803,6 +819,7 @@ void initChangeTables(void) {
 	status->dbs->IconChangeTable[SC_PLUSATTACKPOWER] = SI_PLUSATTACKPOWER;
 	status->dbs->IconChangeTable[SC_PLUSMAGICPOWER] = SI_PLUSMAGICPOWER;
 	status->dbs->IconChangeTable[SC_FOOD_CRITICALSUCCESSVALUE] = SI_FOOD_CRITICALSUCCESSVALUE;
+	status->dbs->IconChangeTable[SC_MORA_BUFF] = SI_MORA_BUFF;
 
 	// Cash Items
 	status->dbs->IconChangeTable[SC_FOOD_STR_CASH] = SI_FOOD_STR_CASH;
@@ -842,6 +859,12 @@ void initChangeTables(void) {
 	status->dbs->IconChangeTable[SC_GEFFEN_MAGIC2] = SI_GEFFEN_MAGIC2;
 	status->dbs->IconChangeTable[SC_GEFFEN_MAGIC3] = SI_GEFFEN_MAGIC3;
 	status->dbs->IconChangeTable[SC_FENRIR_CARD] = SI_FENRIR_CARD;
+	
+	// MVP Scrolls
+	status->dbs->IconChangeTable[SC_MVPCARD_TAOGUNKA] = SI_MVPCARD_TAOGUNKA;
+	status->dbs->IconChangeTable[SC_MVPCARD_MISTRESS] = SI_MVPCARD_MISTRESS;
+	status->dbs->IconChangeTable[SC_MVPCARD_ORCHERO] = SI_MVPCARD_ORCHERO;
+	status->dbs->IconChangeTable[SC_MVPCARD_ORCLORD] = SI_MVPCARD_ORCLORD;
 	
 	// Mercenary Bonus Effects
 	status->dbs->IconChangeTable[SC_MER_FLEE] = SI_MER_FLEE;
@@ -991,7 +1014,6 @@ void initChangeTables(void) {
 	status->dbs->ChangeFlagTable[SC_ARMOR_RESIST] |= SCB_ALL;
 	status->dbs->ChangeFlagTable[SC_ATKER_BLOOD] |= SCB_ALL;
 	status->dbs->ChangeFlagTable[SC_WALKSPEED] |= SCB_SPEED;
-	status->dbs->ChangeFlagTable[SC_ITEMSCRIPT] |= SCB_ALL;
 	status->dbs->ChangeFlagTable[SC_TARGET_BLOOD] |= SCB_ALL;
 	status->dbs->ChangeFlagTable[SC_TARGET_ASPD] |= SCB_MAXSP;
 	status->dbs->ChangeFlagTable[SC_ATKER_ASPD] |= SCB_MAXHP | SCB_ALL;
@@ -1078,6 +1100,12 @@ void initChangeTables(void) {
 	status->dbs->ChangeFlagTable[SC_GEFFEN_MAGIC2] |= SCB_ALL;
 	status->dbs->ChangeFlagTable[SC_GEFFEN_MAGIC3] |= SCB_ALL;
 	status->dbs->ChangeFlagTable[SC_FENRIR_CARD] |= SCB_MATK | SCB_ALL;
+	
+	// MVP Scrolls
+	status->dbs->ChangeFlagTable[SC_MVPCARD_TAOGUNKA] |= SCB_MAXHP | SCB_DEF | SCB_MDEF;
+	status->dbs->ChangeFlagTable[SC_MVPCARD_MISTRESS] |= SCB_ALL;
+	status->dbs->ChangeFlagTable[SC_MVPCARD_ORCHERO] |= SCB_ALL;
+	status->dbs->ChangeFlagTable[SC_MVPCARD_ORCLORD] |= SCB_ALL;
 	
 	// Costume
 	status->dbs->ChangeFlagTable[SC_MOONSTAR] |= SCB_NONE;
@@ -1798,7 +1826,7 @@ int status_check_skilluse(struct block_list *src, struct block_list *target, uin
 					(sc->data[SC_VOLCANO] && skill_id == WZ_ICEWALL) ||
 					(sc->data[SC_ROKISWEIL] && skill_id != BD_ADAPTATION) ||
 					(sc->data[SC_HERMODE] && skill->get_inf(skill_id) & INF_SUPPORT_SKILL) ||
-					(sc->data[SC_NOCHAT] && sc->data[SC_NOCHAT]->val1&MANNER_NOSKILL)
+					pc_ismuted(sc, MANNER_NOSKILL)
 					)
 					return 0;
 
@@ -2511,12 +2539,6 @@ int status_calc_pc_(struct map_session_data* sd, enum e_status_calc_opt opt) {
 					return 1;
 			}
 		}
-	}
-
-	if( sc->count && sc->data[SC_ITEMSCRIPT] ) {
-		struct item_data *data = itemdb->exists(sc->data[SC_ITEMSCRIPT]->val1);
-		if( data && data->script )
-			script->run_use_script(sd, data, 0);
 	}
 
 	status->calc_pc_additional(sd, opt);
@@ -5132,14 +5154,16 @@ defType status_calc_def(struct block_list *bl, struct status_change *sc, int def
 		def += sc->data[SC_SHIELDSPELL_REF]->val2;
 	if (sc->data[SC_PRESTIGE])
 		def += sc->data[SC_PRESTIGE]->val1;
-	if (sc->data[SC_VOLCANIC_ASH] && (bl->type==BL_MOB)) {
-		if (status_get_race(bl)==RC_PLANT)
+	if (sc->data[SC_VOLCANIC_ASH] && (bl->type == BL_MOB)) {
+		if (status_get_race(bl) == RC_PLANT)
 			def /= 2;
 	}
 	if (sc->data[SC_UNLIMIT])
 		return 1;
 	if (sc->data[SC_ARMORSCROLL])
 		def += sc->data[SC_ARMORSCROLL]->val1;
+	if (sc->data[SC_MVPCARD_TAOGUNKA])
+		def -= sc->data[SC_MVPCARD_TAOGUNKA]->val2;
 
 	return (defType)cap_value(def,DEFTYPE_MIN,DEFTYPE_MAX);
 }
@@ -5270,6 +5294,8 @@ defType status_calc_mdef(struct block_list *bl, struct status_change *sc, int md
 		return 1;
 	if (sc->data[SC_FREYJASCROLL])
 		mdef += sc->data[SC_FREYJASCROLL]->val1;
+	if (sc->data[SC_MVPCARD_TAOGUNKA])
+		mdef -= sc->data[SC_MVPCARD_TAOGUNKA]->val3;
 
 	return (defType)cap_value(mdef,DEFTYPE_MIN,DEFTYPE_MAX);
 }
@@ -5874,6 +5900,8 @@ unsigned int status_calc_maxhp(struct block_list *bl, struct status_change *sc, 
 		maxhp += maxhp * sc->data[SC_SOULSCROLL]->val1 / 100;
 	if (sc->data[SC_ATKER_ASPD])
 		maxhp += maxhp * sc->data[SC_ATKER_ASPD]->val1 / 100;
+	if (sc->data[SC_MVPCARD_TAOGUNKA])
+		maxhp += maxhp * sc->data[SC_MVPCARD_TAOGUNKA]->val1 / 100;
 
 	return (unsigned int)cap_value(maxhp,1,UINT_MAX);
 }
@@ -6737,9 +6765,11 @@ int status_get_sc_def(struct block_list *src, struct block_list *bl, enum sc_typ
 
 	if (sc) {
 		if (sc->data[SC_SCRESIST])
-			sc_def += sc->data[SC_SCRESIST]->val1*100; //Status resist
+			sc_def += sc->data[SC_SCRESIST]->val1 * 100; //Status resist
 		else if (sc->data[SC_SIEGFRIED])
-			sc_def += sc->data[SC_SIEGFRIED]->val3*100; //Status resistance.
+			sc_def += sc->data[SC_SIEGFRIED]->val3 * 100; //Status resistance.
+		if (sc && sc->data[SC_MVPCARD_ORCHERO])
+			sc_def += sc->data[SC_MVPCARD_ORCHERO]->val1 * 100;
 	}
 
 	//When tick def not set, reduction is the same for both.
@@ -8582,6 +8612,9 @@ int status_change_start(struct block_list *src, struct block_list *bl, enum sc_t
 			case SC_SPL_MATK:
 				val2 = 2; // Splendide group
 				break;
+			case SC_MORA_BUFF:
+				val2 = 3; // Mora group
+				break;
 				/**
 				* General
 				**/
@@ -9454,31 +9487,6 @@ int status_change_start(struct block_list *src, struct block_list *bl, enum sc_t
 			if (battle_config.sc_castcancel&bl->type)
 				unit->skillcastcancel(bl, 0);
 			break;
-			/* */
-		case SC_ITEMSCRIPT:
-			if( sd ) {
-				switch( val1 ) {
-					case ITEMID_PHREEONI_CARD:
-						clif->status_change(bl, SI_FOOD_BASICHIT, 1, tick, 0, 0, 0);
-						break;
-					case ITEMID_GHOSTRING_CARD:
-						clif->status_change(bl,SI_ARMOR_PROPERTY,1,tick,0,0,0);
-						break;
-					case ITEMID_TAO_GUNKA_CARD:
-						clif->status_change(bl,SI_MVPCARD_TAOGUNKA,1,tick,0,0,0);
-						break;
-					case ITEMID_MISTRESS_CARD:
-						clif->status_change(bl,SI_MVPCARD_MISTRESS,1,tick,0,0,0);
-						break;
-					case ITEMID_ORC_HERO_CARD:
-						clif->status_change(bl,SI_MVPCARD_ORCHERO,1,tick,0,0,0);
-						break;
-					case ITEMID_ORC_LOAD_CARD:
-						clif->status_change(bl,SI_MVPCARD_ORCLORD,1,tick,0,0,0);
-						break;
-				}
-			}
-			break;
 	}
 
 	// Set option as needed.
@@ -10344,30 +10352,6 @@ int status_change_end_(struct block_list* bl, enum sc_type type, int tid, const 
 		case SC_MONSTER_TRANSFORM:
 			if( sce->val2 )
 				status_change_end(bl, (sc_type)sce->val2, INVALID_TIMER);
-			break;
-		case SC_ITEMSCRIPT:
-			if( sd ) {
-				switch( sce->val1 ) {
-				case ITEMID_PHREEONI_CARD:
-					clif->sc_end(&sd->bl, sd->bl.id, SELF, SI_FOOD_BASICHIT);
-					break;
-				case ITEMID_GHOSTRING_CARD:
-					clif->sc_end(&sd->bl, sd->bl.id, SELF, SI_ARMOR_PROPERTY);
-					break;
-				case ITEMID_TAO_GUNKA_CARD:
-					clif->sc_end(&sd->bl, sd->bl.id, SELF, SI_MVPCARD_TAOGUNKA);
-					break;
-				case ITEMID_MISTRESS_CARD:
-					clif->sc_end(&sd->bl, sd->bl.id, SELF, SI_MVPCARD_MISTRESS);
-					break;
-				case ITEMID_ORC_HERO_CARD:
-					clif->sc_end(&sd->bl, sd->bl.id, SELF, SI_MVPCARD_ORCHERO);
-					break;
-				case ITEMID_ORC_LOAD_CARD:
-					clif->sc_end(&sd->bl, sd->bl.id, SELF, SI_MVPCARD_ORCLORD);
-					break;
-				}
-			}
 			break;
 		case SC_OVERED_BOOST:
 			switch( bl->type ){

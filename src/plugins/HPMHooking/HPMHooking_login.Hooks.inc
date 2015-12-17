@@ -1,8 +1,27 @@
-// Copyright (c) Hercules Dev Team, licensed under GNU GPL.
-// See the LICENSE file
-//
-// NOTE: This file was auto-generated and should never be manually edited,
-//       as it will get overwritten.
+/**
+ * This file is part of Hercules.
+ * http://herc.ws - http://github.com/HerculesWS/Hercules
+ *
+ * Copyright (C) 2013-2015  Hercules Dev Team
+ *
+ * Hercules is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
+ * NOTE: This file was auto-generated and should never be manually edited,
+ *       as it will get overwritten.
+ */
 
 /* HCache */
 void HP_HCache_init(void) {
@@ -320,6 +339,32 @@ void HP_console_display_title(void) {
 		void (*postHookFunc) (void);
 		for(hIndex = 0; hIndex < HPMHooks.count.HP_console_display_title_post; hIndex++ ) {
 			postHookFunc = HPMHooks.list.HP_console_display_title_post[hIndex].func;
+			postHookFunc();
+		}
+	}
+	return;
+}
+void HP_console_display_gplnotice(void) {
+	int hIndex = 0;
+	if( HPMHooks.count.HP_console_display_gplnotice_pre ) {
+		void (*preHookFunc) (void);
+		*HPMforce_return = false;
+		for(hIndex = 0; hIndex < HPMHooks.count.HP_console_display_gplnotice_pre; hIndex++ ) {
+			preHookFunc = HPMHooks.list.HP_console_display_gplnotice_pre[hIndex].func;
+			preHookFunc();
+		}
+		if( *HPMforce_return ) {
+			*HPMforce_return = false;
+			return;
+		}
+	}
+	{
+		HPMHooks.source.console.display_gplnotice();
+	}
+	if( HPMHooks.count.HP_console_display_gplnotice_post ) {
+		void (*postHookFunc) (void);
+		for(hIndex = 0; hIndex < HPMHooks.count.HP_console_display_gplnotice_post; hIndex++ ) {
+			postHookFunc = HPMHooks.list.HP_console_display_gplnotice_post[hIndex].func;
 			postHookFunc();
 		}
 	}

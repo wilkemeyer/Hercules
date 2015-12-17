@@ -1,7 +1,23 @@
-// Copyright (c) Hercules Dev Team, licensed under GNU GPL.
-// See the LICENSE file
-// Portions Copyright (c) Athena Dev Teams
-
+/**
+ * This file is part of Hercules.
+ * http://herc.ws - http://github.com/HerculesWS/Hercules
+ *
+ * Copyright (C) 2012-2015  Hercules Dev Team
+ * Copyright (C)  Athena Dev Teams
+ *
+ * Hercules is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 #define HERCULES_CORE
 
 #include "../config/core.h" // DBPATH, MAGIC_REFLECTION_TYPE, OFFICIAL_WALKPATH, RENEWAL, RENEWAL_CAST, VARCAST_REDUCTION()
@@ -14327,6 +14343,8 @@ struct skill_condition skill_get_requirement(struct map_session_data* sd, uint16
 			req.sp -= req.sp * sc->data[SC_TELEKINESIS_INTENSE]->val2 / 100;
 		if (sc->data[SC_TARGET_ASPD])
 			req.sp -= req.sp * sc->data[SC_TARGET_ASPD]->val1 / 100;
+		if (sc->data[SC_MVPCARD_MISTRESS])
+			req.sp -= req.sp * sc->data[SC_MVPCARD_MISTRESS]->val1 / 100;
 	}
 
 	req.zeny = skill->dbs->db[idx].zeny[skill_lv-1];
@@ -14406,22 +14424,24 @@ struct skill_condition skill_get_requirement(struct map_session_data* sd, uint16
 		if (itemid_isgemstone(req.itemid[i]) && skill_id != HW_GANBANTEIN) {
 			if (sd->special_state.no_gemstone) {
 				// All gem skills except Hocus Pocus and Ganbantein can cast for free with Mistress card [helvetica]
-				if( skill_id != SA_ABRACADABRA )
+				if (skill_id != SA_ABRACADABRA)
 					req.itemid[i] = req.amount[i] = 0;
-				else if( --req.amount[i] < 1 )
+				else if (--req.amount[i] < 1)
 					req.amount[i] = 1; // Hocus Pocus always use at least 1 gem
 			}
-			if(sc && sc->data[SC_INTOABYSS])
-			{
-				if( skill_id != SA_ABRACADABRA )
+			if (sc && sc->data[SC_INTOABYSS]) {
+				if (skill_id != SA_ABRACADABRA)
 					req.itemid[i] = req.amount[i] = 0;
-				else if( --req.amount[i] < 1 )
+				else if (--req.amount[i] < 1)
 					req.amount[i] = 1; // Hocus Pocus always use at least 1 gem
+			}
+			if (sc && sc->data[SC_MVPCARD_MISTRESS]) {
+				req.itemid[i] = req.amount[i] = 0;
 			}
 		}
-		if( skill_id >= HT_SKIDTRAP && skill_id <= HT_TALKIEBOX && pc->checkskill(sd, RA_RESEARCHTRAP) > 0){
+		if (skill_id >= HT_SKIDTRAP && skill_id <= HT_TALKIEBOX && pc->checkskill(sd, RA_RESEARCHTRAP) > 0) {
 			int16 item_index;
-			if ((item_index = pc->search_inventory(sd,req.itemid[i])) == INDEX_NOT_FOUND
+			if ((item_index = pc->search_inventory(sd, req.itemid[i])) == INDEX_NOT_FOUND
 			  || sd->status.inventory[item_index].amount < req.amount[i]
 			) {
 				req.itemid[i] = ITEMID_TRAP_ALLOY;

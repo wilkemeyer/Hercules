@@ -1,7 +1,23 @@
-// Copyright (c) Hercules Dev Team, licensed under GNU GPL.
-// See the LICENSE file
-// Portions Copyright (c) Athena Dev Teams
-
+/**
+ * This file is part of Hercules.
+ * http://herc.ws - http://github.com/HerculesWS/Hercules
+ *
+ * Copyright (C) 2012-2015  Hercules Dev Team
+ * Copyright (C)  Athena Dev Teams
+ *
+ * Hercules is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 #define HERCULES_CORE
 
 #include "../config/core.h" // NPC_SECURE_TIMEOUT_INPUT, NPC_SECURE_TIMEOUT_MENU, NPC_SECURE_TIMEOUT_NEXT, SECURE_NPCTIMEOUT, SECURE_NPCTIMEOUT_INTERVAL
@@ -292,7 +308,6 @@ int npc_rr_secure_timeout_timer(int tid, int64 tick, int id, intptr_t data) {
 			sd->st->state = END;
 		sd->state.menu_or_input = 0;
 		sd->npc_menu = 0;
-		clif->scriptmes(sd, sd->npc_id, " ");
 		/**
 		 * This guy's been idle for longer than allowed, close him.
 		 **/
@@ -2628,8 +2643,25 @@ struct npc_data* npc_add_warp(char* name, short from_mapid, short from_x, short 
 	return nd;
 }
 
-/// Parses a warp npc.
-const char* npc_parse_warp(char* w1, char* w2, char* w3, char* w4, const char* start, const char* buffer, const char* filepath, int *retval) {
+/**
+ * Parses a warp NPC.
+ *
+ * @param[in]  w1       First tab-delimited part of the string to parse.
+ * @param[in]  w2       Second tab-delimited part of the string to parse.
+ * @param[in]  w3       Third tab-delimited part of the string to parse.
+ * @param[in]  w4       Fourth tab-delimited part of the string to parse.
+ * @param[in]  start    Pointer to the beginning of the string inside buffer.
+ *                      This must point to the same buffer as `buffer`.
+ * @param[in]  buffer   Pointer to the buffer containing the script. For
+ *                      single-line mapflags not inside a script, this may be
+ *                      an empty (but initialized) single-character buffer.
+ * @param[in]  filepath Source file path.
+ * @param[out] retval   Pointer to return the success (EXIT_SUCCESS) or failure
+ *                      (EXIT_FAILURE) status. May be NULL.
+ * @return A pointer to the advanced buffer position.
+ */
+const char *npc_parse_warp(const char *w1, const char *w2, const char *w3, const char *w4, const char *start, const char *buffer, const char *filepath, int *retval)
+{
 	int x, y, xs, ys, to_x, to_y, m;
 	unsigned short i;
 	char mapname[32], to_mapname[32];
@@ -2676,11 +2708,24 @@ const char* npc_parse_warp(char* w1, char* w2, char* w3, char* w4, const char* s
 }
 
 /**
- * Parses a SHOP/CASHSHOP npc
- * @param retval Pointer to the status, used to know whether there was an error or not, if so it will be EXIT_FAILURE
- * @retval Parsing position (currently only '\n')
- **/
-const char* npc_parse_shop(char* w1, char* w2, char* w3, char* w4, const char* start, const char* buffer, const char* filepath, int *retval) {
+ * Parses a SHOP/CASHSHOP NPC.
+ *
+ * @param[in]  w1       First tab-delimited part of the string to parse.
+ * @param[in]  w2       Second tab-delimited part of the string to parse.
+ * @param[in]  w3       Third tab-delimited part of the string to parse.
+ * @param[in]  w4       Fourth tab-delimited part of the string to parse.
+ * @param[in]  start    Pointer to the beginning of the string inside buffer.
+ *                      This must point to the same buffer as `buffer`.
+ * @param[in]  buffer   Pointer to the buffer containing the script. For
+ *                      single-line mapflags not inside a script, this may be
+ *                      an empty (but initialized) single-character buffer.
+ * @param[in]  filepath Source file path.
+ * @param[out] retval   Pointer to return the success (EXIT_SUCCESS) or failure
+ *                      (EXIT_FAILURE) status. May be NULL.
+ * @return A pointer to the advanced buffer position.
+ */
+const char *npc_parse_shop(const char *w1, const char *w2, const char *w3, const char *w4, const char *start, const char *buffer, const char *filepath, int *retval)
+{
 	//TODO: could be rewritten to NOT need this temp array [ultramage]
 	// We could use nd->u.shop.shop_item to store directly the items, but this could lead
 	// to unecessary memory usage by the server, using a temp dynamic array is the
@@ -2688,7 +2733,7 @@ const char* npc_parse_shop(char* w1, char* w2, char* w3, char* w4, const char* s
 	struct npc_item_list *items = NULL;
 	size_t items_count = 40; // Starting items size
 
-	char *p;
+	const char *p;
 	int x, y, dir, m, i, class_;
 	struct npc_data *nd;
 	enum npc_subtype type;
@@ -2890,12 +2935,38 @@ const char* npc_skip_script(const char* start, const char* buffer, const char* f
 	return p+1;// return after the last '}'
 }
 
-/// Parses a npc script.
-///
-/// -%TAB%script%TAB%<NPC Name>%TAB%-1,{<code>}
-/// <map name>,<x>,<y>,<facing>%TAB%script%TAB%<NPC Name>%TAB%<sprite id>,{<code>}
-/// <map name>,<x>,<y>,<facing>%TAB%script%TAB%<NPC Name>%TAB%<sprite id>,<triggerX>,<triggerY>,{<code>}
-const char* npc_parse_script(char* w1, char* w2, char* w3, char* w4, const char* start, const char* buffer, const char* filepath, int options, int *retval)
+/**
+ * Parses a NPC script.
+ *
+ * Example:
+ * @code
+ * -<TAB>script<TAB><NPC Name><TAB>-1,{
+ *   <code>
+ * }
+ * <map name>,<x>,<y>,<facing><TAB>script<TAB><NPC Name><TAB><sprite id>,{
+ *   <code>
+ * }
+ * <map name>,<x>,<y>,<facing><TAB>script<TAB><NPC Name><TAB><sprite id>,<triggerX>,<triggerY>,{
+ *   <code>
+ * }
+ * @endcode
+ *
+ * @param[in]  w1       First tab-delimited part of the string to parse.
+ * @param[in]  w2       Second tab-delimited part of the string to parse.
+ * @param[in]  w3       Third tab-delimited part of the string to parse.
+ * @param[in]  w4       Fourth tab-delimited part of the string to parse.
+ * @param[in]  start    Pointer to the beginning of the string inside buffer.
+ *                      This must point to the same buffer as `buffer`.
+ * @param[in]  buffer   Pointer to the buffer containing the script. For
+ *                      single-line mapflags not inside a script, this may be
+ *                      an empty (but initialized) single-character buffer.
+ * @param[in]  filepath Source file path.
+ * @param[in]  options  NPC parse/load options (@see enum npc_parse_options).
+ * @param[out] retval   Pointer to return the success (EXIT_SUCCESS) or failure
+ *                      (EXIT_FAILURE) status. May be NULL.
+ * @return A pointer to the advanced buffer position.
+ */
+const char *npc_parse_script(const char *w1, const char *w2, const char *w3, const char *w4, const char *start, const char *buffer, const char *filepath, int options, int *retval)
 {
 	int x, y, dir = 0, m, xs = 0, ys = 0; // [Valaris] thanks to fov
 	struct script_code *scriptroot;
@@ -3149,14 +3220,43 @@ bool npc_duplicate_sub(struct npc_data *nd, const struct npc_data *snd, int xs, 
 	return false;
 }
 
-/// Duplicate a warp, shop, cashshop or script. [Orcao]
-/// warp: <map name>,<x>,<y>,<facing>%TAB%duplicate(<name of target>)%TAB%<NPC Name>%TAB%<spanx>,<spany>
-/// shop/cashshop/npc: -%TAB%duplicate(<name of target>)%TAB%<NPC Name>%TAB%<sprite id>
-/// shop/cashshop/npc: <map name>,<x>,<y>,<facing>%TAB%duplicate(<name of target>)%TAB%<NPC Name>%TAB%<sprite id>
-/// npc: -%TAB%duplicate(<name of target>)%TAB%<NPC Name>%TAB%<sprite id>,<triggerX>,<triggerY>
-/// npc: <map name>,<x>,<y>,<facing>%TAB%duplicate(<name of target>)%TAB%<NPC Name>%TAB%<sprite id>,<triggerX>,<triggerY>
-/// !!Only NPO_ONINIT is available trough options!!
-const char* npc_parse_duplicate(char* w1, char* w2, char* w3, char* w4, const char* start, const char* buffer, const char* filepath, int options, int *retval) {
+/**
+ * Parses a duplicate warp, shop, cashshop or script NPC. [Orcao]
+ *
+ * Example:
+ * @code
+ * warp:
+ *   <map name>,<x>,<y>,<facing><TAB>duplicate(<name of target>)<TAB><NPC Name><TAB><spanx>,<spany>
+ * shop/cashshop/npc:
+ *   -<TAB>duplicate(<name of target>)<TAB><NPC Name><TAB><sprite id>
+ * shop/cashshop/npc:
+ *   <map name>,<x>,<y>,<facing><TAB>duplicate(<name of target>)<TAB><NPC Name><TAB><sprite id>
+ * npc:
+ *   -<TAB>duplicate(<name of target>)<TAB><NPC Name><TAB><sprite id>,<triggerX>,<triggerY>
+ * npc:
+ *   <map name>,<x>,<y>,<facing><TAB>duplicate(<name of target>)<TAB><NPC Name><TAB><sprite id>,<triggerX>,<triggerY>
+ * @endcode
+ *
+ * @param[in]  w1       First tab-delimited part of the string to parse.
+ * @param[in]  w2       Second tab-delimited part of the string to parse.
+ * @param[in]  w3       Third tab-delimited part of the string to parse.
+ * @param[in]  w4       Fourth tab-delimited part of the string to parse.
+ * @param[in]  start    Pointer to the beginning of the string inside buffer.
+ *                      This must point to the same buffer as `buffer`.
+ * @param[in]  buffer   Pointer to the buffer containing the script. For
+ *                      single-line mapflags not inside a script, this may be
+ *                      an empty (but initialized) single-character buffer.
+ * @param[in]  filepath Source file path.
+ * @param[in]  options  NPC parse/load options (@see enum npc_parse_options).
+ * @param[out] retval   Pointer to return the success (EXIT_SUCCESS) or failure
+ *                      (EXIT_FAILURE) status. May be NULL.
+ * @return A pointer to the advanced buffer position.
+ *
+ * @remark
+ *   Only `NPO_ONINIT` is available trough the options argument.
+ */
+const char *npc_parse_duplicate(const char *w1, const char *w2, const char *w3, const char *w4, const char *start, const char *buffer, const char *filepath, int options, int *retval)
+{
 	int x, y, dir, m, xs = -1, ys = -1;
 	char srcname[128];
 	const char *end;
@@ -3475,9 +3575,32 @@ int npc_do_atcmd_event(struct map_session_data* sd, const char* command, const c
 	return 0;
 }
 
-/// Parses a function.
-/// function%TAB%script%TAB%<function name>%TAB%{<code>}
-const char* npc_parse_function(char* w1, char* w2, char* w3, char* w4, const char* start, const char* buffer, const char* filepath, int *retval) {
+/**
+ * Parses a function.
+ *
+ * Example:
+ * @code
+ * function<TAB>script<TAB><function name><TAB>{
+ *   <code>
+ * }
+ * @endcode
+ *
+ * @param[in]  w1       First tab-delimited part of the string to parse.
+ * @param[in]  w2       Second tab-delimited part of the string to parse.
+ * @param[in]  w3       Third tab-delimited part of the string to parse.
+ * @param[in]  w4       Fourth tab-delimited part of the string to parse.
+ * @param[in]  start    Pointer to the beginning of the string inside buffer.
+ *                      This must point to the same buffer as `buffer`.
+ * @param[in]  buffer   Pointer to the buffer containing the script. For
+ *                      single-line mapflags not inside a script, this may be
+ *                      an empty (but initialized) single-character buffer.
+ * @param[in]  filepath Source file path.
+ * @param[out] retval   Pointer to return the success (EXIT_SUCCESS) or failure
+ *                      (EXIT_FAILURE) status. May be NULL.
+ * @return A pointer to the advanced buffer position.
+ */
+const char *npc_parse_function(const char *w1, const char *w2, const char *w3, const char *w4, const char *start, const char *buffer, const char *filepath, int *retval)
+{
 	DBMap* func_db;
 	DBData old_data;
 	struct script_code *scriptroot;
@@ -3535,7 +3658,25 @@ void npc_parse_mob2(struct spawn_data* mobspawn)
 	}
 }
 
-const char* npc_parse_mob(char* w1, char* w2, char* w3, char* w4, const char* start, const char* buffer, const char* filepath, int *retval) {
+/**
+ * Parses a mob permanent spawn.
+ *
+ * @param[in]  w1       First tab-delimited part of the string to parse.
+ * @param[in]  w2       Second tab-delimited part of the string to parse.
+ * @param[in]  w3       Third tab-delimited part of the string to parse.
+ * @param[in]  w4       Fourth tab-delimited part of the string to parse.
+ * @param[in]  start    Pointer to the beginning of the string inside buffer.
+ *                      This must point to the same buffer as `buffer`.
+ * @param[in]  buffer   Pointer to the buffer containing the script. For
+ *                      single-line mapflags not inside a script, this may be
+ *                      an empty (but initialized) single-character buffer.
+ * @param[in]  filepath Source file path.
+ * @param[out] retval   Pointer to return the success (EXIT_SUCCESS) or failure
+ *                      (EXIT_FAILURE) status. May be NULL.
+ * @return A pointer to the advanced buffer position.
+ */
+const char *npc_parse_mob(const char *w1, const char *w2, const char *w3, const char *w4, const char *start, const char *buffer, const char *filepath, int *retval)
+{
 	int num, class_, m,x,y,xs,ys, i,j;
 	int mob_lv = -1, ai = -1, size = -1;
 	char mapname[32], mobname[NAME_LENGTH];
@@ -3703,19 +3844,47 @@ const char* npc_parse_mob(char* w1, char* w2, char* w3, char* w4, const char* st
 	return strchr(start,'\n');// continue
 }
 
-void npc_parse_unknown_mapflag(const char *name, char *w3, char *w4, const char* start, const char* buffer, const char* filepath, int *retval)
+/**
+ * Parses an unknown mapflag.
+ *
+ * The purpose of this function is to be an override or hooking point for plugins.
+ *
+ * @see npc_parse_mapflag
+ */
+void npc_parse_unknown_mapflag(const char *name, const char *w3, const char *w4, const char* start, const char* buffer, const char* filepath, int *retval)
 {
 	ShowError("npc_parse_mapflag: unrecognized mapflag '%s' in file '%s', line '%d'.\n", w3, filepath, strline(buffer,start-buffer));
 	if (retval)
 		*retval = EXIT_FAILURE;
 }
 
-/*==========================================
- * Set or disable mapflag on map
- * eg : bat_c01<TAB>mapflag<TAB>battleground<TAB>2
- * also chking if mapflag conflict with another
- *------------------------------------------*/
-const char* npc_parse_mapflag(char* w1, char* w2, char* w3, char* w4, const char* start, const char* buffer, const char* filepath, int *retval) {
+/**
+ * Parses a mapflag and sets or disables it on a map.
+ *
+ * @remark
+ *   This also checks if the mapflag conflicts with another.
+ *
+ * Example:
+ * @code
+ *   bat_c01<TAB>mapflag<TAB>battleground<TAB>2
+ * @endcode
+ *
+ * @param[in]  w1       First tab-delimited part of the string to parse.
+ * @param[in]  w2       Second tab-delimited part of the string to parse.
+ * @param[in]  w3       Third tab-delimited part of the string to parse.
+ * @param[in]  w4       Fourth tab-delimited part of the string to parse.
+ * @param[in]  start    Pointer to the beginning of the string inside buffer.
+ *                      This must point to the same buffer as `buffer`.
+ * @param[in]  buffer   Pointer to the buffer containing the script. For
+ *                      single-line mapflags not inside a script, this may be
+ *                      an empty (but initialized) single-character buffer.
+ * @param[in]  filepath Source file path.
+ * @param[out] retval   Pointer to return the success (EXIT_SUCCESS) or failure
+ *                      (EXIT_FAILURE) status. May be NULL.
+ * @return A pointer to the advanced buffer position.
+ */
+const char *npc_parse_mapflag(const char *w1, const char *w2, const char *w3, const char *w4, const char *start, const char *buffer, const char *filepath, int *retval)
+{
 	int16 m;
 	char mapname[32];
 	int state = 1;
@@ -4123,7 +4292,24 @@ const char* npc_parse_mapflag(char* w1, char* w2, char* w3, char* w4, const char
 	return strchr(start,'\n');// continue
 }
 
-const char* npc_parse_unknown_object(char *w1, char *w2, char *w3, char *w4, const char* start, const char* buffer, const char* filepath, int *retval)
+/**
+ * Parses an unknown NPC object. This function may be used as override or hooking point by plugins.
+ *
+ * @param[in]  w1       First tab-delimited part of the string to parse.
+ * @param[in]  w2       Second tab-delimited part of the string to parse.
+ * @param[in]  w3       Third tab-delimited part of the string to parse.
+ * @param[in]  w4       Fourth tab-delimited part of the string to parse.
+ * @param[in]  start    Pointer to the beginning of the string inside buffer.
+ *                      This must point to the same buffer as `buffer`.
+ * @param[in]  buffer   Pointer to the buffer containing the script. For
+ *                      single-line mapflags not inside a script, this may be
+ *                      an empty (but initialized) single-character buffer.
+ * @param[in]  filepath Source file path.
+ * @param[out] retval   Pointer to return the success (EXIT_SUCCESS) or failure
+ *                      (EXIT_FAILURE) status. May be NULL.
+ * @return A pointer to the advanced buffer position.
+ */
+const char *npc_parse_unknown_object(const char *w1, const char *w2, const char *w3, const char *w4, const char *start, const char *buffer, const char *filepath, int *retval)
 {
 	ShowError("npc_parsesrcfile: Unable to parse, probably a missing or extra TAB in file '%s', line '%d'. Skipping line...\n * w1=%s\n * w2=%s\n * w3=%s\n * w4=%s\n", filepath, strline(buffer,start-buffer), w1, w2, w3, w4);
 	start = strchr(start,'\n');// skip and continue

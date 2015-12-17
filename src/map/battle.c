@@ -1,7 +1,23 @@
-// Copyright (c) Hercules Dev Team, licensed under GNU GPL.
-// See the LICENSE file
-// Portions Copyright (c) Athena Dev Teams
-
+/**
+ * This file is part of Hercules.
+ * http://herc.ws - http://github.com/HerculesWS/Hercules
+ *
+ * Copyright (C) 2012-2015  Hercules Dev Team
+ * Copyright (C)  Athena Dev Teams
+ *
+ * Hercules is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 #define HERCULES_CORE
 
 #include "../config/core.h" // CELL_NOSTACK, CIRCULAR_AREA, CONSOLE_INPUT, HMAP_ZONE_DAMAGE_CAP_TYPE, OFFICIAL_WALKPATH, RENEWAL, RENEWAL_ASPD, RENEWAL_CAST, RENEWAL_DROP, RENEWAL_EDP, RENEWAL_EXP, RENEWAL_LVDMG, RE_LVL_DMOD(), RE_LVL_MDMOD(), RE_LVL_TMDMOD(), RE_SKILL_REDUCTION(), SCRIPT_CALLFUNC_CHECK, SECURE_NPCTIMEOUT, STATS_OPT_OUT
@@ -3043,18 +3059,30 @@ int64 battle_calc_damage(struct block_list *src,struct block_list *bl,struct Dam
 		// Compressed code, fixed by map.h [Epoque]
 		if (src->type == BL_MOB) {
 			int i;
-			if (sc->data[SC_MANU_DEF])
-				for (i=0;ARRAYLENGTH(mob->manuk)>i;i++)
-					if (mob->manuk[i]==((TBL_MOB*)src)->class_) {
+			if (sc->data[SC_MANU_DEF] != NULL) {
+				for (i = 0; i < ARRAYLENGTH(mob->manuk); i++) {
+					if (mob->manuk[i] == ((TBL_MOB*)src)->class_) {
 						damage -= damage * sc->data[SC_MANU_DEF]->val1 / 100;
 						break;
 					}
-			if (sc->data[SC_SPL_DEF])
-				for (i=0;ARRAYLENGTH(mob->splendide)>i;i++)
-					if (mob->splendide[i]==((TBL_MOB*)src)->class_) {
+				}
+			}
+			if (sc->data[SC_SPL_DEF] != NULL) {
+				for (i = 0; i < ARRAYLENGTH(mob->splendide); i++) {
+					if (mob->splendide[i] == ((TBL_MOB*)src)->class_) {
 						damage -= damage * sc->data[SC_SPL_DEF]->val1 / 100;
 						break;
 					}
+				}
+			}
+			if (sc->data[SC_MORA_BUFF] != NULL) {
+				for (i = 0; i < ARRAYLENGTH(mob->mora); i++) {
+					if (mob->mora[i] == ((TBL_MOB*)src)->class_) {
+						damage -= damage * sc->data[SC_MORA_BUFF]->val1 / 100;
+						break;
+					}
+				}
+			}
 		}
 
 		if((sce=sc->data[SC_ARMOR]) && //NPC_DEFENDER
@@ -5803,6 +5831,17 @@ void battle_reflect_damage(struct block_list *target, struct block_list *src, st
 					battle->delay_damage(tick, wd->amotion,target,src,0,CR_REFLECTSHIELD,0,rdamage,ATK_DEF,rdelay,true);
 
 					delay += 100;/* gradual increase so the numbers don't clip in the client */
+				}
+				if (sc->data[SC_MVPCARD_ORCLORD]) {
+					NORMALIZE_RDAMAGE(damage * sc->data[SC_MVPCARD_ORCLORD]->val1 / 100);
+
+					rdelay = clif->delay_damage(tick + delay, src, src, status_get_amotion(src), status_get_dmotion(src), rdamage, 1, BDT_ENDURE);
+
+					if (tsd)
+						battle->drain(tsd, src, rdamage, rdamage, status_get_race(src), 0);
+					battle->delay_damage(tick, wd->amotion, target, src, 0, CR_REFLECTSHIELD, 0, rdamage, ATK_DEF, rdelay, true);
+
+					delay += 100;
 				}
 			}
 			if( ( ssc = status->get_sc(src) ) ) {

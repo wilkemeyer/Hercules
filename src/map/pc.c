@@ -1,7 +1,23 @@
-// Copyright (c) Hercules Dev Team, licensed under GNU GPL.
-// See the LICENSE file
-// Portions Copyright (c) Athena Dev Teams
-
+/**
+ * This file is part of Hercules.
+ * http://herc.ws - http://github.com/HerculesWS/Hercules
+ *
+ * Copyright (C) 2012-2015  Hercules Dev Team
+ * Copyright (C)  Athena Dev Teams
+ *
+ * Hercules is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 #define HERCULES_CORE
 
 #include "../config/core.h" // DBPATH, GP_BOUND_ITEMS, MAX_SPIRITBALL, RENEWAL, RENEWAL_ASPD, RENEWAL_CAST, RENEWAL_DROP, RENEWAL_EXP, SECURE_NPCTIMEOUT
@@ -2844,6 +2860,10 @@ int pc_bonus(struct map_session_data *sd,int type,int val) {
 			if (sd->state.lr_flag != 2)
 				pc->bonus_item_drop(sd->add_drop, ARRAYLENGTH(sd->add_drop), 0, val, map->race_id2mask(RC_ALL), 10000);
 		break;
+		case SP_ADDMAXWEIGHT:
+			if (sd->state.lr_flag != 2)
+				sd->max_weight += val;
+			break;
 		default:
 			ShowWarning("pc_bonus: unknown type %d %d !\n",type,val);
 			break;
@@ -4863,7 +4883,7 @@ int pc_useitem(struct map_session_data *sd,int n) {
 		sd->sc.data[SC_DEEP_SLEEP] ||
 		sd->sc.data[SC_SATURDAY_NIGHT_FEVER] ||
 		sd->sc.data[SC_COLD] ||
-		(sd->sc.data[SC_NOCHAT] && sd->sc.data[SC_NOCHAT]->val1&MANNER_NOITEM)
+		pc_ismuted(&sd->sc, MANNER_NOITEM)
 	    ))
 		return 0;
 
@@ -8854,7 +8874,7 @@ bool pc_can_talk( struct map_session_data *sd ) {
 
 	if( sd->sc.data[SC_BERSERK] ||
 		(sd->sc.data[SC_DEEP_SLEEP] && sd->sc.data[SC_DEEP_SLEEP]->val2) ||
-		(sd->sc.data[SC_NOCHAT] && sd->sc.data[SC_NOCHAT]->val1&MANNER_NOCHAT) )
+		pc_ismuted(&sd->sc, MANNER_NOCHAT) )
 		return false;
 
 	return true;

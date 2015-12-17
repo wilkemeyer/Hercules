@@ -1,8 +1,27 @@
-// Copyright (c) Hercules Dev Team, licensed under GNU GPL.
-// See the LICENSE file
-//
-// NOTE: This file was auto-generated and should never be manually edited,
-//       as it will get overwritten.
+/**
+ * This file is part of Hercules.
+ * http://herc.ws - http://github.com/HerculesWS/Hercules
+ *
+ * Copyright (C) 2013-2015  Hercules Dev Team
+ *
+ * Hercules is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
+ * NOTE: This file was auto-generated and should never be manually edited,
+ *       as it will get overwritten.
+ */
 
 struct {
 	struct HPMHookPoint *HP_HCache_init_pre;
@@ -347,6 +366,8 @@ struct {
 	struct HPMHookPoint *HP_console_final_post;
 	struct HPMHookPoint *HP_console_display_title_pre;
 	struct HPMHookPoint *HP_console_display_title_post;
+	struct HPMHookPoint *HP_console_display_gplnotice_pre;
+	struct HPMHookPoint *HP_console_display_gplnotice_post;
 	struct HPMHookPoint *HP_core_shutdown_callback_pre;
 	struct HPMHookPoint *HP_core_shutdown_callback_post;
 	struct HPMHookPoint *HP_DB_fix_options_pre;
@@ -1722,6 +1743,8 @@ struct {
 	int HP_console_final_post;
 	int HP_console_display_title_pre;
 	int HP_console_display_title_post;
+	int HP_console_display_gplnotice_pre;
+	int HP_console_display_gplnotice_post;
 	int HP_core_shutdown_callback_pre;
 	int HP_core_shutdown_callback_post;
 	int HP_DB_fix_options_pre;

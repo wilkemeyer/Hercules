@@ -1,7 +1,23 @@
-// Copyright (c) Hercules Dev Team, licensed under GNU GPL.
-// See the LICENSE file
-// Portions Copyright (c) Athena Dev Teams
-
+/**
+ * This file is part of Hercules.
+ * http://herc.ws - http://github.com/HerculesWS/Hercules
+ *
+ * Copyright (C) 2012-2015  Hercules Dev Team
+ * Copyright (C)  Athena Dev Teams
+ *
+ * Hercules is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 #define HERCULES_CORE
 
 #include "../config/core.h" // ANTI_MAYAP_CHEAT, RENEWAL, SECURE_NPCTIMEOUT
@@ -10218,7 +10234,7 @@ void clif_parse_TakeItem(int fd, struct map_session_data *sd) {
 				 sd->sc.data[SC_TRICKDEAD] ||
 				 sd->sc.data[SC_BLADESTOP] ||
 				 sd->sc.data[SC_CLOAKINGEXCEED] ||
-				(sd->sc.data[SC_NOCHAT] &&sd->sc.data[SC_NOCHAT]->val1&MANNER_NOITEM)
+				 pc_ismuted(&sd->sc, MANNER_NOITEM)
 			) )
 			break;
 
@@ -10254,7 +10270,7 @@ void clif_parse_DropItem(int fd, struct map_session_data *sd)
 		if (sd->sc.count && (
 			sd->sc.data[SC_AUTOCOUNTER] ||
 			sd->sc.data[SC_BLADESTOP] ||
-			(sd->sc.data[SC_NOCHAT] && sd->sc.data[SC_NOCHAT]->val1&MANNER_NOITEM)
+			pc_ismuted(&sd->sc, MANNER_NOITEM)
 		))
 			break;
 
@@ -10513,7 +10529,7 @@ void clif_parse_CreateChatRoom(int fd, struct map_session_data* sd)
 	char s_password[CHATROOM_PASS_SIZE];
 	char s_title[CHATROOM_TITLE_SIZE];
 
-	if (sd->sc.data[SC_NOCHAT] && sd->sc.data[SC_NOCHAT]->val1&MANNER_NOROOM)
+	if (pc_ismuted(&sd->sc, MANNER_NOROOM))
 		return;
 	if(battle_config.basic_skill_check && pc->checkskill(sd,NV_BASIC) < 4) {
 		clif->skill_fail(sd,1,USESKILL_FAIL_LEVEL,3);
@@ -11799,7 +11815,7 @@ void clif_parse_PartyMessage(int fd, struct map_session_data* sd)
 	if( atcommand->exec(fd, sd, message, true)  )
 		return;
 
-	if( sd->sc.data[SC_BERSERK] || (sd->sc.data[SC_DEEP_SLEEP] && sd->sc.data[SC_DEEP_SLEEP]->val2) || (sd->sc.data[SC_NOCHAT] && sd->sc.data[SC_NOCHAT]->val1&MANNER_NOCHAT) )
+	if( !pc->can_talk(sd) )
 		return;
 
 	if (battle_config.min_chat_delay) {
@@ -12511,7 +12527,7 @@ void clif_parse_OpenVending(int fd, struct map_session_data* sd) {
 	if( !flag )
 		sd->state.prevend = sd->state.workinprogress = 0;
 
-	if( sd->sc.data[SC_NOCHAT] && sd->sc.data[SC_NOCHAT]->val1&MANNER_NOROOM )
+	if(pc_ismuted(&sd->sc, MANNER_NOROOM))
 		return;
 	if( map->list[sd->bl.m].flag.novending ) {
 		clif->message (sd->fd, msg_sd(sd,276)); // "You can't open a shop on this map"
@@ -12903,7 +12919,7 @@ void clif_parse_GuildMessage(int fd, struct map_session_data* sd)
 	if( atcommand->exec(fd, sd, message, true) )
 		return;
 
-	if( sd->sc.data[SC_BERSERK] || (sd->sc.data[SC_DEEP_SLEEP] && sd->sc.data[SC_DEEP_SLEEP]->val2) || (sd->sc.data[SC_NOCHAT] && sd->sc.data[SC_NOCHAT]->val1&MANNER_NOCHAT) )
+	if( !pc->can_talk(sd) )
 		return;
 
 	if (battle_config.min_chat_delay) {
@@ -15999,7 +16015,7 @@ void clif_parse_BattleChat(int fd, struct map_session_data* sd)
 	if( atcommand->exec(fd, sd, message, true) )
 		return;
 
-	if( sd->sc.data[SC_BERSERK] || (sd->sc.data[SC_DEEP_SLEEP] && sd->sc.data[SC_DEEP_SLEEP]->val2) || (sd->sc.data[SC_NOCHAT] && sd->sc.data[SC_NOCHAT]->val1&MANNER_NOCHAT) )
+	if( !pc->can_talk(sd) )
 		return;
 
 	if( battle_config.min_chat_delay ) {

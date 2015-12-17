@@ -1,7 +1,23 @@
-// Copyright (c) Hercules Dev Team, licensed under GNU GPL.
-// See the LICENSE file
-// Portions Copyright (c) Athena Dev Teams
-
+/**
+ * This file is part of Hercules.
+ * http://herc.ws - http://github.com/HerculesWS/Hercules
+ *
+ * Copyright (C) 2012-2015  Hercules Dev Team
+ * Copyright (C)  Athena Dev Teams
+ *
+ * Hercules is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 #define HERCULES_CORE
 
 #include "../config/core.h" // AUTOLOOT_DISTANCE, DBPATH, DEFTYPE_MAX, DEFTYPE_MIN, RENEWAL_DROP, RENEWAL_EXP
@@ -4979,9 +4995,10 @@ int do_final_mob(void)
 }
 
 void mob_defaults(void) {
-	//Defines the Manuk/Splendide mob groups for the status reductions [Epoque]
+	// Defines the Manuk/Splendide/Mora mob groups for the status reductions [Epoque & Frost]
 	const int mob_manuk[8] = { 1986, 1987, 1988, 1989, 1990, 1997, 1998, 1999 };
 	const int mob_splendide[5] = { 1991, 1992, 1993, 1994, 1995 };
+	const int mob_mora[5] = { 2137, 2136, 2134, 2133, 2132 };
 
 	mob = &mob_s;
 
@@ -4991,6 +5008,8 @@ void mob_defaults(void) {
 
 	memcpy(mob->manuk, mob_manuk, sizeof(mob->manuk));
 	memcpy(mob->splendide, mob_splendide, sizeof(mob->splendide));
+	memcpy(mob->mora, mob_mora, sizeof(mob->mora));
+
 	/* */
 	mob->reload = mob_reload;
 	mob->init = do_init_mob;
