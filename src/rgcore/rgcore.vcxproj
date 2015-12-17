@@ -34,6 +34,7 @@
     <ClInclude Include="arch.h" />
     <ClInclude Include="exception\Exception.hpp" />
     <ClInclude Include="exception\fatal.h" />
+    <ClInclude Include="ini.hpp" />
     <ClInclude Include="mt_util\atomic.hpp" />
     <ClInclude Include="mt_util\box.hpp" />
     <ClInclude Include="mt_util\cond.hpp" />

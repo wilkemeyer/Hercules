@@ -22,6 +22,9 @@
 //
 #include "arch.h"
 
+// Config Parsers
+#include "ini.hpp"
+
 // Time/Tick
 #include "tick.h"
 

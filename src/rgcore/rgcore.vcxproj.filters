@@ -100,5 +100,8 @@
     <ClInclude Include="tick.h">
       <Filter>Header Files\time</Filter>
     </ClInclude>
+    <ClInclude Include="ini.hpp">
+      <Filter>Header Files\config</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
