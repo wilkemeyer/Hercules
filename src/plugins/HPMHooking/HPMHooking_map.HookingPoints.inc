@@ -943,6 +943,7 @@ struct HookingPointData HookingPoints[] = {
 	{ HP_POP(clif->pNPCMarketPurchase, HP_clif_pNPCMarketPurchase) },
 	{ HP_POP(clif->add_random_options, HP_clif_add_random_options) },
 	{ HP_POP(clif->pHotkeyRowShift, HP_clif_pHotkeyRowShift) },
+	{ HP_POP(clif->dressroom_open, HP_clif_dressroom_open) },
 /* cmdline */
 	{ HP_POP(cmdline->init, HP_cmdline_init) },
 	{ HP_POP(cmdline->final, HP_cmdline_final) },
@@ -2282,6 +2283,9 @@ struct HookingPointData HookingPoints[] = {
 	{ HP_POP(script->conv_num, HP_script_conv_num) },
 	{ HP_POP(script->conv_str, HP_script_conv_str) },
 	{ HP_POP(script->rid2sd, HP_script_rid2sd) },
+	{ HP_POP(script->id2sd, HP_script_id2sd) },
+	{ HP_POP(script->charid2sd, HP_script_charid2sd) },
+	{ HP_POP(script->nick2sd, HP_script_nick2sd) },
 	{ HP_POP(script->detach_rid, HP_script_detach_rid) },
 	{ HP_POP(script->push_val, HP_script_push_val) },
 	{ HP_POP(script->get_val, HP_script_get_val) },

@@ -312,8 +312,13 @@ int npc_rr_secure_timeout_timer(int tid, int64 tick, int id, intptr_t data) {
 		 * This guy's been idle for longer than allowed, close him.
 		 **/
 		clif->scriptclose(sd,sd->npc_id);
-		clif->scriptclear(sd,sd->npc_id);
 		sd->npc_idle_timer = INVALID_TIMER;
+		/**
+		* We will end the script ourselves, client will request to end it again if it have dialog,
+		* however it will be ignored, workaround for client stuck if NPC have no dialog. [hemagx]
+		**/
+		sd->state.dialog = 0;
+		npc->scriptcont(sd, sd->npc_id, true);
 	} else //Create a new instance of ourselves to continue
 		sd->npc_idle_timer = timer->add(timer->gettick() + (SECURE_NPCTIMEOUT_INTERVAL*1000),npc->secure_timeout_timer,sd->bl.id,0);
 #endif
@@ -4285,6 +4290,8 @@ const char *npc_parse_mapflag(const char *w1, const char *w2, const char *w3, co
 		map->list[m].flag.src4instance = (state) ? 1 : 0;
 	} else if ( !strcmpi(w3,"nocashshop") ) {
 		map->list[m].flag.nocashshop = (state) ? 1 : 0;
+	} else if (!strcmpi(w3,"noviewid")) {
+		map->list[m].flag.noviewid = (state) ? atoi(w4) : 0;
 	} else {
 		npc->parse_unknown_mapflag(mapname, w3, w4, start, buffer, filepath, retval);
 	}

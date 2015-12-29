@@ -525,7 +525,8 @@ If a variable was never set, it is considered to equal zero for integer
 variables or an empty string ("", nothing between the quotes) for string 
 variables. Once you set it to that, the variable is as good as forgotten 
 forever, and no trace remains of it even if it was stored with character 
-or account data.
+or account data. The maximum length of variable name including prefix and
+suffix is 32.
 
 Some variables are special, that is, they are already defined for you by 
 the scripting engine. You can see the full list somewhere in 
@@ -978,12 +979,10 @@ Within executable script code, some lines can be labels:
 Labels are points of reference in your script, which can be used to route 
 execution with 'goto' and 'menu' commands, invoked with 'doevent', 'donpcevent'
 and 'callsub' commands and are otherwise essential. A label's name may not be
-longer than 22 characters. (23rd is the ':'.) There is some confusion in the
-source about whether it's 22, 23 or 24 all over the place, so keeping labels
-under 22 characters could be wise. It may only contain alphanumeric characters
-and underscore. In addition to labels you name yourself, there are also some
-special labels which the script engine will start execution from if a special
-event happens:
+longer than 23 characters. (24th is the ':'.) It may only contain alphanumeric
+characters and underscore. In addition to labels you name yourself, there are
+also some special labels which the script engine will start execution from if
+a special event happens:
 
 OnClock<hour><minute>:
 OnMinute<minute>:
@@ -1203,11 +1202,14 @@ contain three hexadecimal numbers representing colors as if they were HTML
 colors - ^FF0000 is bright red, ^00FF00 is bright green, ^0000FF is bright 
 blue, ^000000 is black. ^FF00FF is a pure magenta, but it's also a color 
 that is considered transparent whenever the client is drawing windows on 
-screen, so printing text in that color will have kind of a weird effect. 
-Once you've set a text's color to something, you have to set it back to 
-black unless you want all the rest of the text be in that color:
+screen, so printing text in that color will have kind of a weird effect.
+You may also use C_ constants accompany with "F_MesColor" function for the
+color effect, see the full list of the available ones in 'db/const.txt'
+under 'C_'. Once you've set a text's color to something, you have to set
+it back to black unless you want all the rest of the text be in that color:
 
     mes "This is ^FF0000 red ^000000 and this is ^00FF00 green, ^000000 so.";
+    mes callfunc("F_MesColor", C_BLUE) +"This message is now in BLUE";
     
 Notice that the text coloring is handled purely by the client. If you use 
 non-English characters, the color codes might get screwed if they stick to 
@@ -3097,7 +3099,7 @@ cards or if it's signed.
 //=====================================
 ---------------------------------------
 
-*getmapxy("<variable for map name>",<variable for x>,<variable for y>,<type>{,"<search string>"})
+*getmapxy("<variable for map name>",<variable for x>,<variable for y>,<type>{,"<search parameter>"})
 
 This function will locate a character object, NPC object or pet's 
 coordinates and place their coordinates into the variables specified when 
@@ -3106,24 +3108,27 @@ parameters given were not variables or the search was not successful.
 
 Type is the type of object to search for:
 
-	0 - Character object
-	1 - NPC object
-	2 - Pet object
-	3 - Monster object
-	4 - Homunculus object
-	5 - Mercenary object
-	6 - Elemental object
+	UNITTYPE_PC   - Character object
+	UNITTYPE_NPC  - NPC object
+	UNITTYPE_PET  - Pet object
+	UNITTYPE_MOB  - Monster object
+	UNITTYPE_HOM  - Homunculus object
+	UNITTYPE_MER  - Mercenary object
+	UNITTYPE_ELEM - Elemental object
 
-While 3 is meant to look for a monster object, no searching will be done 
-if you specify type 3, and the function will always return -1.
+To look for a monster object, monster GID is required. The function will
+always return -1 when search using string.
 
-The search string is optional. If it is not specified, the location of the 
-invoking character will always be returned for types 0 and 2, the location 
-of the NPC running this function for type 1.
-If a search string is specified, for types 0 and 1, the character or NPC 
-with the specified name will be located. If type is 3, the search will 
-locate the current pet of the character who's name is given in the search 
-string, it will NOT locate a pet by name.
+The search parameter is optional. If it is not specified, the location of the 
+invoking character will always be returned for UNITTYPE_PC, the location of the
+NPC running this function for UNITTYPE_NPC. If a search parameter is specified,
+for UNITTYPE_PC and UNITTYPE_NPC, the character or NPC with the specified name
+or GID will be located.
+
+If type is UNITTYPE_PET, UNITTYPE_HOM, UNITTYPE_MER or UNITTYPE_ELEM the search
+will locate the owner's pet/homun/mercenary/elementals if the search parameter
+is not provided. It will NOT locate these object by name, but can be done if GID
+is provided.
 
 What a mess. Example, a working and tested one now:
 
@@ -3135,7 +3140,7 @@ What a mess. Example, a working and tested one now:
 	prontera,164,299,3%TAB%script%TAB%Nyah%TAB%730,{
 		mes "My name is Nyah.";
 		mes "I will now search for Meh all across the world!";
-		if (getmapxy(.@mapname$,.@mapx,.@mapy,1,"Meh")!=0) {
+		if (getmapxy(.@mapname$, .@mapx, .@mapy, UNITTYPE_NPC, "Meh") != 0) {
 			mes "I can't seem to find Meh anywhere!";
 			close;
 		}
@@ -3162,6 +3167,14 @@ behave specially when talked to by GMs.
 
 ---------------------------------------
 
+*setgroupid(<new group id>{,"<character name>"|<account id>})
+
+This function will temporary adjust the id of player group the account to which the 
+player specified if the new group id is available. 
+Return 1 if success, otherwise it will return 0.
+
+---------------------------------------
+ 
 *getgroupid()
 
 This function will return the id of player group the account to which the 
@@ -4087,18 +4100,20 @@ Note: rid2name may not produce correct character names since rid means
 
 ---------------------------------------
 
+*message <account ID>,"<message>";
 *message "<character name>","<message>";
 
 That command will send a message to the chat window of the character 
-specified by name. The text will also appear above the head of that 
-character. It will not be seen by anyone else.
+specified by account ID or name. The text will also appear above the head
+of that character. It will not be seen by anyone else.
 
 ---------------------------------------
 
-*dispbottom "<message>";
+*dispbottom "<message>"{,<color>};
 
-This command will send the given message into the invoking character's 
-chat window.
+This command will send the given message into the invoking character's
+chat window. The color format is in RGB (0xRRGGBB), and default to green
+if <color> field is left out.
 
 ---------------------------------------
 
@@ -5699,7 +5714,7 @@ as expected, refer only to an invoking character.
 What these commands do is 'attach' a script to the player which will get
 executed on attack (or when attacked in the case of autobonus2).
 
-Rate is the trigger rate of the script (10000 = 100%). 
+Rate is the trigger rate of the script (1000 = 100%).
 
 Duration is the time that the bonus will last for since the script has 
 triggered.
@@ -6195,6 +6210,21 @@ and will return the following values:
 
 ---------------------------------------
 
+*getunittype <GID>;
+
+Returns the type of object from the given Game ID. Returns -1 if the given GID
+does not exist. The return values are :-
+
+	UNITTYPE_PC     0
+	UNITTYPE_NPC    1
+	UNITTYPE_PET    2
+	UNITTYPE_MOB    3
+	UNITTYPE_HOM    4
+	UNITTYPE_MER    5
+	UNITTYPE_ELEM   6
+
+---------------------------------------
+
 *unitwalk <GID>,<x>,<y>;
 *unitwalk <GID>,<target_GID>;
 
@@ -6575,7 +6605,7 @@ client and appears always green.
 This command will broadcast a message to all or most players, similar to 
 @kami/@kamib GM commands.
 
-	announce "This will be shown to everyone at all in yellow.",0;
+	announce "This will be shown to everyone at all in yellow.", bc_all;
 
 The region the broadcast is heard in (target), source of the broadcast and 
 the color the message will come up as is determined by the flags.
@@ -6612,12 +6642,16 @@ special flag is ignored. Optional parameters may not work well (or at all)
 depending on a game client used.
 
 The color parameter is a single number which can be in hexadecimal 
-notation.
+notation. C_ constant can also be used for color effects, see the full list
+of the available ones in 'db/const.txt' under 'C_'.
 
 For example:
-	announce "This will be shown to everyone at all in green.",bc_all,0x00FF00;
+	announce "This announcement will be shown to everyone in green.",bc_all,0x00FF00;
 Will display a global announce in green. The color format is in RGB 
 (0xRRGGBB).
+
+Another example:
+	announce "This announcement will shown to everyone in purple.",bc_all,C_PURPLE;
 
 In official scripts only two font-weights (types) are used:
  - normal (FW_NORMAL = 400, default),
@@ -7984,17 +8018,19 @@ Breaks a string up into substrings based on the specified delimiter.
 Substrings will be stored within the specified string array. Only the 1st 
 char of the delimiter parameter will be used. If an empty string is passed 
 as a delimiter, the string will be placed in the array in its original 
-form, without any changes.
+form, without any changes. Return the number of elements written to
+<dest_array>.
 
 Example:
 
-	explode(.@my_array$, "Explode:Test:1965:red:PIE", ":");
+	.@num_elements = explode(.@my_array$, "Explode:Test:1965:red:PIE", ":");
 	//.@my_array$ contents will be...
 	//.@my_array$[0]: "Explode"
 	//.@my_array$[1]: "Test"
 	//.@my_array$[2]: "1965"
 	//.@my_array$[3]: "red"
 	//.@my_array$[4]: "PIE"
+	//.@num_elements: 5
 
 ---------------------------------------
 
@@ -9005,7 +9041,7 @@ When the QUEUEOPT_MAPCHANGE event is triggered, it sets a temp char var
 @Queue_Destination_Map$ with the destination map name.
 
 Example:
-	queueopt(.@queue_id, QUEUEOPT_DEATH, "MyNPC::MyOnQueueMemberDeathEventName");
+	queueopt(.@queue_id, QUEUEOPT_DEATH, "MyNPC::OnQueueMemberDeathEvent");
 	
 ---------------------------------------
 

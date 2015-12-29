@@ -61,25 +61,6 @@ enum E_MAPSERVER_ST {
 #define block_free_max 1048576
 #define BL_LIST_MAX 1048576
 
-
-// Added definitions for WoESE objects. [L0ne_W0lf]
-enum MOBID {
-	MOBID_EMPERIUM = 1288,
-	MOBID_TREAS01 = 1324,
-	MOBID_TREAS40 = 1363,
-	MOBID_BARRICADE1 = 1905,
-	MOBID_BARRICADE2,
-	MOBID_GUARIDAN_STONE1,
-	MOBID_GUARIDAN_STONE2,
-	MOBID_FOOD_STOR,
-	MOBID_BLUE_CRYST = 1914,
-	MOBID_PINK_CRYST,
-	MOBID_TREAS41 = 1938,
-	MOBID_TREAS49 = 1946,
-	MOBID_SILVERSNIPER = 2042,
-	MOBID_MAGICDECOY_WIND = 2046,
-};
-
 // For filtering and quick checking.
 #define MAPID_BASEMASK 0x00ff
 #define MAPID_UPPERMASK 0x0fff
@@ -242,6 +223,8 @@ enum {
 #define map_flag_gvg2(m) (map->list[m].flag.gvg || map->list[m].flag.gvg_castle)
 // No Kill Steal Protection
 #define map_flag_ks(m) (map->list[m].flag.town || map->list[m].flag.pvp || map->list[m].flag.gvg || map->list[m].flag.battleground)
+// No ViewID
+#define map_no_view(m, view) (map->list[m].flag.noviewid & (view))
 
 //This stackable implementation does not means a BL can be more than one type at a time, but it's
 // meant to make it easier to check for multiple types at a time on invocations such as map_foreach* calls [Skotlex]
@@ -464,7 +447,7 @@ enum status_point_types {
 	SP_WEAPON_ATK,SP_WEAPON_ATK_RATE, // 1081-1082
 	SP_DELAYRATE,SP_HP_DRAIN_RATE_RACE,SP_SP_DRAIN_RATE_RACE, // 1083-1085
 	SP_IGNORE_MDEF_RATE,SP_IGNORE_DEF_RATE,SP_SKILL_HEAL2,SP_ADDEFF_ONSKILL, //1086-1089
-	SP_ADD_HEAL_RATE,SP_ADD_HEAL2_RATE, //1090-1091
+	SP_ADD_HEAL_RATE, SP_ADD_HEAL2_RATE, SP_HP_VANISH_RATE, //1090-1092
 
 	SP_RESTART_FULL_RECOVER=2000,SP_NO_CASTCANCEL,SP_NO_SIZEFIX,SP_NO_MAGIC_DAMAGE,SP_NO_WEAPON_DAMAGE,SP_NO_GEMSTONE, // 2000-2005
 	SP_NO_CASTCANCEL2,SP_NO_MISC_DAMAGE,SP_UNBREAKABLE_WEAPON,SP_UNBREAKABLE_ARMOR, SP_UNBREAKABLE_HELM, // 2006-2010
@@ -731,6 +714,7 @@ struct map_data {
 		unsigned noknockback : 1;
 		unsigned notomb : 1;
 		unsigned nocashshop : 1;
+		unsigned noviewid : 22;
 	} flag;
 	struct point save;
 	struct npc_data *npc[MAX_NPC_PER_MAP];

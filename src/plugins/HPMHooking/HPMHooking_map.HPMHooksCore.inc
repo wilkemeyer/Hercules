@@ -1846,6 +1846,8 @@ struct {
 	struct HPMHookPoint *HP_clif_add_random_options_post;
 	struct HPMHookPoint *HP_clif_pHotkeyRowShift_pre;
 	struct HPMHookPoint *HP_clif_pHotkeyRowShift_post;
+	struct HPMHookPoint *HP_clif_dressroom_open_pre;
+	struct HPMHookPoint *HP_clif_dressroom_open_post;
 	struct HPMHookPoint *HP_cmdline_init_pre;
 	struct HPMHookPoint *HP_cmdline_init_post;
 	struct HPMHookPoint *HP_cmdline_final_pre;
@@ -4456,6 +4458,12 @@ struct {
 	struct HPMHookPoint *HP_script_conv_str_post;
 	struct HPMHookPoint *HP_script_rid2sd_pre;
 	struct HPMHookPoint *HP_script_rid2sd_post;
+	struct HPMHookPoint *HP_script_id2sd_pre;
+	struct HPMHookPoint *HP_script_id2sd_post;
+	struct HPMHookPoint *HP_script_charid2sd_pre;
+	struct HPMHookPoint *HP_script_charid2sd_post;
+	struct HPMHookPoint *HP_script_nick2sd_pre;
+	struct HPMHookPoint *HP_script_nick2sd_post;
 	struct HPMHookPoint *HP_script_detach_rid_pre;
 	struct HPMHookPoint *HP_script_detach_rid_post;
 	struct HPMHookPoint *HP_script_push_val_pre;
@@ -7665,6 +7673,8 @@ struct {
 	int HP_clif_add_random_options_post;
 	int HP_clif_pHotkeyRowShift_pre;
 	int HP_clif_pHotkeyRowShift_post;
+	int HP_clif_dressroom_open_pre;
+	int HP_clif_dressroom_open_post;
 	int HP_cmdline_init_pre;
 	int HP_cmdline_init_post;
 	int HP_cmdline_final_pre;
@@ -10275,6 +10285,12 @@ struct {
 	int HP_script_conv_str_post;
 	int HP_script_rid2sd_pre;
 	int HP_script_rid2sd_post;
+	int HP_script_id2sd_pre;
+	int HP_script_id2sd_post;
+	int HP_script_charid2sd_pre;
+	int HP_script_charid2sd_post;
+	int HP_script_nick2sd_pre;
+	int HP_script_nick2sd_post;
 	int HP_script_detach_rid_pre;
 	int HP_script_detach_rid_post;
 	int HP_script_push_val_pre;

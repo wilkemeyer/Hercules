@@ -927,6 +927,11 @@ int pc_isequip(struct map_session_data *sd,int n)
 	if(item == NULL)
 		return 0;
 
+#if PACKETVER <= 20100707
+	if (itemdb_is_shadowequip(item->equip) || itemdb_is_costumeequip(item->equip))
+		return 0;
+#endif
+
 	if(pc_has_permission(sd, PC_PERM_USE_ALL_EQUIPMENT))
 		return 1;
 
@@ -3162,11 +3167,18 @@ int pc_bonus2(struct map_session_data *sd,int type,int type2,int val)
 				sd->left_weapon.sp_drain[RC_BOSS].type = val;
 			}
 			break;
+		case SP_HP_VANISH_RATE:
+			if (sd->state.lr_flag != 2) {
+				sd->bonus.hp_vanish_rate += type2;
+				sd->bonus.hp_vanish_per = max(sd->bonus.hp_vanish_per, val);
+				sd->bonus.hp_vanish_trigger = 0;
+			}
+			break;
 		case SP_SP_VANISH_RATE:
-			if(sd->state.lr_flag != 2) {
+			if (sd->state.lr_flag != 2) {
 				sd->bonus.sp_vanish_rate += type2;
-				sd->bonus.sp_vanish_per = max(sd->bonus.sp_vanish_per,val);
-				sd->bonus.sp_vanish_trigger=0;
+				sd->bonus.sp_vanish_per = max(sd->bonus.sp_vanish_per, val);
+				sd->bonus.sp_vanish_trigger = 0;
 			}
 			break;
 		case SP_GET_ZENY_NUM:
@@ -3806,11 +3818,18 @@ int pc_bonus3(struct map_session_data *sd,int type,int type2,int type3,int val)
 				}
 			}
 			break;
+		case SP_HP_VANISH_RATE:
+			if (sd->state.lr_flag != 2) {
+				sd->bonus.hp_vanish_rate += type2;
+				sd->bonus.hp_vanish_per = max(sd->bonus.hp_vanish_per, type3);
+				sd->bonus.hp_vanish_trigger = val;
+			}
+			break;
 		case SP_SP_VANISH_RATE:
-			if(sd->state.lr_flag != 2) {
+			if (sd->state.lr_flag != 2) {
 				sd->bonus.sp_vanish_rate += type2;
-				sd->bonus.sp_vanish_per = max(sd->bonus.sp_vanish_per,type3);
-				sd->bonus.sp_vanish_trigger=val;
+				sd->bonus.sp_vanish_per = max(sd->bonus.sp_vanish_per, type3);
+				sd->bonus.sp_vanish_trigger = val;
 			}
 			break;
 
@@ -5240,7 +5259,7 @@ int pc_steal_item(struct map_session_data *sd,struct block_list *bl, uint16 skil
 	sd_status= status->get_status_data(&sd->bl);
 	md_status= status->get_status_data(bl);
 
-	if( md->master_id || md_status->mode&MD_BOSS || mob_is_treasure(md) ||
+	if (md->master_id || md_status->mode&MD_BOSS || mob_is_treasure(md) ||
 		map->list[bl->m].flag.nomobloot || // check noloot map flag [Lorky]
 		(battle_config.skill_steal_max_tries && //Reached limit of steal attempts. [Lupus]
 			md->state.steal_flag++ >= battle_config.skill_steal_max_tries)
@@ -5306,20 +5325,21 @@ int pc_steal_item(struct map_session_data *sd,struct block_list *bl, uint16 skil
 int pc_steal_coin(struct map_session_data *sd, struct block_list *target) {
 	int rate, skill_lv;
 	struct mob_data *md;
-	if(!sd || !target || target->type != BL_MOB)
+
+	if (!sd || !target || target->type != BL_MOB)
 		return 0;
 
 	md = (TBL_MOB*)target;
-	if( md->state.steal_coin_flag || md->sc.data[SC_STONE] || md->sc.data[SC_FREEZE] || md->status.mode&MD_BOSS )
+	if (md->state.steal_coin_flag || md->sc.data[SC_STONE] || md->sc.data[SC_FREEZE] || md->status.mode&MD_BOSS)
 		return 0;
 
-	if( mob_is_treasure(md) )
+	if (mob_is_treasure(md))
 		return 0;
 
 	skill_lv = pc->checkskill(sd, RG_STEALCOIN);
-	rate = skill_lv*10 + (sd->status.base_level - md->level)*2 + sd->battle_status.dex/2 + sd->battle_status.luk/2;
+	rate = skill_lv * 10 + (sd->status.base_level - md->level) * 2 + sd->battle_status.dex / 2 + sd->battle_status.luk / 2;
 	if(rnd()%1000 < rate) {
-		int amount = md->level * skill_lv / 10 + md->level*8 + rnd()%(md->level*2 + 1); // mob_lv * skill_lv / 10 + random [mob_lv*8; mob_lv*10]
+		int amount = md->level * skill_lv / 10 + md->level * 8 + rnd()%(md->level * 2 + 1); // mob_lv * skill_lv / 10 + random [mob_lv*8; mob_lv*10]
 
 		pc->getzeny(sd, amount, LOG_TYPE_STEAL, NULL);
 		md->state.steal_coin_flag = 1;
@@ -9394,7 +9414,7 @@ int pc_load_combo(struct map_session_data *sd) {
 }
 
 /**
-* Equip item ad given position.
+* Equip item at given position.
 * @param sd the affected player structure. Must be checked before.
 * @param id item structure for equip. Must be checked before.
 * @param n inventory item position. Must be checked before.
@@ -9402,7 +9422,8 @@ int pc_load_combo(struct map_session_data *sd) {
 **/
 void pc_equipitem_pos(struct map_session_data *sd, struct item_data *id, int n, int pos)
 {
-	if (pos & (EQP_HAND_R|EQP_SHADOW_WEAPON)) {
+	if ((!map_no_view(sd->bl.m,EQP_SHADOW_WEAPON) && pos & EQP_SHADOW_WEAPON) ||
+		 (pos & EQP_HAND_R)) {
 		if(id)
 			sd->weapontype1 = id->look;
 		else
@@ -9410,7 +9431,8 @@ void pc_equipitem_pos(struct map_session_data *sd, struct item_data *id, int n, 
 		pc->calcweapontype(sd);
 		clif->changelook(&sd->bl,LOOK_WEAPON,sd->status.weapon);
 	}
-	if (pos & (EQP_HAND_L|EQP_SHADOW_SHIELD)) {
+	if ((!map_no_view(sd->bl.m,EQP_SHADOW_SHIELD) && pos & EQP_SHADOW_SHIELD) ||
+		 (pos & EQP_HAND_L)) {
 		if (id) {
 			if(id->type == IT_WEAPON) {
 				sd->status.shield = 0;
@@ -9426,42 +9448,42 @@ void pc_equipitem_pos(struct map_session_data *sd, struct item_data *id, int n, 
 	}
 	//Added check to prevent sending the same look on multiple slots ->
 	//causes client to redraw item on top of itself. (suggested by Lupus)
-	if (pos & EQP_HEAD_LOW && pc->checkequip(sd,EQP_COSTUME_HEAD_LOW) == -1) {
+	if (!map_no_view(sd->bl.m,EQP_HEAD_LOW) && pos & EQP_HEAD_LOW && pc->checkequip(sd,EQP_COSTUME_HEAD_LOW) == -1) {
 		if (id && !(pos&(EQP_HEAD_TOP|EQP_HEAD_MID)))
 			sd->status.head_bottom = id->look;
 		else
 			sd->status.head_bottom = 0;
 		clif->changelook(&sd->bl,LOOK_HEAD_BOTTOM,sd->status.head_bottom);
 	}
-	if (pos & EQP_HEAD_TOP && pc->checkequip(sd,EQP_COSTUME_HEAD_TOP) == -1) {
+	if (!map_no_view(sd->bl.m,EQP_HEAD_TOP) && pos & EQP_HEAD_TOP && pc->checkequip(sd,EQP_COSTUME_HEAD_TOP) == -1) {
 		if (id)
 			sd->status.head_top = id->look;
 		else
 			sd->status.head_top = 0;
 		clif->changelook(&sd->bl,LOOK_HEAD_TOP,sd->status.head_top);
 	}
-	if (pos & EQP_HEAD_MID && pc->checkequip(sd,EQP_COSTUME_HEAD_MID) == -1) {
+	if (!map_no_view(sd->bl.m,EQP_HEAD_MID) && pos & EQP_HEAD_MID && pc->checkequip(sd,EQP_COSTUME_HEAD_MID) == -1) {
 		if (id && !(pos&EQP_HEAD_TOP))
 			sd->status.head_mid = id->look;
 		else
 			sd->status.head_mid = 0;
 		clif->changelook(&sd->bl,LOOK_HEAD_MID,sd->status.head_mid);
 	}
-	if (pos & EQP_COSTUME_HEAD_TOP) {
+	if (!map_no_view(sd->bl.m,EQP_COSTUME_HEAD_TOP) && pos & EQP_COSTUME_HEAD_TOP) {
 		if (id){
 			sd->status.head_top = id->look;
 		} else
 			sd->status.head_top = 0;
 		clif->changelook(&sd->bl,LOOK_HEAD_TOP,sd->status.head_top);
 	}
-	if (pos & EQP_COSTUME_HEAD_MID) {
+	if (!map_no_view(sd->bl.m,EQP_COSTUME_HEAD_MID) && pos & EQP_COSTUME_HEAD_MID) {
 		if(id && !(pos&EQP_HEAD_TOP)){
 			sd->status.head_mid = id->look;
 		} else
 			sd->status.head_mid = 0;
 		clif->changelook(&sd->bl,LOOK_HEAD_MID,sd->status.head_mid);
 	}
-	if (pos & EQP_COSTUME_HEAD_LOW) {
+	if (!map_no_view(sd->bl.m,EQP_COSTUME_HEAD_LOW) && pos & EQP_COSTUME_HEAD_LOW) {
 		if (id && !(pos&(EQP_HEAD_TOP|EQP_HEAD_MID))){
 			sd->status.head_bottom = id->look;
 		} else
@@ -9469,14 +9491,14 @@ void pc_equipitem_pos(struct map_session_data *sd, struct item_data *id, int n, 
 		clif->changelook(&sd->bl,LOOK_HEAD_BOTTOM,sd->status.head_bottom);
 	}
 
-	if (pos & EQP_SHOES)
+	if (!map_no_view(sd->bl.m,EQP_SHOES) && pos & EQP_SHOES)
 		clif->changelook(&sd->bl,LOOK_SHOES,0);
-	if (pos&EQP_GARMENT && pc->checkequip(sd,EQP_COSTUME_GARMENT) == -1) {
+	if (!map_no_view(sd->bl.m,EQP_GARMENT) && pos&EQP_GARMENT && pc->checkequip(sd,EQP_COSTUME_GARMENT) == -1) {
 		sd->status.robe = id ? id->look : 0;
 		clif->changelook(&sd->bl, LOOK_ROBE, sd->status.robe);
 	}
 
-	if (pos & EQP_COSTUME_GARMENT) {
+	if (!map_no_view(sd->bl.m,EQP_COSTUME_GARMENT) && pos & EQP_COSTUME_GARMENT) {
 		sd->status.robe = id ? id->look : 0;
 		clif->changelook(&sd->bl,LOOK_ROBE,sd->status.robe);
 	}

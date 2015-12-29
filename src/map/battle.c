@@ -1187,9 +1187,9 @@ int64 battle_calc_cardfix(int attack_type, struct block_list *src, struct block_
 					else if( cardfix != 1000 )
 						damage = damage * cardfix / 1000;
 #else
-					if ( (cflag & 1) && cardfix_ != 100 )
-						damage += damage * (cardfix - 100) / 100;
-					else if ( cardfix != 100 )
+					if ((cflag & 1) && cardfix_ != 100)
+						damage += damage * (cardfix_ - 100) / 100;
+					else if (cardfix != 100)
 						damage += damage * (cardfix - 100) / 100;
 #endif
 				}
@@ -3326,16 +3326,16 @@ int64 battle_calc_damage(struct block_list *src,struct block_list *bl,struct Dam
  * Calculates BG related damage adjustments.
  *------------------------------------------*/
 // FIXME: flag is undocumented
-int64 battle_calc_bg_damage(struct block_list *src, struct block_list *bl, int64 damage, int div_, uint16 skill_id, uint16 skill_lv, int flag)
-{
-	if( !damage )
+int64 battle_calc_bg_damage(struct block_list *src, struct block_list *bl, int64 damage, int div_, uint16 skill_id, uint16 skill_lv, int flag) {
+
+	if (!damage)
 		return 0;
 
 	nullpo_retr(damage, bl);
-	if( bl->type == BL_MOB ) {
+	if (bl->type == BL_MOB) {
 		struct mob_data* md = BL_CAST(BL_MOB, bl);
 
-		if( flag&BF_SKILL && (md->class_ == MOBID_BLUE_CRYST || md->class_ == MOBID_PINK_CRYST) )
+		if (flag&BF_SKILL && (md->class_ == MOBID_OBJ_A2 || md->class_ == MOBID_OBJ_B2))
 			return 0; // Crystal cannot receive skill damage on battlegrounds
 	}
 
@@ -3356,7 +3356,7 @@ int64 battle_calc_gvg_damage(struct block_list *src,struct block_list *bl,int64 
 	nullpo_retr(damage, bl);
 
 	if(md && md->guardian_data) {
-		if(class_ == MOBID_EMPERIUM && flag&BF_SKILL) {
+		if (class_ == MOBID_EMPELIUM && flag&BF_SKILL) {
 		//Skill immunity.
 			switch (skill_id) {
 #ifndef RENEWAL
@@ -3372,7 +3372,7 @@ int64 battle_calc_gvg_damage(struct block_list *src,struct block_list *bl,int64 
 		if(src->type != BL_MOB) {
 			struct guild *g = src->type == BL_PC ? ((TBL_PC *)src)->guild : guild->search(status->get_guild_id(src));
 
-			if (class_ == MOBID_EMPERIUM && (!g || guild->checkskill(g,GD_APPROVAL) <= 0 ))
+			if (class_ == MOBID_EMPELIUM && (!g || guild->checkskill(g,GD_APPROVAL) <= 0))
 				return 0;
 
 			if (g && battle_config.guild_max_castles && guild->checkcastles(g)>=battle_config.guild_max_castles)
@@ -4557,8 +4557,8 @@ struct Damage battle_calc_weapon_attack(struct block_list *src,struct block_list
 	{
 		short cri = sstatus->cri;
 		if (sd)	{
-			// Check for katar here as katar crit bonus should not be displayed
-			if (sd->status.weapon == W_KATAR) {
+			// if show_katar_crit_bonus is enabled, it already done the calculation in status.c
+			if (!battle_config.show_katar_crit_bonus && sd->status.weapon == W_KATAR) {
 				cri <<= 1;
 			}
 
@@ -4904,7 +4904,7 @@ struct Damage battle_calc_weapon_attack(struct block_list *src,struct block_list
 					if(flag.cri && sd->bonus.crit_atk_rate)
 						ATK_ADDRATE(sd->bonus.crit_atk_rate);
 					if(flag.cri && sc && sc->data[SC_MTF_CRIDAMAGE])
-						ATK_ADDRATE(25);// temporary it should be 'bonus.crit_atk_rate'
+						ATK_ADDRATE(sc->data[SC_MTF_CRIDAMAGE]->val1);// temporary it should be 'bonus.crit_atk_rate'
 #ifndef RENEWAL
 
 					if(sd->status.party_id && (temp=pc->checkskill(sd,TK_POWER)) > 0){
@@ -5217,7 +5217,7 @@ struct Damage battle_calc_weapon_attack(struct block_list *src,struct block_list
 			if( wd.flag&BF_LONG )
 				ATK_ADDRATE(sd->bonus.long_attack_atk_rate);
 			if( sc && sc->data[SC_MTF_RANGEATK] )
-				ATK_ADDRATE(25);// temporary it should be 'bonus.long_attack_atk_rate'
+				ATK_ADDRATE(sc->data[SC_MTF_RANGEATK]->val1);// temporary it should be 'bonus.long_attack_atk_rate'
 	#endif
 			if( (i=pc->checkskill(sd,AB_EUCHARISTICA)) > 0 &&
 				(tstatus->race == RC_DEMON || tstatus->def_ele == ELE_DARK) )
@@ -5433,7 +5433,7 @@ struct Damage battle_calc_weapon_attack(struct block_list *src,struct block_list
 			wd.damage = wd.div_; // In some cases, right hand no need to have a weapon to increase damage
 		if( flag.lh && (flag.hit || wd.damage2 > 0) )
 			wd.damage2 = wd.div_;
-		if( flag.hit && class_ == MOBID_EMPERIUM ) {
+		if (flag.hit && class_ == MOBID_EMPELIUM) {
 			if(wd.damage2 > 0) {
 				wd.damage2 = battle->attr_fix(src,target,wd.damage2,s_ele_,tstatus->def_ele, tstatus->ele_lv);
 				wd.damage2 = battle->calc_gvg_damage(src,target,wd.damage2,wd.div_,skill_id,skill_lv,wd.flag);
@@ -5667,11 +5667,18 @@ struct Damage battle_calc_attack(int attack_type,struct block_list *bl,struct bl
 	} else // Some skills like Weaponry Research will cause damage even if attack is dodged
 		d.dmg_lv = ATK_DEF;
 
-	if(sd && d.damage+d.damage2>1) {
-		if(sd->bonus.sp_vanish_rate && sd->bonus.sp_vanish_trigger && rnd()%10000<sd->bonus.sp_vanish_rate &&
-			( (d.flag&sd->bonus.sp_vanish_trigger&BF_WEAPONMASK) || (d.flag&sd->bonus.sp_vanish_trigger&BF_RANGEMASK)
-			|| (d.flag&sd->bonus.sp_vanish_trigger&BF_SKILLMASK) ))
-			status_percent_damage(&sd->bl,target,0,-sd->bonus.sp_vanish_per,false);
+	if (sd && d.damage + d.damage2 > 1) {
+		// HPVanishRate
+		if (sd->bonus.hp_vanish_rate && sd->bonus.hp_vanish_trigger && rnd() % 1000 < sd->bonus.hp_vanish_rate &&
+			((d.flag&sd->bonus.hp_vanish_trigger&BF_WEAPONMASK) || (d.flag&sd->bonus.hp_vanish_trigger&BF_RANGEMASK)
+			|| (d.flag&sd->bonus.hp_vanish_trigger&BF_SKILLMASK)))
+			status_percent_damage(&sd->bl, target, -sd->bonus.hp_vanish_per, 0, false);
+
+		// SPVanishRate
+		if (sd->bonus.sp_vanish_rate && sd->bonus.sp_vanish_trigger && rnd() % 1000 < sd->bonus.sp_vanish_rate &&
+			((d.flag&sd->bonus.sp_vanish_trigger&BF_WEAPONMASK) || (d.flag&sd->bonus.sp_vanish_trigger&BF_RANGEMASK)
+			|| (d.flag&sd->bonus.sp_vanish_trigger&BF_SKILLMASK)))
+			status_percent_damage(&sd->bl, target, 0, -sd->bonus.sp_vanish_per, false);
 	}
 	return d;
 }
@@ -5901,7 +5908,7 @@ void battle_drain(TBL_PC *sd, struct block_list *tbl, int64 rdamage, int64 ldama
 		if (i == 0 || i == 2)
 			type = race;
 		else
-			type = boss?RC_BOSS:RC_NONBOSS;
+			type = boss ? RC_BOSS : RC_NONBOSS;
 
 		hp = wd->hp_drain[type].value;
 		if (wd->hp_drain[type].rate)
@@ -5910,6 +5917,14 @@ void battle_drain(TBL_PC *sd, struct block_list *tbl, int64 rdamage, int64 ldama
 		sp = wd->sp_drain[type].value;
 		if (wd->sp_drain[type].rate)
 			sp += battle->calc_drain(*damage, wd->sp_drain[type].rate, wd->sp_drain[type].per);
+
+		// HPVanishRate
+		if (sd->bonus.hp_vanish_rate && rnd() % 1000 < sd->bonus.hp_vanish_rate && !sd->bonus.hp_vanish_trigger)
+			status_percent_damage(&sd->bl, tbl, (unsigned char)sd->bonus.hp_vanish_per, 0, false);
+
+		// SPVanishRate
+		if (sd->bonus.sp_vanish_rate && rnd() % 1000 < sd->bonus.sp_vanish_rate && !sd->bonus.sp_vanish_trigger)
+			status_percent_damage(&sd->bl, tbl, 0, (unsigned char)sd->bonus.sp_vanish_per, false);
 
 		if (hp) {
 			if (wd->hp_drain[type].type)
@@ -5923,17 +5938,14 @@ void battle_drain(TBL_PC *sd, struct block_list *tbl, int64 rdamage, int64 ldama
 		}
 	}
 
-	if (sd->bonus.sp_vanish_rate && rnd()%1000 < sd->bonus.sp_vanish_rate && !sd->bonus.sp_vanish_trigger)
-		status_percent_damage(&sd->bl, tbl, 0, (unsigned char)sd->bonus.sp_vanish_per, false);
-
-	if( sd->sp_gain_race_attack[race] )
+	if (sd->sp_gain_race_attack[race])
 		tsp += sd->sp_gain_race_attack[race];
-	if( sd->hp_gain_race_attack[race] )
+	if (sd->hp_gain_race_attack[race])
 		thp += sd->hp_gain_race_attack[race];
 
 	if (!thp && !tsp) return;
 
-	status->heal(&sd->bl, thp, tsp, battle_config.show_hp_sp_drain?3:1);
+	status->heal(&sd->bl, thp, tsp, battle_config.show_hp_sp_drain ? 3 : 1);
 
 	if (rhp || rsp)
 		status_zap(tbl, rhp, rsp);
@@ -5951,7 +5963,7 @@ int battle_damage_area(struct block_list *bl, va_list ap) {
 	amotion=va_arg(ap,int);
 	dmotion=va_arg(ap,int);
 	damage=va_arg(ap,int);
-	if( bl->type == BL_MOB && ((TBL_MOB*)bl)->class_ == MOBID_EMPERIUM )
+	if (bl->type == BL_MOB && ((TBL_MOB*)bl)->class_ == MOBID_EMPELIUM)
 		return 0;
 	if( bl != src && battle->check_target(src,bl,BCT_ENEMY) > 0 ) {
 		nullpo_ret(src);
@@ -6600,7 +6612,7 @@ int battle_check_target( struct block_list *src, struct block_list *target,int f
 			}
 			break;
 		case BL_MER:
-			if (t_bl->type == BL_MOB && ((TBL_MOB*)t_bl)->class_ == MOBID_EMPERIUM && flag&BCT_ENEMY)
+			if (t_bl->type == BL_MOB && ((TBL_MOB*)t_bl)->class_ == MOBID_EMPELIUM && flag&BCT_ENEMY)
 				return 0; //mercenary may not attack Emperium
 			break;
 	} //end switch actual src
@@ -6622,7 +6634,7 @@ int battle_check_target( struct block_list *src, struct block_list *target,int f
 						return 0;
 				}
 			}
-			if( map_flag_gvg(m) && !sd->status.guild_id && t_bl->type == BL_MOB && ((TBL_MOB*)t_bl)->class_ == MOBID_EMPERIUM )
+			if (map_flag_gvg(m) && !sd->status.guild_id && t_bl->type == BL_MOB && ((TBL_MOB*)t_bl)->class_ == MOBID_EMPELIUM)
 				return 0; //If you don't belong to a guild, can't target emperium.
 			if( t_bl->type != BL_PC )
 				state |= BCT_ENEMY; //Natural enemy.
@@ -7065,6 +7077,7 @@ static const struct battle_data {
 	{ "mob_remove_damaged",                 &battle_config.mob_remove_damaged,              1,      0,      1,              },
 	{ "show_hp_sp_drain",                   &battle_config.show_hp_sp_drain,                0,      0,      1,              },
 	{ "show_hp_sp_gain",                    &battle_config.show_hp_sp_gain,                 1,      0,      1,              },
+	{ "show_katar_crit_bonus",              &battle_config.show_katar_crit_bonus,           0,      0,      1,              },
 	{ "mob_npc_event_type",                 &battle_config.mob_npc_event_type,              1,      0,      1,              },
 	{ "character_size",                     &battle_config.character_size,                  1|2,    0,      1|2,            },
 	{ "retaliate_to_master",                &battle_config.retaliate_to_master,             1,      0,      1,              },
@@ -7179,6 +7192,9 @@ static const struct battle_data {
 	{ "feature.roulette",                   &battle_config.feature_roulette,                1,      0,      1,              },
 	{ "show_monster_hp_bar",                &battle_config.show_monster_hp_bar,             1,      0,      1,              },
 	{ "fix_warp_hit_delay_abuse",           &battle_config.fix_warp_hit_delay_abuse,        0,      0,      1,              },
+	{ "costume_refine_def",                 &battle_config.costume_refine_def,              1,      0,      1,              },
+	{ "shadow_refine_def",                  &battle_config.shadow_refine_def,               1,      0,      1,              },
+	{ "shadow_refine_atk",                  &battle_config.shadow_refine_atk,               1,      0,      1,              },
 };
 #ifndef STATS_OPT_OUT
 /**

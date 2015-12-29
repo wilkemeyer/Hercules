@@ -494,7 +494,7 @@ int mob_once_spawn(struct map_session_data* sd, int16 m, int16 x, int16 y, const
 		if (!md)
 			continue;
 
-		if ( class_ == MOBID_EMPERIUM && !no_guardian_data ) {
+		if (class_ == MOBID_EMPELIUM && !no_guardian_data) {
 			struct guild_castle* gc = guild->mapindex2gc(map_id2index(m));
 			struct guild* g = (gc) ? guild->search(gc->guild_id) : NULL;
 			if( gc ) {
@@ -602,7 +602,7 @@ int mob_spawn_guardian_sub(int tid, int64 tick, int id, intptr_t data) {
 	if( g == NULL ) { //Liberate castle, if the guild is not found this is an error! [Skotlex]
 		ShowError("mob_spawn_guardian_sub: Couldn't load guild %d!\n", (int)data);
 		//Not sure this is the best way, but otherwise we'd be invoking this for ALL guardians spawned later on.
-		if( md->class_ == MOBID_EMPERIUM && md->guardian_data ) {
+		if (md->class_ == MOBID_EMPELIUM && md->guardian_data) {
 			md->guardian_data->g = NULL;
 			if( md->guardian_data->castle->guild_id ) {//Free castle up.
 				ShowNotice("Clearing ownership of castle %d (%s)\n", md->guardian_data->castle->castle_id, md->guardian_data->castle->castle_name);
@@ -2067,11 +2067,17 @@ void mob_damage(struct mob_data *md, struct block_list *src, int damage) {
 
 	if (battle_config.show_mob_info&3)
 		clif->charnameack (0, &md->bl);
+	
+#if PACKETVER >= 20131223
+	// Resend ZC_NOTIFY_MOVEENTRY to Update the HP
+	if (battle_config.show_monster_hp_bar)
+		clif->set_unit_walking(&md->bl, NULL, unit->bl2ud(&md->bl), AREA);
+#endif
 
 	if (!src)
 		return;
 
-#if PACKETVER >= 20120404
+#if (PACKETVER >= 20120404 && PACKETVER < 20131223)
 	if (battle_config.show_monster_hp_bar && !(md->status.mode&MD_BOSS)) {
 		int i;
 		for(i = 0; i < DAMAGELOG_SIZE; i++){ // must show hp bar to all char who already hit the mob.
@@ -2405,7 +2411,7 @@ int mob_dead(struct mob_data *md, struct block_list *src, int type) {
 			 * so while we discuss, for a small period of time, the list is hardcoded (yes officially only those 2 use it,
 			 * thus why we're unsure on how to best place the setting) */
 			/* temp, will not be hardcoded for long thudu. */
-			if( it->nameid == 7782 || it->nameid == 7783 ) /* for when not hardcoded: add a check on mvp bonus drop as well */
+			if (it->nameid == ITEMID_GOLD_KEY77 || it->nameid == ITEMID_SILVER_KEY77) /* for when not hardcoded: add a check on mvp bonus drop as well */
 				clif->item_drop_announce(mvp_sd, it->nameid, md->name);
 
 			// Announce first, or else ditem will be freed. [Lance]
@@ -2565,7 +2571,7 @@ int mob_dead(struct mob_data *md, struct block_list *src, int type) {
 		logs->mvpdrop(mvp_sd, md->class_, log_mvp);
 	}
 
-	if (type&2 && !sd && md->class_ == MOBID_EMPERIUM && md->guardian_data) {
+	if (type&2 && !sd && md->class_ == MOBID_EMPELIUM && md->guardian_data) {
 		//Emperium destroyed by script. Discard mvp character. [Skotlex]
 		mvp_sd = NULL;
 	}
@@ -2690,9 +2696,10 @@ int mob_guardian_guildchange(struct mob_data *md)
 
 	if (md->guardian_data->castle->guild_id == 0) {
 		//Castle with no owner? Delete the guardians.
-		if( md->class_ == MOBID_EMPERIUM ) //But don't delete the emperium, just clear it's guild-data
+		if (md->class_ == MOBID_EMPELIUM) {
+			//But don't delete the emperium, just clear it's guild-data
 			md->guardian_data->g = NULL;
-		else {
+		} else {
 			if (md->guardian_data->number >= 0 && md->guardian_data->number < MAX_GUARDIANS && md->guardian_data->castle->guardian[md->guardian_data->number].visible)
 				guild->castledatasave(md->guardian_data->castle->castle_id, 10+md->guardian_data->number, 0);
 			unit->free(&md->bl,CLR_OUTSIGHT); //Remove guardian.
@@ -2740,39 +2747,39 @@ int mob_random_class (int *value, size_t count)
 /*==========================================
  * Change mob base class
  *------------------------------------------*/
-int mob_class_change (struct mob_data *md, int class_)
-{
+int mob_class_change (struct mob_data *md, int class_) {
+
 	int64 tick = timer->gettick(), c = 0;
 	int i, hp_rate;
 
 	nullpo_ret(md);
 
-	if( md->bl.prev == NULL )
+	if (md->bl.prev == NULL)
 		return 0;
 
-	//Disable class changing for some targets...
+	// Disable class changing for some targets...
 	if (md->guardian_data)
-		return 0; //Guardians/Emperium
+		return 0; // Guardians/Emperium
 
-	if( mob_is_treasure(md) )
-		return 0; //Treasure Boxes
+	if (mob_is_treasure(md))
+		return 0; // Treasure Boxes
 
-	if( md->special_state.ai > AI_ATTACK )
-		return 0; //Marine Spheres and Floras.
+	if (md->special_state.ai > AI_ATTACK)
+		return 0; // Marine Spheres and Floras.
 
-	if( mob->is_clone(md->class_) )
-		return 0; //Clones
+	if (mob->is_clone(md->class_))
+		return 0; // Clones
 
-	if( md->class_ == class_ )
-		return 0; //Nothing to change.
+	if (md->class_ == class_)
+		return 0; // Nothing to change.
 
 	hp_rate = get_percentage(md->status.hp, md->status.max_hp);
 	md->class_ = class_;
 	md->db = mob->db(class_);
-	if (battle_config.override_mob_names==1)
-		memcpy(md->name,md->db->name,NAME_LENGTH);
+	if (battle_config.override_mob_names == 1)
+		memcpy(md->name, md->db->name, NAME_LENGTH);
 	else
-		memcpy(md->name,md->db->jname,NAME_LENGTH);
+		memcpy(md->name, md->db->jname, NAME_LENGTH);
 
 	mob_stop_attack(md);
 	mob_stop_walking(md, STOPWALKING_FLAG_NONE);
@@ -2812,8 +2819,13 @@ void mob_heal(struct mob_data *md, unsigned int heal)
 {
 	if (battle_config.show_mob_info&3)
 		clif->charnameack (0, &md->bl);
+#if PACKETVER >= 20131223
+	// Resend ZC_NOTIFY_MOVEENTRY to Update the HP
+	if (battle_config.show_monster_hp_bar)
+		clif->set_unit_walking(&md->bl, NULL, unit->bl2ud(&md->bl), AREA);
+#endif
 
-#if PACKETVER >= 20120404
+#if (PACKETVER >= 20120404 && PACKETVER < 20131223)
 	if (battle_config.show_monster_hp_bar && !(md->status.mode&MD_BOSS)) {
 		int i;
 		for(i = 0; i < DAMAGELOG_SIZE; i++){ // must show hp bar to all char who already hit the mob.
@@ -3819,7 +3831,7 @@ void mob_read_db_drops_sub(struct mob_db *entry, struct status_data *mstatus, in
 			continue;
 		}
 		type = id->type;
-		if ((class_ >= 1324 && class_ <= 1363) || (class_ >= 1938 && class_ <= 1946)) {
+		if ((class_ >= MOBID_TREASURE_BOX1 && class_ <= MOBID_TREASURE_BOX40) || (class_ >= MOBID_TREASURE_BOX41 && class_ <= MOBID_TREASURE_BOX49)) {
 			//Treasure box drop rates [Skotlex]
 			rate_adjust = battle_config.item_rate_treasure;
 			ratemin = battle_config.item_drop_treasure_min;
@@ -3860,8 +3872,10 @@ void mob_read_db_drops_sub(struct mob_db *entry, struct status_data *mstatus, in
 		entry->dropitem[idx].p = mob->drop_adjust(value, rate_adjust, ratemin, ratemax);
 
 		//calculate and store Max available drop chance of the item
-		if (entry->dropitem[idx].p && (class_ < 1324 || class_ > 1363) && (class_ < 1938 || class_ > 1946))
-		{ //Skip treasure chests.
+		if (entry->dropitem[idx].p
+		 && (class_ < MOBID_TREASURE_BOX1 || class_ > MOBID_TREASURE_BOX40)
+		 && (class_ < MOBID_TREASURE_BOX41 || class_ > MOBID_TREASURE_BOX49)) {
+			//Skip treasure chests.
 			if (id->maxchance == -1 || (id->maxchance < entry->dropitem[idx].p) ) {
 				id->maxchance = entry->dropitem[idx].p; //item has bigger drop chance or sold in shops
 			}
@@ -4373,7 +4387,7 @@ int mob_read_randommonster(void)
 	for (i = 0; i < ARRAYLENGTH(mobfile) && i < MAX_RANDOMMONSTER; i++) {
 		FILE *fp;
 		unsigned int count = 0;
-		mob->db_data[0]->summonper[i] = 1002; // Default fallback value, in case the database does not provide one
+		mob->db_data[0]->summonper[i] = MOBID_PORING; // Default fallback value, in case the database does not provide one
 		sprintf(line, "%s/%s", map->db_path, mobfile[i]);
 		fp=fopen(line,"r");
 		if(fp==NULL){
@@ -4996,9 +5010,30 @@ int do_final_mob(void)
 
 void mob_defaults(void) {
 	// Defines the Manuk/Splendide/Mora mob groups for the status reductions [Epoque & Frost]
-	const int mob_manuk[8] = { 1986, 1987, 1988, 1989, 1990, 1997, 1998, 1999 };
-	const int mob_splendide[5] = { 1991, 1992, 1993, 1994, 1995 };
-	const int mob_mora[5] = { 2137, 2136, 2134, 2133, 2132 };
+	const int mob_manuk[8] = {
+		MOBID_TATACHO,
+		MOBID_CENTIPEDE,
+		MOBID_NEPENTHES,
+		MOBID_HILLSRION,
+		MOBID_HARDROCK_MOMMOTH,
+		MOBID_G_TATACHO,
+		MOBID_G_HILLSRION,
+		MOBID_CENTIPEDE_LARVA,
+	};
+	const int mob_splendide[5] = {
+		MOBID_TENDRILRION,
+		MOBID_CORNUS,
+		MOBID_NAGA,
+		MOBID_LUCIOLA_VESPA,
+		MOBID_PINGUICULA,
+	};
+	const int mob_mora[5] = {
+		MOBID_POM_SPIDER,
+		MOBID_ANGRA_MANTIS,
+		MOBID_PARUS,
+		MOBID_LITTLE_FATUM,
+		MOBID_MIMING,
+	};
 
 	mob = &mob_s;
 

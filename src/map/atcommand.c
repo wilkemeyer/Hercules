@@ -1530,7 +1530,7 @@ ACMD(help) {
 	}
 
 	// Display help contents
-	clif->message(fd, tinfo->help);
+	clif->messageln(fd, tinfo->help);
 	return true;
 }
 
@@ -1991,7 +1991,7 @@ ACMD(monster)
 	for (i = 0; i < number; i++) {
 		int k;
 		map->search_freecell(&sd->bl, 0, &mx,  &my, range, range, 0);
-		k = mob->once_spawn(sd, sd->bl.m, mx, my, name, mob_id, 1, eventname, size, AI_NONE|(mob_id == MOBID_EMPERIUM?0x200:0x0));
+		k = mob->once_spawn(sd, sd->bl.m, mx, my, name, mob_id, 1, eventname, size, AI_NONE|(mob_id == MOBID_EMPELIUM?0x200:0x0));
 		count += (k != 0) ? 1 : 0;
 	}
 
@@ -3888,6 +3888,8 @@ ACMD(mapinfo) {
 		strcat(atcmd_output, msg_fd(fd,1096)); // PartyLock |
 	if (map->list[m_id].flag.guildlock)
 		strcat(atcmd_output, msg_fd(fd,1097)); // GuildLock |
+	if (map->list[m_id].flag.noviewid)
+		strcat(atcmd_output, msg_fd(fd,1079)); // NoViewID |
 	clif->message(fd, atcmd_output);
 
 	switch (list) {
@@ -6860,8 +6862,8 @@ ACMD(hommutate) {
 		return false;
 	}
 
-	if (!*message) {
-		homun_id = 6048 + (rnd() % 4);
+	if (*message == '\0') {
+		homun_id = HOMID_EIRA + (rnd() % 4);
 	} else {
 		homun_id = atoi(message);
 	}
@@ -7539,7 +7541,7 @@ ACMD(mapflag) {
 		CHECKFLAG(nojobexp);          CHECKFLAG(nomobloot);          CHECKFLAG(nomvploot);    CHECKFLAG(nightenabled);
 		CHECKFLAG(nodrop);            CHECKFLAG(novending);          CHECKFLAG(loadevent);
 		CHECKFLAG(nochat);            CHECKFLAG(partylock);          CHECKFLAG(guildlock);    CHECKFLAG(src4instance);
-		CHECKFLAG(notomb);            CHECKFLAG(nocashshop);
+		CHECKFLAG(notomb);            CHECKFLAG(nocashshop);         CHECKFLAG(noviewid);
 		clif->message(sd->fd," ");
 		clif->message(sd->fd,msg_fd(fd,1312)); // Usage: "@mapflag monster_noteleport 1" (0=Off | 1=On)
 		clif->message(sd->fd,msg_fd(fd,1313)); // Type "@mapflag available" to list the available mapflags.
@@ -7576,7 +7578,7 @@ ACMD(mapflag) {
 	SETFLAG(nojobexp);          SETFLAG(nomobloot);          SETFLAG(nomvploot);    SETFLAG(nightenabled);
 	SETFLAG(nodrop);            SETFLAG(novending);          SETFLAG(loadevent);
 	SETFLAG(nochat);            SETFLAG(partylock);          SETFLAG(guildlock);    SETFLAG(src4instance);
-	SETFLAG(notomb);            SETFLAG(nocashshop);
+	SETFLAG(notomb);            SETFLAG(nocashshop);         SETFLAG(noviewid);
 
 	clif->message(sd->fd,msg_fd(fd,1314)); // Invalid flag name or flag.
 	clif->message(sd->fd,msg_fd(fd,1312)); // Usage: "@mapflag monster_noteleport 1" (0=Off | 1=On)
@@ -7588,7 +7590,7 @@ ACMD(mapflag) {
 	clif->message(sd->fd,"nozenypenalty, notrade, noskill, nowarp, nowarpto, noicewall, snow, clouds, clouds2,");
 	clif->message(sd->fd,"fog, fireworks, sakura, leaves, nobaseexp, nojobexp, nomobloot,");
 	clif->message(sd->fd,"nomvploot, nightenabled, nodrop, novending, loadevent, nochat, partylock,");
-	clif->message(sd->fd,"guildlock, src4instance, notomb, nocashshop");
+	clif->message(sd->fd,"guildlock, src4instance, notomb, nocashshop, noviewid");
 #undef CHECKFLAG
 #undef SETFLAG
 
@@ -8435,14 +8437,15 @@ ACMD(accinfo) {
 }
 
 /* [Ind] */
-ACMD(set) {
-	char reg[32], val[128];
+ACMD(set)
+{
+	char reg[SCRIPT_VARNAME_LENGTH+1], val[254];
 	struct script_data* data;
 	int toset = 0;
 	bool is_str = false;
 	size_t len;
 
-	if (!*message || (toset = sscanf(message, "%31s %127[^\n]s", reg, val)) < 1) {
+	if (!*message || (toset = sscanf(message, "%32s %253[^\n]", reg, val)) < 1) {
 		clif->message(fd, msg_fd(fd,1367)); // Usage: @set <variable name> <value>
 		clif->message(fd, msg_fd(fd,1368)); // Usage: ex. "@set PoringCharVar 50"
 		clif->message(fd, msg_fd(fd,1369)); // Usage: ex. "@set PoringCharVarSTR$ Super Duper String"
@@ -10090,8 +10093,8 @@ void atcommand_config_read(const char* config_filename) {
 				if( commandinfo->help == NULL ) {
 					const char *str = libconfig->setting_get_string(command);
 					size_t len = strlen(str);
-					commandinfo->help = (char*)aMalloc( len * sizeof(char) );
-					safestrncpy(commandinfo->help, str, len);
+					commandinfo->help = (char*)aMalloc(len + 1);
+					safestrncpy(commandinfo->help, str, len + 1);
 				}
 			}
 		}

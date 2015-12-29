@@ -2088,7 +2088,7 @@ int skill_blown(struct block_list* src, struct block_list* target, int count, in
 	switch (target->type) {
 		case BL_MOB: {
 				struct mob_data* md = BL_CAST(BL_MOB, target);
-				if( md->class_ == MOBID_EMPERIUM )
+				if (md->class_ == MOBID_EMPELIUM)
 					return 0;
 				if(src != target && is_boss(target)) // Bosses can't be knocked-back
 					return 0;
@@ -3032,7 +3032,7 @@ int skill_check_unit_range2_sub (struct block_list *bl, va_list ap) {
 	if( skill_id == HP_BASILICA && bl->type == BL_PC )
 		return 0;
 
-	if( skill_id == AM_DEMONSTRATION && bl->type == BL_MOB && ((TBL_MOB*)bl)->class_ == MOBID_EMPERIUM )
+	if (skill_id == AM_DEMONSTRATION && bl->type == BL_MOB && ((TBL_MOB*)bl)->class_ == MOBID_EMPELIUM)
 		return 0; //Allow casting Bomb/Demonstration Right under emperium [Skotlex]
 	return 1;
 }
@@ -4999,15 +4999,13 @@ int skill_castend_id(int tid, int64 tick, int id, intptr_t data) {
 				break;
 			}
 
-			if( ud->skill_id >= SL_SKE && ud->skill_id <= SL_SKA && target->type == BL_MOB )
-			{
-				if( ((TBL_MOB*)target)->class_ == MOBID_EMPERIUM )
+			if (ud->skill_id >= SL_SKE && ud->skill_id <= SL_SKA && target->type == BL_MOB) {
+				if (((TBL_MOB*)target)->class_ == MOBID_EMPELIUM)
 					break;
-			}
-			else if (inf && battle->check_target(src, target, inf) <= 0){
+			} else if (inf && battle->check_target(src, target, inf) <= 0) {
 				if (sd) clif->skill_fail(sd,ud->skill_id,USESKILL_FAIL_LEVEL,0);
 				break;
-			} else if( ud->skill_id == RK_PHANTOMTHRUST && target->type != BL_MOB ) {
+			} else if (ud->skill_id == RK_PHANTOMTHRUST && target->type != BL_MOB) {
 				if( !map_flag_vs(src->m) && battle->check_target(src,target,BCT_PARTY) <= 0 )
 					break; // You can use Phantom Thurst on party members in normal maps too. [pakpil]
 			}
@@ -5401,19 +5399,18 @@ int skill_castend_nodamage_id(struct block_list *src, struct block_list *bl, uin
 				int heal = skill->calc_heal(src, bl, (skill_id == AB_HIGHNESSHEAL)?AL_HEAL:skill_id, (skill_id == AB_HIGHNESSHEAL)?10:skill_lv, true);
 				int heal_get_jobexp;
 				//Highness Heal: starts at 1.7 boost + 0.3 for each level
-				if( skill_id == AB_HIGHNESSHEAL ) {
-					heal = heal * ( 17 + 3 * skill_lv ) / 10;
+				if (skill_id == AB_HIGHNESSHEAL) {
+					heal = heal * (17 + 3 * skill_lv) / 10;
 				}
-				if( status->isimmune(bl) ||
-						(dstmd && (dstmd->class_ == MOBID_EMPERIUM || mob_is_battleground(dstmd))) )
-					heal=0;
+				if (status->isimmune(bl) || (dstmd != NULL && (dstmd->class_ == MOBID_EMPELIUM || mob_is_battleground(dstmd))))
+					heal = 0;
 
-				if( sd && dstsd && sd->status.partner_id == dstsd->status.char_id && (sd->class_&MAPID_UPPERMASK) == MAPID_SUPER_NOVICE && sd->status.sex == 0 )
-					heal = heal*2;
+				if (sd && dstsd && sd->status.partner_id == dstsd->status.char_id && (sd->class_&MAPID_UPPERMASK) == MAPID_SUPER_NOVICE && sd->status.sex == 0)
+					heal = heal * 2;
 
-				if( tsc && tsc->count )
+				if (tsc && tsc->count)
 				{
-					if( tsc->data[SC_KAITE] && !(sstatus->mode&MD_BOSS) )
+					if (tsc->data[SC_KAITE] && !(sstatus->mode&MD_BOSS))
 					{ //Bounce back heal
 						if (--tsc->data[SC_KAITE]->val2 <= 0)
 							status_change_end(bl, SC_KAITE, INVALID_TIMER);
@@ -5651,7 +5648,7 @@ int skill_castend_nodamage_id(struct block_list *src, struct block_list *bl, uin
 					clif->skill_fail(sd,skill_id,USESKILL_FAIL_LEVEL,0);
 					break;
 				}
-				class_ = skill_id==SA_MONOCELL?1002:mob->get_random_id(4, 1, 0);
+				class_ = skill_id == SA_MONOCELL ? MOBID_PORING : mob->get_random_id(4, 1, 0);
 				clif->skill_nodamage(src,bl,skill_id,skill_lv,1);
 				mob->class_change(dstmd,class_);
 				if( tsc && dstmd->status.mode&MD_BOSS )
@@ -6653,7 +6650,7 @@ int skill_castend_nodamage_id(struct block_list *src, struct block_list *bl, uin
 				clif->skill_fail(sd,skill_id,USESKILL_FAIL_LEVEL,0);
 				break;
 			}
-			if( dstmd && dstmd->class_ == MOBID_EMPERIUM )
+			if (dstmd && dstmd->class_ == MOBID_EMPELIUM)
 				break; // Cannot be Used on Emperium
 
 			clif->skill_nodamage(src, bl, skill_id, skill_lv, 1);
@@ -6846,7 +6843,7 @@ int skill_castend_nodamage_id(struct block_list *src, struct block_list *bl, uin
 			{
 				int i,sp = 0;
 				int64 hp = 0;
-				if( dstmd && dstmd->class_ == MOBID_EMPERIUM ) {
+				if (dstmd && dstmd->class_ == MOBID_EMPELIUM) {
 					map->freeblock_unlock();
 					return 1;
 				}
@@ -7383,9 +7380,9 @@ int skill_castend_nodamage_id(struct block_list *src, struct block_list *bl, uin
 			break;
 
 		case NPC_AGIUP:
-			sc_start(src,bl,SC_MOVHASTE_INFINITY,100,skill_lv,skill->get_time(skill_id, skill_lv));
-			clif->skill_nodamage(src,bl,skill_id,skill_lv,
-				sc_start(src,bl,type,100,100,skill->get_time(skill_id, skill_lv)));
+			sc_start(src, bl, SC_MOVHASTE_INFINITY, 100, 100, skill->get_time(skill_id, skill_lv)); // Fix 100% movement speed in all levels. [Frost]
+			clif->skill_nodamage(src, bl, skill_id, skill_lv,
+				sc_start(src, bl, type, 100, 100, skill->get_time(skill_id, skill_lv)));
 			break;
 
 		case NPC_INVISIBLE:
@@ -7623,7 +7620,7 @@ int skill_castend_nodamage_id(struct block_list *src, struct block_list *bl, uin
 		// Slim Pitcher
 		case CR_SLIMPITCHER:
 			// Updated to block Slim Pitcher from working on barricades and guardian stones.
-			if( dstmd && (dstmd->class_ == MOBID_EMPERIUM || (dstmd->class_ >= MOBID_BARRICADE1 && dstmd->class_ <= MOBID_GUARIDAN_STONE2)) )
+			if (dstmd != NULL && (dstmd->class_ == MOBID_EMPELIUM || (dstmd->class_ >= MOBID_BARRICADE && dstmd->class_ <= MOBID_S_EMPEL_2)))
 				break;
 			if (script->potion_hp || script->potion_sp) {
 				int hp = script->potion_hp, sp = script->potion_sp;
@@ -7703,9 +7700,9 @@ int skill_castend_nodamage_id(struct block_list *src, struct block_list *bl, uin
 					map->freeblock_unlock();
 					return 0;
 				}
-				if( rnd() % 100 > skill_lv * 8 || (dstmd && ((dstmd->guardian_data && dstmd->class_ == MOBID_EMPERIUM) || mob_is_battleground(dstmd))) ) {
-					if( sd )
-						clif->skill_fail(sd,skill_id,USESKILL_FAIL_LEVEL,0);
+				if (rnd() % 100 > skill_lv * 8 || (dstmd && ((dstmd->guardian_data && dstmd->class_ == MOBID_EMPELIUM) || mob_is_battleground(dstmd)))) {
+					if (sd != NULL)
+						clif->skill_fail(sd, skill_id, USESKILL_FAIL_LEVEL, 0);
 
 					map->freeblock_unlock();
 					return 0;
@@ -8741,7 +8738,7 @@ int skill_castend_nodamage_id(struct block_list *src, struct block_list *bl, uin
 			{
 				if( bl->type != BL_MOB ) break;
 				md = map->id2md(bl->id);
-				if( md && md->class_ >= MOBID_SILVERSNIPER && md->class_ <= MOBID_MAGICDECOY_WIND )
+				if (md && md->class_ >= MOBID_SILVERSNIPER && md->class_ <= MOBID_MAGICDECOY_WIND)
 					status_kill(bl);
 				clif->skill_nodamage(src, bl, skill_id, skill_lv, 1);
 			}
@@ -9426,13 +9423,17 @@ int skill_castend_nodamage_id(struct block_list *src, struct block_list *bl, uin
 				if( !sd->ed )
 					break;
 
-				switch(sd->ed->db->class_){
-					case 2115:case 2124:
-					case 2118:case 2121:
+				switch (sd->ed->db->class_) {
+					case ELEID_EL_AGNI_M:
+					case ELEID_EL_AQUA_M:
+					case ELEID_EL_VENTUS_M:
+					case ELEID_EL_TERA_M:
 						duration = 6000;
 						break;
-					case 2116:case 2119:
-					case 2122:case 2125:
+					case ELEID_EL_AGNI_L:
+					case ELEID_EL_AQUA_L:
+					case ELEID_EL_VENTUS_L:
+					case ELEID_EL_TERA_L:
 						duration = 9000;
 						break;
 				}
@@ -9633,7 +9634,7 @@ int skill_castend_nodamage_id(struct block_list *src, struct block_list *bl, uin
 			if(sd) {
 				struct mob_data *summon_md;
 
-				summon_md = mob->once_spawn_sub(src, src->m, src->x, src->y, status->get_name(src), 2308, "", SZ_SMALL, AI_NONE);
+				summon_md = mob->once_spawn_sub(src, src->m, src->x, src->y, status->get_name(src), MOBID_KO_KAGE, "", SZ_SMALL, AI_NONE);
 				if( summon_md ) {
 					summon_md->master_id = src->id;
 					summon_md->special_state.ai = AI_ZANZOU;
@@ -9795,18 +9796,27 @@ int skill_castend_nodamage_id(struct block_list *src, struct block_list *bl, uin
 			break;
 		case MH_SUMMON_LEGION:
 		{
-			int summons[5] = {1004, 1303, 1303, 1994, 1994};
-			int qty[5] =     {3   , 3   , 4   , 4   , 5};
-			struct mob_data *summon_md;
+			struct {
+				int mob_id;
+				int quantity;
+			} summons[5] = {
+				{ MOBID_HORNET,        3 },
+				{ MOBID_GIANT_HONET,   3 },
+				{ MOBID_GIANT_HONET,   4 },
+				{ MOBID_LUCIOLA_VESPA, 4 },
+				{ MOBID_LUCIOLA_VESPA, 5 },
+			};
 			int i, dummy = 0;
+			Assert_retb(skill_lv < ARRAYLENGTH(summons));
 
-			i = map->foreachinmap(skill->check_condition_mob_master_sub, src->m, BL_MOB, src->id, summons[skill_lv-1], skill_id, &dummy);
-			if(i >= qty[skill_lv-1])
+			i = map->foreachinmap(skill->check_condition_mob_master_sub, src->m, BL_MOB, src->id, summons[skill_lv-1].mob_id, skill_id, &dummy);
+			if(i >= summons[skill_lv-1].quantity)
 				break;
 
-			for(i=0; i<qty[skill_lv - 1]; i++){ //easy way
-				summon_md = mob->once_spawn_sub(src, src->m, src->x, src->y, status->get_name(src), summons[skill_lv - 1], "", SZ_SMALL, AI_ATTACK);
-				if (summon_md) {
+			for (i = 0; i < summons[skill_lv-1].quantity; i++) {
+				struct mob_data *summon_md = mob->once_spawn_sub(src, src->m, src->x, src->y, status->get_name(src),
+				                                                 summons[skill_lv-1].mob_id, "", SZ_SMALL, AI_ATTACK);
+				if (summon_md != NULL) {
 					summon_md->master_id = src->id;
 					if (summon_md->deletetimer != INVALID_TIMER)
 						timer->_delete(summon_md->deletetimer, mob->timer_delete);
@@ -10523,10 +10533,20 @@ int skill_castend_pos2(struct block_list* src, int x, int y, uint16 skill_id, ui
 		case AM_SPHEREMINE:
 		case AM_CANNIBALIZE:
 			{
-				int summons[5] = { 1589, 1579, 1575, 1555, 1590 };
-				//int summons[5] = { 1020, 1068, 1118, 1500, 1368 };
-				int class_ = skill_id==AM_SPHEREMINE?1142:summons[skill_lv-1];
 				struct mob_data *md;
+				int class_ = 0;
+				if (skill_id == AM_SPHEREMINE) {
+					class_ = MOBID_MARINE_SPHERE;
+				} else {
+					Assert_retb(skill_lv > 0 && skill_lv <= 5);
+					switch (skill_lv) {
+					case 1: class_ = MOBID_G_MANDRAGORA; break;
+					case 2: class_ = MOBID_G_HYDRA;      break;
+					case 3: class_ = MOBID_G_FLORA;      break;
+					case 4: class_ = MOBID_G_PARASITE;   break;
+					case 5: class_ = MOBID_G_GEOGRAPHER; break;
+					}
+				}
 
 				// Correct info, don't change any of this! [Celest]
 				md = mob->once_spawn_sub(src, src->m, x, y, status->get_name(src), class_, "", SZ_SMALL, AI_NONE);
@@ -10627,7 +10647,8 @@ int skill_castend_pos2(struct block_list* src, int x, int y, uint16 skill_id, ui
 				if (rnd()%100 < 50) {
 					clif->skill_fail(sd,skill_id,USESKILL_FAIL_LEVEL,0);
 				} else {
-					TBL_MOB* md = mob->once_spawn_sub(src, src->m, x, y, "--ja--",(skill_lv < 2 ? 1084+rnd()%2 : 1078+rnd()%6),"", SZ_SMALL, AI_NONE);
+					int mob_id = skill_lv < 2 ? MOBID_BLACK_MUSHROOM + rnd()%2 : MOBID_RED_PLANT + rnd()%6;
+					TBL_MOB* md = mob->once_spawn_sub(src, src->m, x, y, "--ja--", mob_id, "", SZ_SMALL, AI_NONE);
 					int i;
 					if (!md) break;
 					if ((i = skill->get_time(skill_id, skill_lv)) > 0)
@@ -10772,11 +10793,8 @@ int skill_castend_pos2(struct block_list* src, int x, int y, uint16 skill_id, ui
 
 		case NC_SILVERSNIPER:
 			{
-				int class_ = 2042;
-				struct mob_data *md;
-
-				md = mob->once_spawn_sub(src, src->m, x, y, status->get_name(src), class_, "", SZ_SMALL, AI_NONE);
-				if( md ) {
+				struct mob_data *md = mob->once_spawn_sub(src, src->m, x, y, status->get_name(src), MOBID_SILVERSNIPER, "", SZ_SMALL, AI_NONE);
+				if (md) {
 					md->master_id = src->id;
 					md->special_state.ai = AI_FLORA;
 					if( md->deletetimer != INVALID_TIMER )
@@ -11911,24 +11929,24 @@ int skill_unit_onplace_timer(struct skill_unit *src, struct block_list *bl, int6
 				int heal = skill->calc_heal(ss,bl,sg->skill_id,sg->skill_lv,true);
 				struct mob_data *md = BL_CAST(BL_MOB, bl);
 #ifdef RENEWAL
-				if( md && md->class_ == MOBID_EMPERIUM )
+				if (md != NULL && md->class_ == MOBID_EMPELIUM)
 					break;
 #endif
-				if( md && mob_is_battleground(md) )
+				if (md && mob_is_battleground(md))
 					break;
-				if( tstatus->hp >= tstatus->max_hp )
+				if (tstatus->hp >= tstatus->max_hp)
 					break;
-				if( status->isimmune(bl) )
+				if (status->isimmune(bl))
 					heal = 0;
 				clif->skill_nodamage(&src->bl, bl, AL_HEAL, heal, 1);
-				if( tsc && tsc->data[SC_AKAITSUKI] && heal )
+				if (tsc && tsc->data[SC_AKAITSUKI] && heal)
 					heal = ~heal + 1;
 				status->heal(bl, heal, 0, 0);
-				if( diff >= 500 )
+				if (diff >= 500)
 					sg->val1--;
 			}
-			if( sg->val1 <= 0 )
-				skill->del_unitgroup(sg,ALC_MARK);
+			if (sg->val1 <= 0)
+				skill->del_unitgroup(sg, ALC_MARK);
 			break;
 
 		case UNT_EVILLAND:
@@ -12133,7 +12151,7 @@ int skill_unit_onplace_timer(struct skill_unit *src, struct block_list *bl, int6
 			int heal;
 #ifdef RENEWAL
 			struct mob_data *md = BL_CAST(BL_MOB, bl);
-			if (md && md->class_ == MOBID_EMPERIUM)
+			if (md && md->class_ == MOBID_EMPELIUM)
 				break;
 #endif
 			if ((sg->src_id == bl->id && !(tsc && tsc->data[SC_SOULLINK] && tsc->data[SC_SOULLINK]->val2 == SL_BARDDANCER))
@@ -13667,7 +13685,7 @@ int skill_check_condition_castbegin(struct map_session_data* sd, uint16 skill_id
 		case SR_CURSEDCIRCLE:
 			if (map_flag_gvg2(sd->bl.m)) {
 				if (map->foreachinrange(mob->count_sub, &sd->bl, skill->get_splash(skill_id, skill_lv), BL_MOB,
-				                        MOBID_EMPERIUM, MOBID_GUARIDAN_STONE1, MOBID_GUARIDAN_STONE2)) {
+				                        MOBID_EMPELIUM, MOBID_S_EMPEL_1, MOBID_S_EMPEL_2)) {
 					char output[128];
 					sprintf(output, "You're too close to a stone or emperium to do this skill"); /* TODO official response? or message.conf it */
 					clif->messagecolor_self(sd->fd, COLOR_RED, output);
@@ -14024,10 +14042,22 @@ int skill_check_condition_castend(struct map_session_data* sd, uint16 skill_id, 
 		case AM_CANNIBALIZE:
 		case AM_SPHEREMINE: {
 			int c=0;
-			int summons[5] = { 1589, 1579, 1575, 1555, 1590 };
-			//int summons[5] = { 1020, 1068, 1118, 1500, 1368 };
-			int maxcount = (skill_id==AM_CANNIBALIZE)? 6-skill_lv : skill->get_maxcount(skill_id,skill_lv);
-			int mob_class = (skill_id==AM_CANNIBALIZE)? summons[skill_lv-1] :1142;
+			int maxcount = 0;
+			int mob_class = 0;
+			if (skill_id == AM_CANNIBALIZE) {
+				Assert_retb(skill_lv > 0 && skill_lv <= 5);
+				maxcount = 6-skill_lv;
+				switch (skill_lv) {
+					case 1: mob_class = MOBID_G_MANDRAGORA; break;
+					case 2: mob_class = MOBID_G_HYDRA;      break;
+					case 3: mob_class = MOBID_G_FLORA;      break;
+					case 4: mob_class = MOBID_G_PARASITE;   break;
+					case 5: mob_class = MOBID_G_GEOGRAPHER; break;
+				}
+			} else {
+				maxcount = skill->get_maxcount(skill_id,skill_lv);
+				mob_class = MOBID_MARINE_SPHERE;
+			}
 			if(battle_config.land_skill_limit && maxcount>0 && (battle_config.land_skill_limit&BL_PC)) {
 				i = map->foreachinmap(skill->check_condition_mob_master_sub ,sd->bl.m, BL_MOB, sd->bl.id, mob_class, skill_id, &c);
 				if( c >= maxcount
@@ -14044,17 +14074,15 @@ int skill_check_condition_castend(struct map_session_data* sd, uint16 skill_id, 
 		case NC_MAGICDECOY: {
 				int c = 0;
 				int maxcount = skill->get_maxcount(skill_id,skill_lv);
-				int mob_class = 2042;
-				if( skill_id == NC_MAGICDECOY )
-					mob_class = 2043;
 
 				if( battle_config.land_skill_limit && maxcount > 0 && ( battle_config.land_skill_limit&BL_PC ) ) {
-					if( skill_id == NC_MAGICDECOY ) {
+					if (skill_id == NC_MAGICDECOY) {
 						int j;
-						for(j = mob_class; j <= 2046; j++)
+						for (j = MOBID_MAGICDECOY_FIRE; j <= MOBID_MAGICDECOY_WIND; j++)
 							map->foreachinmap(skill->check_condition_mob_master_sub, sd->bl.m, BL_MOB, sd->bl.id, j, skill_id, &c);
-					} else
-						map->foreachinmap(skill->check_condition_mob_master_sub, sd->bl.m, BL_MOB, sd->bl.id, mob_class, skill_id, &c);
+					} else {
+						map->foreachinmap(skill->check_condition_mob_master_sub, sd->bl.m, BL_MOB, sd->bl.id, MOBID_SILVERSNIPER, skill_id, &c);
+					}
 					if( c >= maxcount ) {
 						clif->skill_fail(sd , skill_id, USESKILL_FAIL_LEVEL, 0);
 						return 0;
@@ -14064,7 +14092,7 @@ int skill_check_condition_castend(struct map_session_data* sd, uint16 skill_id, 
 			break;
 		case KO_ZANZOU: {
 				int c = 0;
-				i = map->foreachinmap(skill->check_condition_mob_master_sub, sd->bl.m, BL_MOB, sd->bl.id, 2308, skill_id, &c);
+				i = map->foreachinmap(skill->check_condition_mob_master_sub, sd->bl.m, BL_MOB, sd->bl.id, MOBID_KO_KAGE, skill_id, &c);
 				if( c >= skill->get_maxcount(skill_id,skill_lv) || c != i) {
 					clif->skill_fail(sd , skill_id, USESKILL_FAIL_LEVEL, 0);
 					return 0;
@@ -14778,6 +14806,8 @@ int skill_vfcastfix(struct block_list *bl, double time, uint16 skill_id, uint16 
 		}
 		if (sc->data[SC_FENRIR_CARD])
 			fixcast_r = max(fixcast_r, sc->data[SC_FENRIR_CARD]->val2);
+		if (sc->data[SC_MAGIC_CANDY])
+			fixcast_r = max(fixcast_r, sc->data[SC_MAGIC_CANDY]->val2);
 
 		// Fixed cast non percentage bonuses
 		if( sc->data[SC_MANDRAGORA] )
@@ -17587,7 +17617,7 @@ void skill_toggle_magicpower(struct block_list *bl, uint16 skill_id) {
 }
 
 int skill_magicdecoy(struct map_session_data *sd, int nameid) {
-	int x, y, i, class_, skill_id;
+	int x, y, i, class_ = 0, skill_id;
 	struct mob_data *md;
 	nullpo_ret(sd);
 	skill_id = sd->menuskill_val;
@@ -17607,7 +17637,20 @@ int skill_magicdecoy(struct map_session_data *sd, int nameid) {
 	sd->sc.comet_x = sd->sc.comet_y = 0;
 	sd->menuskill_val = 0;
 
-	class_ = (nameid == ITEMID_BOODY_RED || nameid == ITEMID_CRYSTAL_BLUE) ? 2043 + nameid - ITEMID_BOODY_RED : (nameid == ITEMID_WIND_OF_VERDURE) ? 2046 : 2045;
+	switch (nameid) {
+	case ITEMID_BOODY_RED:
+		class_ = MOBID_MAGICDECOY_FIRE;
+		break;
+	case ITEMID_CRYSTAL_BLUE:
+		class_ = MOBID_MAGICDECOY_WATER;
+		break;
+	case ITEMID_WIND_OF_VERDURE:
+		class_ = MOBID_MAGICDECOY_WIND;
+		break;
+	case ITEMID_YELLOW_LIVE:
+		class_ = MOBID_MAGICDECOY_EARTH;
+		break;
+	}
 
 	md =  mob->once_spawn_sub(&sd->bl, sd->bl.m, x, y, sd->status.name, class_, "", SZ_SMALL, AI_NONE);
 	if( md ) {
@@ -18531,11 +18574,11 @@ int skill_block_check(struct block_list *bl, sc_type type , uint16 skill_id) {
 int skill_get_elemental_type( uint16 skill_id , uint16 skill_lv ) {
 	int type = 0;
 
-	switch( skill_id ) {
-		case SO_SUMMON_AGNI:   type = 2114; break;
-		case SO_SUMMON_AQUA:   type = 2117; break;
-		case SO_SUMMON_VENTUS: type = 2120; break;
-		case SO_SUMMON_TERA:   type = 2123; break;
+	switch (skill_id) {
+		case SO_SUMMON_AGNI:   type = ELEID_EL_AGNI_S;   break;
+		case SO_SUMMON_AQUA:   type = ELEID_EL_AQUA_S;   break;
+		case SO_SUMMON_VENTUS: type = ELEID_EL_VENTUS_S; break;
+		case SO_SUMMON_TERA:   type = ELEID_EL_TERA_S;   break;
 	}
 
 	type += skill_lv - 1;

@@ -24041,6 +24041,32 @@ void HP_clif_pHotkeyRowShift(int fd, struct map_session_data *sd) {
 	}
 	return;
 }
+void HP_clif_dressroom_open(struct map_session_data *sd, int view) {
+	int hIndex = 0;
+	if( HPMHooks.count.HP_clif_dressroom_open_pre ) {
+		void (*preHookFunc) (struct map_session_data *sd, int *view);
+		*HPMforce_return = false;
+		for(hIndex = 0; hIndex < HPMHooks.count.HP_clif_dressroom_open_pre; hIndex++ ) {
+			preHookFunc = HPMHooks.list.HP_clif_dressroom_open_pre[hIndex].func;
+			preHookFunc(sd, &view);
+		}
+		if( *HPMforce_return ) {
+			*HPMforce_return = false;
+			return;
+		}
+	}
+	{
+		HPMHooks.source.clif.dressroom_open(sd, view);
+	}
+	if( HPMHooks.count.HP_clif_dressroom_open_post ) {
+		void (*postHookFunc) (struct map_session_data *sd, int *view);
+		for(hIndex = 0; hIndex < HPMHooks.count.HP_clif_dressroom_open_post; hIndex++ ) {
+			postHookFunc = HPMHooks.list.HP_clif_dressroom_open_post[hIndex].func;
+			postHookFunc(sd, &view);
+		}
+	}
+	return;
+}
 /* cmdline */
 void HP_cmdline_init(void) {
 	int hIndex = 0;
@@ -59441,6 +59467,87 @@ TBL_PC* HP_script_rid2sd(struct script_state *st) {
 		for(hIndex = 0; hIndex < HPMHooks.count.HP_script_rid2sd_post; hIndex++ ) {
 			postHookFunc = HPMHooks.list.HP_script_rid2sd_post[hIndex].func;
 			retVal___ = postHookFunc(retVal___, st);
+		}
+	}
+	return retVal___;
+}
+TBL_PC* HP_script_id2sd(struct script_state *st, int account_id) {
+	int hIndex = 0;
+	TBL_PC* retVal___ = NULL;
+	if( HPMHooks.count.HP_script_id2sd_pre ) {
+		TBL_PC* (*preHookFunc) (struct script_state *st, int *account_id);
+		*HPMforce_return = false;
+		for(hIndex = 0; hIndex < HPMHooks.count.HP_script_id2sd_pre; hIndex++ ) {
+			preHookFunc = HPMHooks.list.HP_script_id2sd_pre[hIndex].func;
+			retVal___ = preHookFunc(st, &account_id);
+		}
+		if( *HPMforce_return ) {
+			*HPMforce_return = false;
+			return retVal___;
+		}
+	}
+	{
+		retVal___ = HPMHooks.source.script.id2sd(st, account_id);
+	}
+	if( HPMHooks.count.HP_script_id2sd_post ) {
+		TBL_PC* (*postHookFunc) (TBL_PC* retVal___, struct script_state *st, int *account_id);
+		for(hIndex = 0; hIndex < HPMHooks.count.HP_script_id2sd_post; hIndex++ ) {
+			postHookFunc = HPMHooks.list.HP_script_id2sd_post[hIndex].func;
+			retVal___ = postHookFunc(retVal___, st, &account_id);
+		}
+	}
+	return retVal___;
+}
+TBL_PC* HP_script_charid2sd(struct script_state *st, int char_id) {
+	int hIndex = 0;
+	TBL_PC* retVal___ = NULL;
+	if( HPMHooks.count.HP_script_charid2sd_pre ) {
+		TBL_PC* (*preHookFunc) (struct script_state *st, int *char_id);
+		*HPMforce_return = false;
+		for(hIndex = 0; hIndex < HPMHooks.count.HP_script_charid2sd_pre; hIndex++ ) {
+			preHookFunc = HPMHooks.list.HP_script_charid2sd_pre[hIndex].func;
+			retVal___ = preHookFunc(st, &char_id);
+		}
+		if( *HPMforce_return ) {
+			*HPMforce_return = false;
+			return retVal___;
+		}
+	}
+	{
+		retVal___ = HPMHooks.source.script.charid2sd(st, char_id);
+	}
+	if( HPMHooks.count.HP_script_charid2sd_post ) {
+		TBL_PC* (*postHookFunc) (TBL_PC* retVal___, struct script_state *st, int *char_id);
+		for(hIndex = 0; hIndex < HPMHooks.count.HP_script_charid2sd_post; hIndex++ ) {
+			postHookFunc = HPMHooks.list.HP_script_charid2sd_post[hIndex].func;
+			retVal___ = postHookFunc(retVal___, st, &char_id);
+		}
+	}
+	return retVal___;
+}
+TBL_PC* HP_script_nick2sd(struct script_state *st, const char *name) {
+	int hIndex = 0;
+	TBL_PC* retVal___ = NULL;
+	if( HPMHooks.count.HP_script_nick2sd_pre ) {
+		TBL_PC* (*preHookFunc) (struct script_state *st, const char *name);
+		*HPMforce_return = false;
+		for(hIndex = 0; hIndex < HPMHooks.count.HP_script_nick2sd_pre; hIndex++ ) {
+			preHookFunc = HPMHooks.list.HP_script_nick2sd_pre[hIndex].func;
+			retVal___ = preHookFunc(st, name);
+		}
+		if( *HPMforce_return ) {
+			*HPMforce_return = false;
+			return retVal___;
+		}
+	}
+	{
+		retVal___ = HPMHooks.source.script.nick2sd(st, name);
+	}
+	if( HPMHooks.count.HP_script_nick2sd_post ) {
+		TBL_PC* (*postHookFunc) (TBL_PC* retVal___, struct script_state *st, const char *name);
+		for(hIndex = 0; hIndex < HPMHooks.count.HP_script_nick2sd_post; hIndex++ ) {
+			postHookFunc = HPMHooks.list.HP_script_nick2sd_post[hIndex].func;
+			retVal___ = postHookFunc(retVal___, st, name);
 		}
 	}
 	return retVal___;
