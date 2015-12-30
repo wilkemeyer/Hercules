@@ -18,19 +18,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#define HERCULES_CORE
 
-#include "nullpo.h"
+#include "stdafx.h"
 
-#include "showmsg.h"
 
-#include <stdio.h>
-#include <stdarg.h>
-#include <stdlib.h>
-#include <string.h>
-#ifdef HAVE_EXECINFO
-#include <execinfo.h>
-#endif // HAVE_EXECINFO
 
 struct nullpo_interface nullpo_s;
 struct nullpo_interface *nullpo;

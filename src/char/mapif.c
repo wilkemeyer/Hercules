@@ -18,22 +18,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#define HERCULES_CORE
-
-#include "mapif.h"
-
-#include "char.h"
-#include "int_auction.h"
-#include "int_guild.h"
-#include "int_homun.h"
-#include "../common/cbasetypes.h"
-#include "../common/mmo.h"
-#include "../common/random.h"
-#include "../common/showmsg.h"
-#include "../common/socket.h"
-#include "../common/strlib.h"
-
-#include <stdlib.h>
+#include "stdafx.h"
 
 void mapif_ban(int id, unsigned int flag, int status);
 void mapif_server_init(int id);

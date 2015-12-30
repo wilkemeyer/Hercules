@@ -18,21 +18,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#define HERCULES_CORE
+#include "stdafx.h"
 
-#include "sql.h"
-
-#include "cbasetypes.h"
-#include "memmgr.h"
-#include "showmsg.h"
-#include "strlib.h"
-#include "timer.h"
-
-#ifdef WIN32
-#	include "winapi.h" // Needed before mysql.h
-#endif
-#include <mysql.h>
-#include <stdlib.h> // strtoul
 
 void hercules_mysql_error_handler(unsigned int ecode);
 

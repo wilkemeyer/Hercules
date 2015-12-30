@@ -18,20 +18,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#define HERCULES_CORE
+#include "stdafx.h"
 
-#include "duel.h"
-
-#include "atcommand.h"  // msg_txt
-#include "clif.h"
-#include "pc.h"
-#include "../common/cbasetypes.h"
-#include "../common/nullpo.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
 
 struct duel_interface duel_s;
 struct duel_interface *duel;

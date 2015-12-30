@@ -18,38 +18,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#define HERCULES_CORE
-
-#include "login.h"
+#include "stdafx.h"
 
 
-#include "account.h"
-#include "ipban.h"
-#include "loginlog.h"
-
-
-#include "../common/cbasetypes.h"
-#include "../common/conf.h"
-#include "../common/core.h"
-#include "../common/db.h"
-#include "../common/memmgr.h"
-#include "../common/md5calc.h"
-#include "../common/nullpo.h"
-#include "../common/random.h"
-#include "../common/showmsg.h"
-#include "../common/socket.h"
-#include "../common/strlib.h"
-#include "../common/timer.h"
-#include "../common/utils.h"
-#include "../common/console.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-
-// Win32:
-#if defined(_MSC_VER)
-#pragma comment(lib, "..\\..\\build\\common.lib")
-#endif
 
 struct login_interface login_s;
 struct login_interface *login;

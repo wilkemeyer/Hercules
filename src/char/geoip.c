@@ -18,17 +18,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#define HERCULES_CORE
-
-#include "geoip.h"
-
-#include "../common/cbasetypes.h"
-#include "../common/memmgr.h"
-#include "../common/showmsg.h"
-
-#include <errno.h>
-#include <stdio.h>
-#include <sys/stat.h> // for stat/lstat/fstat - [Dekamaster/Ultimate GM Tool]
+#include "stdafx.h"
 
 struct s_geoip geoip_data;
 

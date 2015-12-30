@@ -18,28 +18,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#define HERCULES_CORE
+#include "stdafx.h"
 
-#include "storage.h"
-
-#include "atcommand.h"
-#include "battle.h"
-#include "chrif.h"
-#include "clif.h"
-#include "guild.h"
-#include "intif.h"
-#include "itemdb.h"
-#include "log.h"
-#include "map.h" // struct map_session_data
-#include "pc.h"
-#include "../common/cbasetypes.h"
-#include "../common/db.h"
-#include "../common/memmgr.h"
-#include "../common/nullpo.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 struct storage_interface storage_s;
 struct guild_storage_interface gstorage_s;

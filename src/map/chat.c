@@ -18,26 +18,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#define HERCULES_CORE
-
-#include "chat.h"
-
-#include "atcommand.h" // msg_sd(sd,)
-#include "battle.h" // struct battle_config
-#include "clif.h"
-#include "map.h"
-#include "npc.h" // npc_event_do()
-#include "pc.h"
-#include "skill.h" // ext_skill_unit_onplace()
-#include "../common/cbasetypes.h"
-#include "../common/memmgr.h"
-#include "../common/mmo.h"
-#include "../common/nullpo.h"
-#include "../common/showmsg.h"
-#include "../common/strlib.h"
-
-#include <stdio.h>
-#include <string.h>
+#include "stdafx.h"
 
 struct chat_interface chat_s;
 struct chat_interface *chat;

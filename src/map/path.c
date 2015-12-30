@@ -18,23 +18,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#define HERCULES_CORE
+#include "stdafx.h"
 
-#include "../config/core.h" // CELL_NOSTACK, CIRCULAR_AREA
-#include "path.h"
-
-#include "map.h"
-#include "../common/cbasetypes.h"
-#include "../common/db.h"
-#include "../common/memmgr.h"
-#include "../common/nullpo.h"
-#include "../common/random.h"
-#include "../common/showmsg.h"
-
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 #define SET_OPEN 0
 #define SET_CLOSED 1

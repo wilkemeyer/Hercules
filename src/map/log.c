@@ -18,24 +18,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#define HERCULES_CORE
-
-#include "log.h"
-
-#include "battle.h"
-#include "itemdb.h"
-#include "map.h"
-#include "mob.h"
-#include "pc.h"
-#include "../common/cbasetypes.h"
-#include "../common/nullpo.h"
-#include "../common/showmsg.h"
-#include "../common/sql.h" // SQL_INNODB
-#include "../common/strlib.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "stdafx.h"
 
 struct log_interface log_s;
 struct log_interface *logs;

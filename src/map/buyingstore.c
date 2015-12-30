@@ -18,22 +18,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#define HERCULES_CORE
-
-#include "buyingstore.h" // struct s_buyingstore
-
-#include "atcommand.h" // msg_txt
-#include "battle.h" // battle_config.*
-#include "chrif.h"
-#include "clif.h" // clif-"buyingstore_*
-#include "log.h" // log_pick_pc, log_zeny
-#include "pc.h" // struct map_session_data
-#include "../common/cbasetypes.h"
-#include "../common/db.h" // ARR_FIND
-#include "../common/nullpo.h" // nullpo_*
-#include "../common/showmsg.h" // ShowWarning
-#include "../common/socket.h" // RBUF*
-#include "../common/strlib.h" // safestrncpy
+#include "stdafx.h"
 
 struct buyingstore_interface buyingstore_s;
 struct buyingstore_interface *buyingstore;

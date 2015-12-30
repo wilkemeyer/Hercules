@@ -29,8 +29,6 @@
 #include "../common/mmo.h"
 #include "../common/sql.h"
 
-#include <stdio.h>
-#include <stdarg.h>
 
 struct mob_data;
 struct npc_data;

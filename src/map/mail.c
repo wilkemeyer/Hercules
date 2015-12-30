@@ -18,21 +18,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#define HERCULES_CORE
-
-#include "mail.h"
-
-#include "atcommand.h"
-#include "clif.h"
-#include "itemdb.h"
-#include "log.h"
-#include "pc.h"
-#include "storage.h"
-#include "../common/nullpo.h"
-#include "../common/showmsg.h"
-
-#include <time.h>
-#include <string.h>
+#include "stdafx.h"
 
 struct mail_interface mail_s;
 struct mail_interface *mail;

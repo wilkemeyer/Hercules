@@ -41,6 +41,8 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 
 #include <Windows.h>
+#include <RichEdit.h>
+#include <Windowsx.h>
 #include <WinSock2.h>
 #include <In6addr.h>
 #include <Ws2tcpip.h>
@@ -50,10 +52,13 @@
 #include <stdio.h>	// vsnprintf
 #include <stdarg.h>	// vsnprintf
 #include <stdlib.h>	// EXIT_FAILURE
+#include <signal.h>
+#include <math.h>
+#include <sys/types.h>
+#include <sys/stat.h> 
 #include <time.h>
 #include <io.h>
 #include <Mswsock.h>
 #include <MMSystem.h>
 
-#include <RichEdit.h>
-#include <Windowsx.h>
+

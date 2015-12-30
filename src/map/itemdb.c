@@ -18,27 +18,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#define HERCULES_CORE
-
-#include "../config/core.h" // DBPATH, RENEWAL
-#include "itemdb.h"
-
-#include "battle.h" // struct battle_config
-#include "map.h"
-#include "mob.h"    // MAX_MOB_DB
-#include "pc.h"     // W_MUSICAL, W_WHIP
-#include "script.h" // item script processing
-#include "../common/conf.h"
-#include "../common/memmgr.h"
-#include "../common/nullpo.h"
-#include "../common/random.h"
-#include "../common/showmsg.h"
-#include "../common/strlib.h"
-#include "../common/utils.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "stdafx.h"
 
 struct itemdb_interface itemdb_s;
 struct itemdb_interface *itemdb;

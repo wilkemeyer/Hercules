@@ -18,54 +18,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#define HERCULES_CORE
-
-#include "../config/core.h"
-#include "../rgcore/rgcore.h"
-
-#include "core.h"
-
-#include "cbasetypes.h"
-#include "console.h"
-#include "db.h"
-#include "memmgr.h"
-#include "mmo.h"
-#include "random.h"
-#include "showmsg.h"
-#include "strlib.h"
-#include "sysinfo.h"
-#include "nullpo.h"
+#include "stdafx.h"
 
 using namespace rgCore;
 
 
-#ifndef MINICORE
-#	include "conf.h"
-#	include "ers.h"
-#	include "socket.h"
-#	include "sql.h"
-#	include "timer.h"
-#	include "utils.h"
-#endif
-
-#ifndef _WIN32
-#	include <unistd.h>
-#else
-#	include "winapi.h" // Console close event handling
-#endif
-#include <signal.h>
-#include <stdio.h>
-#include <stdlib.h>
-
-#if defined(_MSC_VER)
-#pragma comment(lib, "..\\..\\build\\common.lib")
-#pragma comment(lib, "..\\..\\build\\zlib.lib")
-#pragma comment(lib, "..\\..\\build\\libconfig.lib")
-#pragma comment(lib, "..\\..\\build\\sfmt.lib")
-#pragma comment(lib, "..\\..\\build\\rgcore.lib")
-#pragma comment(lib, "..\\..\\3rdparty\\mysql\\lib\\libmysql.lib")
-#pragma comment(lib, "ws2_32.lib")
-#endif
 
 /// Called when a terminate signal is received.
 void (*shutdown_callback)(void) = NULL;

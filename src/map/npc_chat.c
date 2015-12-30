@@ -18,27 +18,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#define HERCULES_CORE
+#include "stdafx.h"
 
 #ifdef PCRE_SUPPORT
-
-#include "npc.h" // struct npc_data
-
-#include "mob.h" // struct mob_data
-#include "pc.h" // struct map_session_data
-#include "script.h" // set_var()
-#include "../common/memmgr.h"
-#include "../common/nullpo.h"
-#include "../common/showmsg.h"
-#include "../common/strlib.h"
-#include "../common/timer.h"
-
-#include <pcre/include/pcre.h>
-
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 /**
  * interface sources

@@ -28,8 +28,6 @@
 #include "../common/sql.h" // Sql
 #include "../common/strlib.h" //StringBuf
 
-#include <errno.h>
-#include <setjmp.h>
 
 /**
  * Declarations

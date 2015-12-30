@@ -18,55 +18,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#define HERCULES_CORE
+#include "stdafx.h"
 
-#include "../config/core.h" // CONSOLE_INPUT
-#include "char.h"
 
-#include "geoip.h"
-#include "int_auction.h"
-#include "int_elemental.h"
-#include "int_guild.h"
-#include "int_homun.h"
-#include "int_mail.h"
-#include "int_mercenary.h"
-#include "int_party.h"
-#include "int_pet.h"
-#include "int_quest.h"
-#include "int_storage.h"
-#include "inter.h"
-#include "loginif.h"
-#include "mapif.h"
-#include "pincode.h"
-
-#include "../common/cbasetypes.h"
-#include "../common/console.h"
-#include "../common/core.h"
-#include "../common/db.h"
-#include "../common/memmgr.h"
-#include "../common/mapindex.h"
-#include "../common/mmo.h"
-#include "../common/nullpo.h"
-#include "../common/showmsg.h"
-#include "../common/socket.h"
-#include "../common/strlib.h"
-#include "../common/sql.h"
-#include "../common/timer.h"
-#include "../common/utils.h"
-
-#include <signal.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#ifndef WIN32
-#	include <unistd.h>
-#endif
-
-// Win32:
-#if defined(_MSC_VER)
-#pragma comment(lib, "..\\..\\build\\common.lib")
-#endif
 
 // private declarations
 char char_db[256] = "char";

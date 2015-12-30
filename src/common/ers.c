@@ -58,17 +58,7 @@
  * @see common#ers.h                                                         *
 \*****************************************************************************/
 
-#define HERCULES_CORE
-
-#include "ers.h"
-
-#include "cbasetypes.h"
-#include "memmgr.h" // CREATE, RECREATE, aMalloc, aFree
-#include "nullpo.h"
-#include "showmsg.h" // ShowMessage, ShowError, ShowFatalError, CL_BOLD, CL_NORMAL
-
-#include <stdlib.h>
-#include <string.h>
+#include "stdafx.h"
 
 #ifndef DISABLE_ERS
 

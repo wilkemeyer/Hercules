@@ -25,7 +25,6 @@
 #include "../common/hercules.h"
 #include "../common/mmo.h" // MAX_SLOTS
 
-#include <time.h>
 
 /**
  * Defines

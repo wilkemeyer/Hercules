@@ -86,18 +86,7 @@
  * @see #db.h
 \*****************************************************************************/
 
-#define HERCULES_CORE
-
-#include "db.h"
-
-#include "ers.h"
-#include "memmgr.h"
-#include "mmo.h"
-#include "showmsg.h"
-#include "strlib.h"
-
-#include <stdio.h>
-#include <stdlib.h>
+#include "stdafx.h"
 
 struct db_interface DB_s;
 struct db_interface *DB;

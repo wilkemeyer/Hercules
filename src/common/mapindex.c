@@ -18,18 +18,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#define HERCULES_CORE
+#include "stdafx.h"
 
-#include "mapindex.h"
-
-#include "cbasetypes.h"
-#include "db.h"
-#include "mmo.h"
-#include "showmsg.h"
-#include "strlib.h"
-
-#include <stdio.h>
-#include <stdlib.h>
 
 /* mapindex.c interface source */
 struct mapindex_interface mapindex_s;

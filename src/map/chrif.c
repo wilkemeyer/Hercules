@@ -18,39 +18,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#define HERCULES_CORE
+#include "stdafx.h"
 
-#include "../config/core.h" // AUTOTRADE_PERSISTENCY, STATS_OPT_OUT
-#include "chrif.h"
-
-#include "battle.h"
-#include "clif.h"
-#include "elemental.h"
-#include "guild.h"
-#include "homunculus.h"
-#include "instance.h"
-#include "intif.h"
-#include "map.h"
-#include "mercenary.h"
-#include "npc.h"
-#include "pc.h"
-#include "pet.h"
-#include "quest.h"
-#include "skill.h"
-#include "status.h"
-#include "storage.h"
-#include "../common/cbasetypes.h"
-#include "../common/ers.h"
-#include "../common/memmgr.h"
-#include "../common/nullpo.h"
-#include "../common/showmsg.h"
-#include "../common/socket.h"
-#include "../common/strlib.h"
-#include "../common/timer.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/types.h>
 
 struct chrif_interface chrif_s;
 struct chrif_interface *chrif;

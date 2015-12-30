@@ -18,33 +18,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#define HERCULES_CORE
-
-#include "../config/core.h" // CELL_NOSTACK
-#include "instance.h"
-
-#include "channel.h"
-#include "clif.h"
-#include "guild.h"
-#include "map.h"
-#include "npc.h"
-#include "party.h"
-#include "pc.h"
-#include "../common/cbasetypes.h"
-#include "../common/db.h"
-#include "../common/memmgr.h"
-#include "../common/nullpo.h"
-#include "../common/showmsg.h"
-#include "../common/socket.h"
-#include "../common/strlib.h"
-#include "../common/timer.h"
-#include "../common/utils.h"
-
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
+#include "stdafx.h"
 
 struct instance_interface instance_s;
 struct instance_interface *instance;

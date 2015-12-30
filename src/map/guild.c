@@ -18,37 +18,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#define HERCULES_CORE
-
-#include "../config/core.h" // GP_BOUND_ITEMS
-#include "guild.h"
-
-#include "battle.h"
-#include "channel.h"
-#include "clif.h"
-#include "instance.h"
-#include "intif.h"
-#include "log.h"
-#include "map.h"
-#include "mob.h"
-#include "npc.h"
-#include "pc.h"
-#include "skill.h"
-#include "status.h"
-#include "storage.h"
-#include "../common/cbasetypes.h"
-#include "../common/ers.h"
-#include "../common/memmgr.h"
-#include "../common/mapindex.h"
-#include "../common/nullpo.h"
-#include "../common/showmsg.h"
-#include "../common/strlib.h"
-#include "../common/timer.h"
-#include "../common/utils.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "stdafx.h"
 
 struct guild_interface guild_s;
 struct guild_interface *guild;

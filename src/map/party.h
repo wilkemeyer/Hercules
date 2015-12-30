@@ -26,8 +26,6 @@
 #include "../common/db.h"
 #include "../common/mmo.h" // struct party
 
-#include <stdarg.h>
-
 #define PARTY_BOOKING_JOBS 6
 #define PARTY_BOOKING_RESULTS 10
 

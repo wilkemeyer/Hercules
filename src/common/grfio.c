@@ -18,22 +18,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#define HERCULES_CORE
+#include "stdafx.h"
 
-#include "grfio.h"
 
-#include "cbasetypes.h"
-#include "des.h"
-#include "memmgr.h"
-#include "nullpo.h"
-#include "showmsg.h"
-#include "strlib.h"
-#include "utils.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/stat.h>
-#include <zlib.h>
 
 //----------------------------
 // file entry table struct

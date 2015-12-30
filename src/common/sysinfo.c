@@ -24,22 +24,8 @@
  *
  * Base Author: Haru @ http://herc.ws
  */
-#define HERCULES_CORE
+#include "stdafx.h"
 
-#include "sysinfo.h"
-
-#include "cbasetypes.h"
-#include "core.h"
-#include "memmgr.h"
-#include "strlib.h"
-
-#include <stdio.h> // fopen
-#include <stdlib.h> // atoi
-#ifdef WIN32
-#	include <windows.h>
-#else
-#	include <unistd.h>
-#endif
 
 /// Private interface fields
 struct sysinfo_private {

@@ -18,53 +18,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#define HERCULES_CORE
+#include "stdafx.h"
 
-#include "../config/core.h" // SHOW_SERVER_STATS
-#include "socket.h"
-
-#include "cbasetypes.h"
-#include "db.h"
-#include "memmgr.h"
-#include "mmo.h"
-#include "nullpo.h"
-#include "showmsg.h"
-#include "strlib.h"
-#include "timer.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/types.h>
-
-#ifdef WIN32
-#	include "winapi.h"
-#else
-#	include <arpa/inet.h>
-#	include <errno.h>
-#	include <net/if.h>
-#	include <netdb.h>
-#if defined __linux__ || defined __linux
-#       include <linux/tcp.h>
-#else
-#	include <netinet/in.h>
-#	include <netinet/tcp.h>
-#endif
-#	include <sys/ioctl.h>
-#	include <sys/socket.h>
-#	include <sys/time.h>
-#	include <unistd.h>
-
-#	ifndef SIOCGIFCONF
-#		include <sys/sockio.h> // SIOCGIFCONF on Solaris, maybe others? [Shinomori]
-#	endif
-#	ifndef FIONBIO
-#		include <sys/filio.h> // FIONBIO on Solaris [FlavioJS]
-#	endif
-
-#	ifdef HAVE_SETRLIMIT
-#		include <sys/resource.h>
-#	endif
-#endif
 
 /**
  * Socket Interface Source

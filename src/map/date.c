@@ -18,13 +18,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#define HERCULES_CORE
-
-#include "date.h"
-
-#include "../common/cbasetypes.h"
-
-#include <time.h>
+#include "stdafx.h"
 
 int date_get_year(void)
 {

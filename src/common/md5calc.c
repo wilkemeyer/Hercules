@@ -18,7 +18,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#define HERCULES_CORE
 
 /***********************************************************
  * md5 calculation algorithm
@@ -28,14 +27,8 @@
  *
  ***********************************************************/
 
-#include "md5calc.h"
+#include "stdafx.h"
 
-#include "cbasetypes.h"
-#include "random.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 // Global variable
 static unsigned int *pX;

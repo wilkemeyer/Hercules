@@ -18,22 +18,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#define HERCULES_CORE
-
-#include "loginif.h"
-
-#include "char.h"
-#include "mapif.h"
-#include "../common/cbasetypes.h"
-#include "../common/core.h"
-#include "../common/db.h"
-#include "../common/nullpo.h"
-#include "../common/showmsg.h"
-#include "../common/socket.h"
-#include "../common/timer.h"
-
-#include <stdlib.h>
-#include <string.h>
+#include "stdafx.h"
 
 struct loginif_interface loginif_s;
 struct loginif_interface *loginif;

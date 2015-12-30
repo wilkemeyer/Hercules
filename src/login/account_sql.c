@@ -18,22 +18,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#define HERCULES_CORE
+#include "stdafx.h"
 
-#include "../config/core.h" // CONSOLE_INPUT
-#include "account.h"
-
-#include "../common/cbasetypes.h"
-#include "../common/console.h"
-#include "../common/memmgr.h"
-#include "../common/mmo.h"
-#include "../common/nullpo.h"
-#include "../common/showmsg.h"
-#include "../common/socket.h"
-#include "../common/sql.h"
-#include "../common/strlib.h"
-
-#include <stdlib.h>
 
 /// global defines
 #define ACCOUNT_SQL_DB_VERSION 20110114

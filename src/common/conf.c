@@ -18,13 +18,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#define HERCULES_CORE
+#include "stdafx.h"
 
-#include "conf.h"
 
-#include "showmsg.h" // ShowError
-
-#include <libconfig/libconfig.h>
 
 /* interface source */
 struct libconfig_interface libconfig_s;

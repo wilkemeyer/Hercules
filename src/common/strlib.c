@@ -18,17 +18,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#define HERCULES_CORE
+#include "stdafx.h"
 
-#include "strlib.h"
-
-#include "cbasetypes.h"
-#include "memmgr.h"
-#include "showmsg.h"
-
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
 
 #define J_MAX_MALLOC_SIZE 65535
 

@@ -26,7 +26,6 @@
 #include "../common/hercules.h"
 #include "../common/mmo.h" // NAME_LENGTH
 
-#include <stdarg.h>
 
 /**
  * Enums

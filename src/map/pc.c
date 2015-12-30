@@ -18,59 +18,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#define HERCULES_CORE
-
-#include "../config/core.h" // DBPATH, GP_BOUND_ITEMS, MAX_SPIRITBALL, RENEWAL, RENEWAL_ASPD, RENEWAL_CAST, RENEWAL_DROP, RENEWAL_EXP, SECURE_NPCTIMEOUT
-#include "pc.h"
-
-#include "atcommand.h" // get_atcommand_level()
-#include "battle.h" // battle_config
-#include "battleground.h"
-#include "channel.h"
-#include "chat.h"
-#include "chrif.h"
-#include "clif.h"
-#include "date.h" // is_day_of_*()
-#include "duel.h"
-#include "elemental.h"
-#include "guild.h" // guild-"search(), guild_request_info()
-#include "homunculus.h"
-#include "instance.h"
-#include "intif.h"
-#include "itemdb.h"
-#include "log.h"
-#include "mail.h"
-#include "map.h"
-#include "mercenary.h"
-#include "mob.h" // struct mob_data
-#include "npc.h" // fake_nd
-#include "party.h" // party-"search()
-#include "path.h"
-#include "pc_groups.h"
-#include "pet.h" // pet_unlocktarget()
-#include "quest.h"
-#include "script.h" // script_config
-#include "skill.h"
-#include "status.h" // struct status_data
-#include "storage.h"
-#include "../common/cbasetypes.h"
-#include "../common/conf.h"
-#include "../common/core.h" // get_svn_revision()
-#include "../common/memmgr.h"
-#include "../common/mmo.h" // NAME_LENGTH, MAX_CARTS, NEW_CARTS
-#include "../common/nullpo.h"
-#include "../common/random.h"
-#include "../common/showmsg.h"
-#include "../common/socket.h"
-#include "../common/strlib.h" // safestrncpy()
-#include "../common/sysinfo.h"
-#include "../common/timer.h"
-#include "../common/utils.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
+#include "stdafx.h"
 
 struct pc_interface pc_s;
 struct pc_interface *pc;

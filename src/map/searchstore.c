@@ -18,17 +18,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#define HERCULES_CORE
-
-#include "searchstore.h" // struct s_search_store_info
-
-#include "battle.h" // battle_config.*
-#include "clif.h" // clif-"open_search_store_info, clif-"search_store_info_*
-#include "pc.h" // struct map_session_data
-#include "../common/cbasetypes.h"
-#include "../common/memmgr.h" // aMalloc, aRealloc, aFree
-#include "../common/showmsg.h" // ShowError, ShowWarning
-#include "../common/strlib.h" // safestrncpy
+#include "stdafx.h"
 
 struct searchstore_interface searchstore_s;
 struct searchstore_interface *searchstore;

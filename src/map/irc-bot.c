@@ -21,25 +21,7 @@
 /**
  * Base Author: shennetsind @ http://herc.ws
  */
-#define HERCULES_CORE
-
-#include "irc-bot.h"
-
-#include "channel.h"
-#include "map.h"
-#include "pc.h"
-#include "../common/cbasetypes.h"
-#include "../common/memmgr.h"
-#include "../common/nullpo.h"
-#include "../common/random.h"
-#include "../common/showmsg.h"
-#include "../common/socket.h"
-#include "../common/strlib.h"
-#include "../common/timer.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "stdafx.h"
 
 //#define IRCBOT_DEBUG
 

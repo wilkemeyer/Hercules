@@ -18,19 +18,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#define HERCULES_CORE
-
-#include "ipban.h"
-
-#include "login.h"
-#include "loginlog.h"
-#include "../common/cbasetypes.h"
-#include "../common/nullpo.h"
-#include "../common/sql.h"
-#include "../common/strlib.h"
-#include "../common/timer.h"
-
-#include <stdlib.h>
+#include "stdafx.h"
 
 // global sql settings
 static char   global_db_hostname[32] = "127.0.0.1";

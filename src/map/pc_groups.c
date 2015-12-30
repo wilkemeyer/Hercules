@@ -18,21 +18,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#define HERCULES_CORE
-
-#include "pc_groups.h"
-
-#include "atcommand.h" // atcommand-"exists(), atcommand-"load_groups()
-#include "clif.h"      // clif-"GM_kick()
-#include "map.h"       // mapiterator
-#include "pc.h"        // pc-"set_group()
-#include "../common/cbasetypes.h"
-#include "../common/conf.h"
-#include "../common/db.h"
-#include "../common/memmgr.h"
-#include "../common/nullpo.h"
-#include "../common/showmsg.h"
-#include "../common/strlib.h" // strcmp
+#include "stdafx.h"
 
 static GroupSettings dummy_group; ///< dummy group used in dummy map sessions @see pc_get_dummy_sd()
 

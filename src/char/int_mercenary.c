@@ -18,25 +18,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#define HERCULES_CORE
-
-#include "int_mercenary.h"
-
-#include "char.h"
-#include "inter.h"
-#include "mapif.h"
-#include "../common/cbasetypes.h"
-#include "../common/memmgr.h"
-#include "../common/mmo.h"
-#include "../common/nullpo.h"
-#include "../common/showmsg.h"
-#include "../common/socket.h"
-#include "../common/sql.h"
-#include "../common/strlib.h"
-#include "../common/utils.h"
-
-#include <stdio.h>
-#include <stdlib.h>
+#include "stdafx.h"
 
 struct inter_mercenary_interface inter_mercenary_s;
 struct inter_mercenary_interface *inter_mercenary;

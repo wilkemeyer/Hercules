@@ -18,19 +18,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#define HERCULES_CORE
-
-#include "utils.h"
-
-#include "cbasetypes.h"
-#include "core.h"
-#include "mmo.h"
-#include "showmsg.h"
-#include "socket.h"
-#include "strlib.h"
+#include "stdafx.h"
 
 #ifdef WIN32
-#	include "winapi.h"
 #	ifndef F_OK
 #		define F_OK   0x0
 #	endif  /* F_OK */
@@ -39,10 +29,6 @@
 #	include <unistd.h>
 #endif
 
-#include <math.h> // floor()
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/stat.h> // cache purposes [Ind/Hercules]
 
 struct HCache_interface HCache_s;
 struct HCache_interface *HCache;

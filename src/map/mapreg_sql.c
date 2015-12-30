@@ -18,23 +18,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#define HERCULES_CORE
-
-#include "mapreg.h"
-
-#include "map.h" // map-"mysql_handle
-#include "script.h"
-#include "../common/cbasetypes.h"
-#include "../common/db.h"
-#include "../common/ers.h"
-#include "../common/memmgr.h"
-#include "../common/showmsg.h"
-#include "../common/sql.h"
-#include "../common/strlib.h"
-#include "../common/timer.h"
-
-#include <stdlib.h>
-#include <string.h>
+#include "stdafx.h"
 
 struct mapreg_interface mapreg_s;
 struct mapreg_interface *mapreg;

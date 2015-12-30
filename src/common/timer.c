@@ -18,28 +18,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#define HERCULES_CORE
+#include "stdafx.h"
 
-#include "timer.h"
-
-#include "cbasetypes.h"
-#include "db.h"
-#include "memmgr.h"
-#include "showmsg.h"
-#include "utils.h"
-
-#include "../rgcore/rgcore.h" // Time::getTick()
-
-#ifdef WIN32
-#	include "winapi.h" // GetTickCount()
-#else
-#	include <sys/time.h> // struct timeval, gettimeofday()
-#	include <unistd.h>
-#endif
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 struct timer_interface timer_s;
 struct timer_interface *timer;

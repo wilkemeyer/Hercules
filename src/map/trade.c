@@ -18,27 +18,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#define HERCULES_CORE
+#include "stdafx.h"
 
-#include "trade.h"
-
-#include "atcommand.h"
-#include "battle.h"
-#include "chrif.h"
-#include "clif.h"
-#include "intif.h"
-#include "itemdb.h"
-#include "log.h"
-#include "map.h"
-#include "npc.h"
-#include "path.h"
-#include "pc.h"
-#include "storage.h"
-#include "../common/nullpo.h"
-#include "../common/socket.h"
-
-#include <stdio.h>
-#include <string.h>
 
 struct trade_interface trade_s;
 struct trade_interface *trade;

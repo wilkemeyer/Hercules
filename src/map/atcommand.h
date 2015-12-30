@@ -26,7 +26,6 @@
 #include "../common/conf.h"
 #include "../common/db.h"
 
-#include <stdarg.h>
 
 /**
  * Declarations
