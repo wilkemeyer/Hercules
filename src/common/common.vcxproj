@@ -19,7 +19,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="atomic.h" />
     <ClInclude Include="cbasetypes.h" />
     <ClInclude Include="conf.h" />
     <ClInclude Include="console.h" />
@@ -38,11 +37,9 @@
     <ClInclude Include="random.h" />
     <ClInclude Include="showmsg.h" />
     <ClInclude Include="socket.h" />
-    <ClInclude Include="spinlock.h" />
     <ClInclude Include="sql.h" />
     <ClInclude Include="strlib.h" />
     <ClInclude Include="sysinfo.h" />
-    <ClInclude Include="thread.h" />
     <ClInclude Include="timer.h" />
     <ClInclude Include="utils.h" />
     <ClInclude Include="winapi.h" />
@@ -64,7 +61,6 @@
     <ClCompile Include="sql.c" />
     <ClCompile Include="strlib.c" />
     <ClCompile Include="sysinfo.c" />
-    <ClCompile Include="thread.c" />
     <ClCompile Include="timer.c" />
     <ClCompile Include="utils.c" />
   </ItemGroup>

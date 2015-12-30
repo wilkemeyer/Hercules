@@ -44,7 +44,6 @@ using namespace rgCore;
 #	include "ers.h"
 #	include "socket.h"
 #	include "sql.h"
-#	include "thread.h"
 #	include "timer.h"
 #	include "utils.h"
 #endif
@@ -430,7 +429,6 @@ DWORD __stdcall serverMain(util::thread *_self){
 #else// not MINICORE
 
 	Sql_Init();
-	rathread_init();
 	DB->init();
 	signals_init();
 
@@ -463,7 +461,6 @@ DWORD __stdcall serverMain(util::thread *_self){
 	timer->final();
 	sockt->final();
 	DB->final();
-	rathread_final();
 	ers_final();
 #endif
 	cmdline->final();
