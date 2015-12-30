@@ -401,6 +401,8 @@ DWORD __stdcall serverMain(util::thread *_self){
 
 	sockt->init();
 
+	putDbg("serverMain: Begin Application Initialization\n");
+
 	do_init(core->arg_c, core->arg_v);
 
 
@@ -423,7 +425,7 @@ DWORD __stdcall serverMain(util::thread *_self){
 	cmdline->final();
 	sysinfo->final();
 
-	putDbg("serverMain: Finished Finailization\n");
+	putDbg("serverMain: Finished Finalization\n");
 
 	rgCore_releaseIdleLoop();
 
@@ -485,6 +487,12 @@ int main (int argc, char **argv) {
 	//
 	util::thread *hServerMain = new util::thread("Athena Server Main", serverMain);
 
+	if(iniGetAppBoolean("serverMain Thread", "Disable Priority Boost", false) == true){
+		putLog("ServerMain Thread -> Disabling Time Steal (Priority Boost)!\n");
+		hServerMain->setTimeSteal(false);
+	}
+
+	
 
 
 	//
