@@ -50,15 +50,19 @@ __forceinline void iniGetString(const char *fileName,  const char *sectionName, 
 		::GetPrivateProfileStringA(sectionName, varName, defaultValue, destBuffer, (unsigned int)szDestBuffer, fileName);
 }
 
-
+// Tries to Read the value from app config 
+// if not found tries to read the value in defaults configuration - otherwise the specified defaultValue will be used
 __forceinline void iniGetAppString(const char *section, const char *varName, const char *defaultValue, char *destBuffer, size_t szDestBuffer){
 	char fn[256];
 
 	sprintf_s(fn, INI_DEFAULT_APP_CONFIG, rgCore_getAppName());
 
 	
-	iniGetString(fn, section, varName, defaultValue, destBuffer, szDestBuffer);
-
+	iniGetString(fn, section, varName, "\xfe", destBuffer, szDestBuffer);
+	if(destBuffer[0] == '\xfe'){
+		iniGetString(INI_DEFAULT_CONFIG, section, varName, defaultValue, destBuffer, szDestBuffer);
+	}
+	
 }//end: iniGetAppString()
 
 
@@ -73,14 +77,32 @@ __forceinline bool iniGetBoolean(const char *fileName,  const char *sectionName,
 	return _ini_parseBooleanString(buf);
 }
 
+
+// Tries to Read the value from app config 
+// if not found tries to read the value in defaults configuration - otherwise the specified defaultValue will be used
 __forceinline bool iniGetAppBoolean(const char *section, const char *varName, bool defaultValue) {
 	char fn[256];
+	char buf[64];
 
 	sprintf_s(fn, INI_DEFAULT_APP_CONFIG, rgCore_getAppName());
 
 
-	return iniGetBoolean(fn, section, varName, defaultValue);
 
+	iniGetString(fn, section, varName, "", buf, sizeof(buf));
+	if(buf[0] == '\0'){
+		iniGetString(INI_DEFAULT_CONFIG, section, varName, "", buf, sizeof(buf));
+		if(buf[0] == '\0'){
+			return defaultValue;
+		}else{
+			return _ini_parseBooleanString(buf);
+		}
+	}else{
+		return _ini_parseBooleanString(buf);
+	}
+
+
+	// never reached.
+	return false;
 }//end: iniGetAppBoolean()
 
 /**
@@ -140,12 +162,20 @@ __forceinline __int64 iniGetInteger(const char *fileName,  const char *sectionNa
 }
 
 
+// Tries to Read the value from app config 
+// if not found tries to read the value in defaults configuration - otherwise the specified defaultValue will be used
 __forceinline __int64 iniGetAppInteger(const char *section, const char *varName, __int64 defaultValue) {
 	char fn[256];
+	__int64 ret;
 
 	sprintf_s(fn, INI_DEFAULT_APP_CONFIG, rgCore_getAppName());
 
 
-	return iniGetInteger(fn, section, varName, defaultValue);
+	ret =  iniGetInteger(fn, section, varName, 0xFFFFFFFFFFFFFFA2);
+	if(ret == 0xFFFFFFFFFFFFFFA2){
+		ret =  iniGetInteger(INI_DEFAULT_CONFIG, section, varName, defaultValue);
+	}
 
+
+	return ret;
 }//end: iniGetAppBoolean()

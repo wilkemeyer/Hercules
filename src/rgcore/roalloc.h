@@ -32,6 +32,16 @@ char *_rostrdup(const char *pStr);
 #endif
 
 
+// Large Page Status
+enum LargePageStatus {
+	ROALLOC_LP_Disabled = 0,	// Disabled
+	ROALLOC_LP_OSRefused,		// Enabled in Configuration, but OS Refused (or implementation fail)
+	ROALLOC_LP_Enabled			// Enabled
+};
+
+enum LargePageStatus roalloc_getLargePageStatus();
+
+
 ///
 /// Wrappers for RBDB
 ///

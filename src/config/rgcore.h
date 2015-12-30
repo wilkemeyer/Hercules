@@ -13,6 +13,8 @@
 // Default Application Config File Name 
 #define INI_DEFAULT_APP_CONFIG "Settings/%s.ini"
 
+// Default File (Fallback) to be overridden by application config
+#define INI_DEFAULT_CONFIG "Settings/Defaults.ini"
 
 
 //// ==================================================================================

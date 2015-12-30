@@ -79,6 +79,14 @@ public:
 		if(Name == NULL || *Name == '\0')
 			Name = "Unnamed";
 
+		// Large Pages? (check settings)
+		if(rgCore_settings.poolAllowLargePages == false){
+			largePages = false; // disable in any case
+		}else{
+			if(rgCore_settings.poolEnforceLargePages == true){
+				largePages = true;
+			}
+		}
 
 		// Correct the allocStep by considerign the pageSize and the sgement Header Size
 		{
@@ -335,8 +343,7 @@ private:
 		//
 		size_t	szAllocBytes	= szSegmentHeader + (m_allocStep * (szNodeHeader + m_szElem));
 		DWORD	dwAllocFlags	= (MEM_COMMIT | MEM_RESERVE);
-		//size_t	szPage			= (m_bLargePages == true)?GetLargePageMinimum():4096;
-		size_t	szPage			= getpagesize();
+		size_t	szPage			= (m_bLargePages == true)?GetLargePageMinimum():getpagesize();
 
 		// Allocate always WHOLE pages
 		szAllocBytes = ALIGN_TO(szAllocBytes, szPage);

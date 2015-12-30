@@ -24,9 +24,27 @@
 
 #include "stdafx.h"
 
+enum LargePageStatus g_largePageStatus = ROALLOC_LP_Disabled;
+
+enum LargePageStatus roalloc_getLargePageStatus(){
+	return g_largePageStatus;
+}//end: roalloc_getLargePageStatus()
+
+
+
 #if LINUX | ROALLOC_USE_TBB
 
-static __forceinline void mbackend_init() {}
+static __forceinline void mbackend_init() {
+	bool bLargePages = iniGetAppBoolean("roalloc", "Use Large Lages", false);
+
+	if(bLargePages == true){
+		g_largePageStatus = ROALLOC_LP_Enabled;
+		if(TBBMALLOC_OK != scalable_allocation_mode(TBBMALLOC_USE_HUGE_PAGES, 1) ){
+			g_largePageStatus = ROALLOC_LP_OSRefused;
+		}
+	}
+}
+
 static __forceinline void mbackend_final() {}
 
 static __forceinline void *mbackend_allocAligned(size_t sz) {

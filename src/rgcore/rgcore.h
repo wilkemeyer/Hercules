@@ -23,3 +23,13 @@ void rgCore_releaseIdleLoop();
 void rgCore_idleLoop();
 
 const char *rgCore_getAppName();
+
+//
+// --
+//
+struct rgCoreSettings {
+	bool poolAllowLargePages;
+	bool poolEnforceLargePages;
+};
+extern struct rgCoreSettings rgCore_settings;
+
