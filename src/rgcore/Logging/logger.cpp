@@ -164,6 +164,46 @@ logger::~logger() {
 }//end: ~logger()
 
 
+void logger::flushLogging(){
+	size_t c = 0;
+
+	// Enforce the queue to be written to file.
+	while(1){
+		m_lock_queue.lock();
+		if(m_qbegin != NULL){
+			m_lock_queue.unlock();
+
+			// Signal The Worker again
+			m_cond_worker.signal();
+
+			if(c++ > 15000){
+				// More then 15k tries, probably a problem that the log is being spammed.. 
+				break;
+			}
+
+		}else{
+			m_lock_queue.unlock();
+
+			break; // break while!
+		}
+	}
+
+	
+	// Flush All Opened Log Files to disk!
+	m_lock_logToFileList.lock();
+	for(auto it = m_logToFileListBegin; it != NULL; it = it->next){
+	
+		fflush(it->fp);
+
+	}
+	m_lock_logToFileList.unlock();
+
+
+	////
+
+}//end: flushLogging()
+
+
 void logger::enableUDPConsole(const char *appName, const char *ip, unsigned short port) {
 
 	if(m_dbg_sock != INVALID_SOCKET)
@@ -576,6 +616,35 @@ struct logger::qElem *logger::copyQElem(const qElem *qe, bool use_roalloc, size_
 	return qout;
 }//end: copyQElem()
 
+
+void logger::copyFileLogFiles(const char *directory) {
+	char destName[512];
+
+	m_lock_logToFileList.lock();
+	m_lock_queue.lock(); // prevent logging more stuff
+
+
+	for(auto it = m_logToFileListBegin; it != NULL; it = it->next) {
+
+		sprintf_s(destName, "%s%s", directory, it->fileName);
+
+		// ensure that the path exists
+		for(char *p = destName; *p != '\0'; p++) {
+			char c = *p;
+			if(c == '/' || c == '\\') {
+				*p = '\0';
+				CreateDirectory(destName, NULL);
+				*p = c;
+			}
+		}
+
+		CopyFile(it->fileName, destName, FALSE);
+	}
+
+	m_lock_queue.unlock();
+	m_lock_logToFileList.unlock();
+
+}//end: copyFileLogLogFiles()
 
 
 const char *logger::logType2Str(enum LOGLEVEL lt){

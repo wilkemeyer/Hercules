@@ -75,6 +75,19 @@ namespace Logging {
 		 */
 		virtual __int64 get_Tick(void) = 0;
 
+	public:
+		//
+		// Methods used by Debug Subsystem
+		// (you should know what u're doing, theese may be dangerous)
+		
+		// Flushes the current log queue to files
+		void flushLogging();
+
+		// Copies the current log-files to the given directory
+		// Note: it will create the directory tree if it does not exist!
+		// Note: the given directory name must be terminated with /! (or \ on win32)
+		void copyFileLogFiles(const char *directory);
+
 
 	public:
 		///

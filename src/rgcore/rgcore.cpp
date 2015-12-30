@@ -16,6 +16,9 @@ void rgCore_init(const char *appName){
 	Logging::coreLogger::init();
 	Logging::g_globalLogger = Logging::coreLogger::get();
 
+	// Initialize Debug 
+	debug_init();
+
 	//
 	roalloc_init();
 	tick_init();
@@ -52,6 +55,8 @@ void rgCore_final() {
 
 	tick_final();
 	roalloc_final();
+
+	debug_final();
 
 	// Finalize Global Core Logger:
 	Logging::g_globalLogger = NULL;

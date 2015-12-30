@@ -2,6 +2,10 @@
 
 #if defined(ARCH_AMD64)
 
+// DBGHelp:
+#pragma comment(lib, "..\\..\\3rdparty\\dbghelp_x64\\lib\\dbghelp.lib")
+
+// 
 #if defined(_DEBUG)
 #pragma comment(lib, "..\\..\\3rdparty\\tbb\\bin\\Win64\\Debug\\tbbmalloc_debug64.lib")
 #else

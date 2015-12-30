@@ -60,5 +60,5 @@
 #include <io.h>
 #include <Mswsock.h>
 #include <MMSystem.h>
-
+#include <TlHelp32.h>
 

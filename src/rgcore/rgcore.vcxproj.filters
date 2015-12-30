@@ -42,6 +42,12 @@
     <Filter Include="Source Files\gui">
       <UniqueIdentifier>{0f839674-af7a-430e-bd28-6ec151c8a7b2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\debug">
+      <UniqueIdentifier>{a2598c08-792d-4dd4-961a-20bfbcbf975a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\debug">
+      <UniqueIdentifier>{8c77c29f-e579-471c-835c-86dd6972b513}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="rgcore.cpp">
@@ -67,6 +73,9 @@
     </ClCompile>
     <ClCompile Include="gui\win_ui.cpp">
       <Filter>Source Files\gui</Filter>
+    </ClCompile>
+    <ClCompile Include="debug\debug.cpp">
+      <Filter>Source Files\debug</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -144,6 +153,9 @@
     </ClInclude>
     <ClInclude Include="rgcore.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="debug\debug.h">
+      <Filter>Header Files\debug</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

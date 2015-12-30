@@ -31,6 +31,9 @@
 // rgCore Specific Methods (init/final etc)
 #include "rgcore.h"
 
+// Debug
+#include "debug/debug.h"
+
 // Architecture Definitions (such as alignment size)
 #include "arch.h"
 
