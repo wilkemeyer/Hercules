@@ -5541,60 +5541,6 @@ void do_shutdown(void)
 	}
 }
 
-CPCMD(gm_position) {
-	int x = 0, y = 0, m = 0;
-	char map_name[25];
-
-	if( line == NULL || sscanf(line, "%d %d %24s",&x,&y,map_name) < 3 ) {
-		ShowError("gm:info invalid syntax. use '"CL_WHITE"gm:info xCord yCord map_name"CL_RESET"'\n");
-		return;
-	}
-
-	if ((m = map->mapname2mapid(map_name)) <= 0) {
-		ShowError("gm:info '"CL_WHITE"%s"CL_RESET"' is not a known map\n",map_name);
-		return;
-	}
-
-	if( x < 0 || x >= map->list[m].xs || y < 0 || y >= map->list[m].ys ) {
-		ShowError("gm:info '"CL_WHITE"%d %d"CL_RESET"' is out of '"CL_WHITE"%s"CL_RESET"' map bounds!\n",x,y,map_name);
-		return;
-	}
-
-	ShowInfo("HCP: updated console's game position to '"CL_WHITE"%d %d %s"CL_RESET"'\n",x,y,map_name);
-	map->cpsd->bl.x = x;
-	map->cpsd->bl.y = y;
-	map->cpsd->bl.m = m;
-}
-CPCMD(gm_use) {
-
-	if( line == NULL ) {
-		ShowError("gm:use invalid syntax. use '"CL_WHITE"gm:use @command <optional params>"CL_RESET"'\n");
-		return;
-	}
-
-	map->cpsd_active = true;
-
-	if( !atcommand->exec(map->cpsd->fd, map->cpsd, line, false) )
-		ShowInfo("HCP: '"CL_WHITE"%s"CL_RESET"' failed\n",line);
-	else
-		ShowInfo("HCP: '"CL_WHITE"%s"CL_RESET"' was used\n",line);
-
-	map->cpsd_active = false;
-}
-/* Hercules Console Parser */
-void map_cp_defaults(void) {
-#ifdef CONSOLE_INPUT
-	/* default HCP data */
-	map->cpsd = pc->get_dummy_sd();
-	strcpy(map->cpsd->status.name, "Hercules Console");
-	map->cpsd->bl.x = mapindex->default_x;
-	map->cpsd->bl.y = mapindex->default_y;
-	map->cpsd->bl.m = map->mapname2mapid(mapindex->default_map);
-
-	console->input->addCommand("gm:info",CPCMD_A(gm_position));
-	console->input->addCommand("gm:use",CPCMD_A(gm_use));
-#endif
-}
 
 void map_load_defaults(void) {
 	mapindex_defaults();
@@ -5970,11 +5916,7 @@ int do_init(int argc, char *argv[])
 
 	Sql_HerculesUpdateCheck(map->mysql_handle);
 
-#ifdef CONSOLE_INPUT
-	console->input->setSQL(map->mysql_handle);
-	if (!minimal && core->runflag != CORE_ST_STOP)
-		console->display_gplnotice();
-#endif
+	console_display_gplnotice();
 
 	ShowStatus("Server is '"CL_GREEN"ready"CL_RESET"' and listening on port '"CL_WHITE"%d"CL_RESET"'.\n\n", map->port);
 
@@ -5982,8 +5924,6 @@ int do_init(int argc, char *argv[])
 		core->shutdown_callback = map->do_shutdown;
 		core->runflag = MAPSERVER_ST_RUNNING;
 	}
-
-	map_cp_defaults();
 
 	return 0;
 }

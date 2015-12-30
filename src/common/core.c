@@ -212,7 +212,6 @@ void core_defaults(void) {
 
 	nullpo_defaults();
 	sysinfo_defaults();
-	console_defaults();
 	strlib_defaults();
 	cmdline_defaults();
 #ifndef MINICORE
@@ -421,7 +420,7 @@ DWORD __stdcall serverMain(util::thread *_self){
 
 	sysinfo->init();
 
-	console->display_title();
+	console_display_title();
 
 	usercheck();
 
@@ -445,8 +444,6 @@ DWORD __stdcall serverMain(util::thread *_self){
 	rnd_init();
 	srand((unsigned int)timer->gettick());
 
-	console->init();
-
 	sockt->init();
 
 	do_init(core->arg_c, core->arg_v);
@@ -461,8 +458,6 @@ DWORD __stdcall serverMain(util::thread *_self){
 	}
 
 	putDbg("serverMain: Begin Finalization\n");
-
-	console->final();
 
 	retval = (DWORD)do_final();
 	timer->final();

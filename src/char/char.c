@@ -5954,10 +5954,9 @@ int do_init(int argc, char **argv) {
 	}
 
 	Sql_HerculesUpdateCheck(inter->sql_handle);
-#ifdef CONSOLE_INPUT
-	console->input->setSQL(inter->sql_handle);
-	console->display_gplnotice();
-#endif
+
+	console_display_gplnotice();
+
 	ShowStatus("The char-server is "CL_GREEN"ready"CL_RESET" (Server is listening on the port %d).\n\n", chr->port);
 
 	if( core->runflag != CORE_ST_STOP )

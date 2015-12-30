@@ -187,9 +187,7 @@ static bool account_db_sql_init(AccountDB* self)
 		Sql_ShowDebug(sql_handle);
 
 	Sql_HerculesUpdateCheck(db->accounts);
-#ifdef CONSOLE_INPUT
-	console->input->setSQL(db->accounts);
-#endif
+
 	return true;
 }
 
