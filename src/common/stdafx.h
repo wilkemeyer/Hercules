@@ -22,7 +22,7 @@
 
 
 // rgCore:
-#include "../rgcore/rgcore.h"
+#include "../rgcore/rgcore_api.h"
 
 
 // Locals:

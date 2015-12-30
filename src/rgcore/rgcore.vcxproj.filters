@@ -70,9 +70,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="rgcore.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -141,6 +138,12 @@
     </ClInclude>
     <ClInclude Include="gui\win_ui.h">
       <Filter>Header Files\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="rgcore_api.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="rgcore.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

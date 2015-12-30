@@ -1,4 +1,10 @@
 #pragma once
+/////////////////////////////////////////
+//
+// - Include this File in Your Project!
+// 
+/////////////////////////////////////////
+
 #define HERCULES_CORE
 
 
@@ -22,6 +28,10 @@
 //
 // Locals
 //
+// rgCore Specific Methods (init/final etc)
+#include "rgcore.h"
+
+// Architecture Definitions (such as alignment size)
 #include "arch.h"
 
 // Config Parsers
@@ -63,6 +73,4 @@
 
 // Memory Allocation / Pool
 #include "pool.hpp"
-
-
 
