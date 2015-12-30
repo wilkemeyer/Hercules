@@ -3,7 +3,7 @@
 // ..
 #include "../common/winapi.h"
 
-#include "rgcore.h"
+#include "rgcore_api.h"
 
 //
 #include "gui/win_ui.h"

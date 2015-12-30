@@ -41,6 +41,7 @@ return false;
 }
 
 
+
 __forceinline void iniGetString(const char *fileName,  const char *sectionName,  const char *varName, 
 									const char *defaultValue, 
 									char *destBuffer, 
@@ -48,6 +49,17 @@ __forceinline void iniGetString(const char *fileName,  const char *sectionName, 
 		
 		::GetPrivateProfileStringA(sectionName, varName, defaultValue, destBuffer, (unsigned int)szDestBuffer, fileName);
 }
+
+
+__forceinline void iniGetAppString(const char *section, const char *varName, const char *defaultValue, char *destBuffer, size_t szDestBuffer){
+	char fn[256];
+
+	sprintf_s(fn, "conf/%s.ini", rgCore_getAppName());
+
+	
+	iniGetString(fn, section, varName, defaultValue, destBuffer, szDestBuffer);
+
+}//end: iniGetAppString()
 
 
 __forceinline bool iniGetBoolean(const char *fileName,  const char *sectionName,  const char *varName, 
@@ -61,6 +73,15 @@ __forceinline bool iniGetBoolean(const char *fileName,  const char *sectionName,
 	return _ini_parseBooleanString(buf);
 }
 
+__forceinline bool iniGetAppBoolean(const char *section, const char *varName, bool defaultValue) {
+	char fn[256];
+
+	sprintf_s(fn, "conf/%s.ini", rgCore_getAppName());
+
+
+	return iniGetBoolean(fn, section, varName, defaultValue);
+
+}//end: iniGetAppBoolean()
 
 /**
 	* <summary>	Gets the given section/key from given ini-file, and returns integer
@@ -117,3 +138,14 @@ __forceinline __int64 iniGetInteger(const char *fileName,  const char *sectionNa
 		
 	return ::_strtoi64(p, NULL, base);
 }
+
+
+__forceinline __int64 iniGetAppInteger(const char *section, const char *varName, __int64 defaultValue) {
+	char fn[256];
+
+	sprintf_s(fn, "conf/%s.ini", rgCore_getAppName());
+
+
+	return iniGetInteger(fn, section, varName, defaultValue);
+
+}//end: iniGetAppBoolean()
