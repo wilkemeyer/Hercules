@@ -26,7 +26,7 @@ typedef struct TimerListEntry {
 
 } TimerListEntry;
 
-Pool<TimerListEntry>	*g_timerPool;
+static Pool<TimerListEntry>	*g_timerPool;
 static TimerListEntry	*heap[HEAPSIZE],
 						*listBegin,
 						**idMap;

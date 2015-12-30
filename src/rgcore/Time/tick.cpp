@@ -23,6 +23,7 @@ SOFTWARE.
 */
 
 #include "stdafx.h"
+#include "../stdafx.h"
 
 namespace rgCore { namespace Time {
 using namespace util;

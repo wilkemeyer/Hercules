@@ -128,7 +128,7 @@ public:
 
 		m_szElem		= szElem;
 		m_allocStep		= allocStep;
-		m_gcTimerID		= -1;
+		m_gcTimerID		= TIMER_INVALID_ID;
 
 		atomic::Exchange(&m_gcRunningLock, 0);
 
@@ -160,9 +160,9 @@ public:
 		}
 
 
-		if(m_gcTimerID != -1) {
-			timer->_delete_nocheck(m_gcTimerID);
-
+		if(m_gcTimerID != TIMER_INVALID_ID) {
+			Time::timer::del(m_gcTimerID);
+	
 			// Ensure that no GC is running during finalzation:
 			while(1) {
 				if(atomic::CompareAndSwap(&m_gcRunningLock, 0, 0) == 0)
@@ -170,7 +170,7 @@ public:
 				SwitchToThread();
 			}
 
-			m_gcTimerID = -1; // blockz::Time::ITimerSystem::TIMER_INVALID_ID;
+			m_gcTimerID = TIMER_INVALID_ID; // blockz::Time::ITimerSystem::TIMER_INVALID_ID;
 		}
 
 
@@ -220,7 +220,7 @@ public:
 		m_bGarbageCollection = true;
 		m_gcTimeout = timeWaitForReuse;
 		m_cbOnGarbageCollect = cbOnGarbageCollect;
-		m_gcTimerID = timer->add_interval(timer->gettick_nocache()+timeWaitForReuse, Pool<T>::gcProcProxy, 0, this, timeWaitForReuse);
+		m_gcTimerID = Time::timer::addInterval(Time::tick_get() + timeWaitForReuse, timeWaitForReuse, Pool<T>::gcProcProxy, this, 0);
 
 	}//end: setupGC()
 
@@ -286,7 +286,7 @@ public:
 
 		if(m_bGarbageCollection == true) {
 			// GC Enabled, push to gc list
-			node->gcReuseTick = timer->gettick_nocache() + m_gcTimeout;
+			node->gcReuseTick = Time::tick_get() + m_gcTimeout;
 
 			atomic::SListPush(&m_nodeWaitForGCList, node);
 
@@ -476,13 +476,13 @@ private:
 private:
 	///
 	/// GC Proc
-	static int gcProcProxy(int timerID, __int64 tick, int id, intptr_t data) {
-		Pool<T> *_this = (Pool*)data;
+	static bool gcProcProxy(int timerID, void *paramPtr, size_t paramInt){
+		Pool<T> *_this = (Pool*)paramPtr;
 		return _this->gcProc();
 	}//end: gcProcProxy()
 
 
-	int gcProc() {
+	bool gcProc() {
 		//Pool<T> *_this = (Pool*)data;
 		Pool<T>::Node *iter, *skipBegin, *skipEnd;
 		size_t nSkipped, curTick, nRecycled;
@@ -507,7 +507,7 @@ private:
 		skipBegin = NULL;
 		skipEnd = NULL;
 
-		curTick = timer->gettick_nocache();
+		curTick = Time::tick_get();
 
 
 		while(1) {
@@ -572,7 +572,7 @@ private:
 		// Release lock
 		atomic::Exchange(&this->m_gcRunningLock, 0);
 
-		return 0;
+		return false; // do NOT self-delete timer!
 	}//end: gcProc()
 
 
