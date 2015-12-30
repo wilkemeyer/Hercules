@@ -148,7 +148,7 @@ public:
 	__forceinline ~Pool() {
 
 		if(m_numFree < m_numTotal) {
-			showmsg->showError("~Pool<%s>:  Pool is not Empty!\n", m_name);
+			ShowError("~Pool<%s>:  Pool is not Empty!\n", m_name);
 		}
 
 
@@ -262,10 +262,10 @@ public:
 
 #ifdef ASSERT_POOL
 		if(node->pool != this || node->magic != PI_NODE_MAGIC) {
-			showmsg->showError("Pool<%s>::put(): ASSERT %s fail\n", m_name, (node->pool != this)?"pool":"magic");
+			ShowError("Pool<%s>::put(): ASSERT %s fail\n", m_name, (node->pool != this)?"pool":"magic");
 			//
 			if(node->magic == PI_NODE_MAGIC)
-				showmsg->showError("this %s != node %s\n", this->m_name, node->pool->m_name);
+				ShowError("this %s != node %s\n", this->m_name, node->pool->m_name);
 			return;
 		}
 #endif
@@ -366,7 +366,7 @@ private:
 			}
 			
 
-			showmsg->showFatalError("Pool<%s>::segmentAllocate(): VirtualAlloc failed! (Errcode: %u) - Bytes Total: %u\n", m_name, err, szAllocBytes);
+			ShowFatalError("Pool<%s>::segmentAllocate(): VirtualAlloc failed! (Errcode: %u) - Bytes Total: %u\n", m_name, err, szAllocBytes);
 	
 
 			if(err == ERROR_NOT_ENOUGH_MEMORY) {
@@ -395,14 +395,14 @@ private:
 
 			if(err == ERROR_PRIVILEGE_NOT_HELD) {
 				//  No Permission to 'Lock pages in memory',  to allow: Open Security Policy manager => Local Policies => User Rights Assignment => Lock pages in Memory, add the user.
-				showmsg->showError("Pool<%s>::segmentAllocate(): Allocation of LargePages failed, this happens when the Current user has no Permission to LOCK Pages in Memory (to allow: Open Security Policy manager => Local Policies => User Rights Assignment => Lock pages in Memory, add the user)\n", m_name);
+				ShowError("Pool<%s>::segmentAllocate(): Allocation of LargePages failed, this happens when the Current user has no Permission to LOCK Pages in Memory (to allow: Open Security Policy manager => Local Policies => User Rights Assignment => Lock pages in Memory, add the user)\n", m_name);
 				dwAllocFlags &= ~MEM_LARGE_PAGES;
 				continue;
 			}
 
 
 			if(err == ERROR_NO_SYSTEM_RESOURCES) {
-				showmsg->showError("Pool<%s>::segmentAllocate(): Allocation of large Pages failed, system reported out of ressources, allocating normal pages, please reboot the system!\n", m_name);
+				ShowError("Pool<%s>::segmentAllocate(): Allocation of large Pages failed, system reported out of ressources, allocating normal pages, please reboot the system!\n", m_name);
 				dwAllocFlags &= ~MEM_LARGE_PAGES;
 				continue;
 			}
@@ -469,7 +469,7 @@ private:
 private:
 	///
 	/// GC Proc
-	static int gcProcProxy(int timerID, int64 tick, int id, intptr_t data) {
+	static int gcProcProxy(int timerID, __int64 tick, int id, intptr_t data) {
 		Pool<T> *_this = (Pool*)data;
 		return _this->gcProc();
 	}//end: gcProcProxy()
@@ -577,7 +577,7 @@ private:
 	typedef atomic64_align struct Node: atomic::SLIST_NODE {
 		void		*ptr;	// elem ptr
 
-		int64	gcReuseTick;	// used when GC is enabled, REUSE Timeout. (gettick() >= gcReuseTick == could be reused)
+		__int64	gcReuseTick;	// used when GC is enabled, REUSE Timeout. (gettick() >= gcReuseTick == could be reused)
 
 #ifdef ASSERT_POOL
 		Pool	*pool;
@@ -600,7 +600,7 @@ private:
 	
 	
 	int					m_gcTimerID;
-	int64				m_gcTimeout;	// Time before node can be reused when running in gc mode.s
+	__int64				m_gcTimeout;	// Time before node can be reused when running in gc mode.s
 
 	cbInitializeNode		m_cbNodeInit;
 	cbFinalizeNode		m_cbNodeFinal;

@@ -1743,15 +1743,6 @@ int login_config_read(const char* cfgName)
 		if (sscanf(line, "%1023[^:]: %1023[^\r\n]", w1, w2) < 2)
 			continue;
 
-		if(!strcmpi(w1,"timestamp_format"))
-			safestrncpy(showmsg->timestamp_format, w2, 20);
-		else if(!strcmpi(w1,"stdout_with_ansisequence"))
-			showmsg->stdout_with_ansisequence = config_switch(w2) ? true : false;
-		else if(!strcmpi(w1,"console_silent")) {
-			showmsg->silent = atoi(w2);
-			if (showmsg->silent) /* only bother if we actually have this enabled */
-				ShowInfo("Console Silent Setting: %d\n", atoi(w2));
-		}
 		else if( !strcmpi(w1, "bind_ip") ) {
 			login_config.login_ip = sockt->host2ip(w2);
 			if( login_config.login_ip ) {

@@ -197,7 +197,6 @@ void core_defaults(void) {
 	sysinfo_defaults();
 	console_defaults();
 	strlib_defaults();
-	showmsg_defaults();
 	cmdline_defaults();
 #ifndef MINICORE
 	libconfig_defaults();
@@ -337,12 +336,8 @@ int cmdline_exec(int argc, char **argv, unsigned int options)
 				exit(EXIT_FAILURE);
 			i++;
 		}
-		if (options&CMDLINE_OPT_SILENT) {
-			if (data->options&CMDLINE_OPT_SILENT) {
-				showmsg->silent = 0x7; // silence information and status messages
-				break;
-			}
-		} else if ((data->options&CMDLINE_OPT_PREINIT) == (options&CMDLINE_OPT_PREINIT)) {
+		
+		if ((data->options&CMDLINE_OPT_PREINIT) == (options&CMDLINE_OPT_PREINIT)) {
 			const char *param = NULL;
 			if (data->options&CMDLINE_OPT_PARAM) {
 				param = argv[i]; // Already incremented above
@@ -409,18 +404,34 @@ int main (int argc, char **argv) {
 	}
 	core_defaults();
 	
-	rgCore_init();
+	set_server_type();
+	
+	{
+		//
+		// Initialize rgCore
+		//
+		char *appName;
+		if(SERVER_TYPE == SERVER_TYPE_MAP){
+			appName = "MapServer";
+		}else if(SERVER_TYPE == SERVER_TYPE_CHAR){
+			appName = "CharServer";
+		}else if(SERVER_TYPE == SERVER_TYPE_LOGIN){
+			appName = "LoginServer";
+		}else{
+			appName = "Unknown";
+		}
 
-	showmsg->init();
+		rgCore_init(appName);
+	}
+
 
 	cmdline->init();
 
 	cmdline->exec(argc, argv, CMDLINE_OPT_SILENT);
 
 	sysinfo->init();
-
-	if (!(showmsg->silent&0x1))
-		console->display_title();
+	
+	console->display_title();
 
 	usercheck();
 
@@ -428,7 +439,6 @@ int main (int argc, char **argv) {
 	do_init(argc,argv);
 	do_final();
 #else// not MINICORE
-	set_server_type();
 
 	Sql_Init();
 	rathread_init();
@@ -468,8 +478,7 @@ int main (int argc, char **argv) {
 #endif
 	cmdline->final();
 	sysinfo->final(); 
-	showmsg->final(); 
-
+	
 	rgCore_final();
 
 	return retval;

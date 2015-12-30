@@ -20,7 +20,7 @@ public:
 	__forceinline ~spinlock(){
 #ifdef _DEBUG
 		if(atomic::CompareAndSwap(&m_lock, 0, 0) != 0){
-			showmsg->showDebug("~spinlock() -> lock is not fully released\n");
+			ShowDebug("~spinlock() -> lock is not fully released\n");
 			__debugbreak();
 		}
 #endif

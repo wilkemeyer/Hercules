@@ -76,7 +76,7 @@ public:
 		DYNLIBPROC ret = (DYNLIBPROC)GetProcAddress(m_dll, procName);
 
 		if(ret == NULL){
-			showmsg->showError("%s: failed to resolve '%s' (GetLastError: %u)\n", m_name, procName, GetLastError());
+			ShowError("%s: failed to resolve '%s' (GetLastError: %u)\n", m_name, procName, GetLastError());
 		}
 
 		return ret;

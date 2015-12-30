@@ -3572,16 +3572,8 @@ int map_config_read(char *cfgName) {
 		while (--ptr >= w2 && *ptr == ' ');
 		ptr++;
 		*ptr = '\0';
-
-		if(strcmpi(w1,"timestamp_format")==0)
-			safestrncpy(showmsg->timestamp_format, w2, 20);
-		else if(strcmpi(w1,"stdout_with_ansisequence")==0)
-			showmsg->stdout_with_ansisequence = config_switch(w2) ? true : false;
-		else if(strcmpi(w1,"console_silent")==0) {
-			showmsg->silent = atoi(w2);
-			if (showmsg->silent) // only bother if its actually enabled
-				ShowInfo("Console Silent Setting: %d\n", atoi(w2));
-		} else if (strcmpi(w1, "userid")==0)
+		
+		if (strcmpi(w1, "userid")==0)
 			chrif->setuserid(w2);
 		else if (strcmpi(w1, "passwd") == 0)
 			chrif->setpasswd(w2);
@@ -3628,8 +3620,6 @@ int map_config_read(char *cfgName) {
 			map->enable_spy = config_switch(w2);
 		else if (strcmpi(w1, "use_grf") == 0)
 			map->enable_grf = config_switch(w2);
-		else if (strcmpi(w1, "console_msg_log") == 0)
-			showmsg->console_log = atoi(w2);//[Ind]
 		else if (strcmpi(w1, "default_language") == 0)
 			safestrncpy(map->default_lang_str, w2, sizeof(map->default_lang_str));
 		else if (strcmpi(w1, "import") == 0)

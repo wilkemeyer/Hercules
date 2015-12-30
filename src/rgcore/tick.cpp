@@ -64,7 +64,7 @@ void tick_init(){
 	static_assert(sizeof(tick_t) == sizeof(atomic::atomic64_t), "Assertion Failure - tick_t != atomic64_t - they should be equal due to performance reasons.");
 
 	if(QueryPerformanceFrequency(&g_rdtsc_freq) == FALSE){
-		showmsg->showFatalError("Performance Counters (TSC) are not Supported byh this Server!\n");
+		ShowFatalError("Performance Counters (TSC) are not Supported byh this Server!\n");
 		fatalError("Performance Counters (TSC) are not Supported by this Server\n");
 		return;
 	}

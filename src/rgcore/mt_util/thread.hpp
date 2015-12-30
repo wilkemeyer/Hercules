@@ -74,7 +74,7 @@ namespace rgCore {
 				m_handle = CreateThread(NULL, 0, threadMain, this, CREATE_SUSPENDED, NULL);
 				if(m_handle == NULL || m_handle == INVALID_HANDLE_VALUE){
 					atomic::Exchange(&m_isRunning, 0);
-					showmsg->showError("Thread: failed to create new Thread '%s'\n", m_name);
+					ShowError("Thread: failed to create new Thread '%s'\n", m_name);
 					return; // @TODO fatal?
 				}
 
@@ -161,13 +161,13 @@ namespace rgCore {
 
 				_this->setNameInDebugger();
 
-				showmsg->showDebug("New Thread '%s'\n", _this->m_name);
+				ShowDebug("New Thread '%s'\n", _this->m_name);
 
 				ret = _this->m_threadProc(_this);
 
 				atomic::Exchange(&_this->m_isRunning, 0);
 
-				showmsg->showDebug("Thread Terminated '%s' (ExitCode: %u)\n", _this->m_name, ret);
+				ShowDebug("Thread Terminated '%s' (ExitCode: %u)\n", _this->m_name, ret);
 
 				return ret;
 			}//end: threadMain
@@ -275,7 +275,7 @@ namespace rgCore {
 					m_prioBoost = enable;
 					
 				}else{
-					showmsg->showError("Thread '%s' can't set PriorityBoost - Error: %u\n", m_name, GetLastError());
+					ShowError("Thread '%s' can't set PriorityBoost - Error: %u\n", m_name, GetLastError());
 				}
 				
 				return oldval;
@@ -302,7 +302,7 @@ namespace rgCore {
 					case THRPRIO_HIGH:		winPrio = THREAD_PRIORITY_ABOVE_NORMAL; break;
 					case THRPRIO_HIGHEST:	winPrio = THREAD_PRIORITY_TIME_CRITICAL; break;
 					default:
-						showmsg->showDebug("Thread '%s' unknown Priority %u assuming NORMAL Priority\n", m_name, newPrio);
+						ShowDebug("Thread '%s' unknown Priority %u assuming NORMAL Priority\n", m_name, newPrio);
 						winPrio = THREAD_PRIORITY_NORMAL;
 						break;
 				}
@@ -314,7 +314,7 @@ namespace rgCore {
 
 					return oldPrio;
 				}else{
-					showmsg->showError("Thread '%s' can't set Priority - Error: %u\n", m_name, GetLastError());
+					ShowError("Thread '%s' can't set Priority - Error: %u\n", m_name, GetLastError());
 				}
 				
 

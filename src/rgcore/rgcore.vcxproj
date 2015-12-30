@@ -19,6 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Logging\coreLogger.cpp" />
+    <ClCompile Include="Logging\globalLoggerDefines.cpp" />
+    <ClCompile Include="Logging\logger.cpp" />
     <ClCompile Include="rgcore.cpp" />
     <ClCompile Include="roalloc.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -35,6 +38,10 @@
     <ClInclude Include="exception\Exception.hpp" />
     <ClInclude Include="exception\fatal.h" />
     <ClInclude Include="ini.hpp" />
+    <ClInclude Include="Logging\coreLogger.h" />
+    <ClInclude Include="Logging\globalLoggerDefines.h" />
+    <ClInclude Include="Logging\ILogger.h" />
+    <ClInclude Include="Logging\logger.h" />
     <ClInclude Include="mt_util\atomic.hpp" />
     <ClInclude Include="mt_util\box.hpp" />
     <ClInclude Include="mt_util\cond.hpp" />

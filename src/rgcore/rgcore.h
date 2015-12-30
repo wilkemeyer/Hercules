@@ -15,7 +15,9 @@
 #include "../../3rdparty/tbb/include/tbb/cache_aligned_allocator.h"
 
 
-
+// Log
+#include "Logging/ILogger.h"
+#include "Logging/globalLoggerDefines.h"
 
 //
 // Locals
@@ -53,11 +55,19 @@
 
 // Memory Allocation:
 #include "roalloc.h"
+
+// Logger:
+#include "Logging/Logger.h"
+#include "Logging/coreLogger.h"	// Actual  Generic Implementation (showmsg replacement)
+
+
+
 #include "pool.hpp"
 
 
 
 
 // Platformlib Init:
-void rgCore_init();
+void rgCore_init(const char *appName);
 void rgCore_final();
+const char *rgCore_getAppName();

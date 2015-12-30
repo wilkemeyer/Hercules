@@ -670,7 +670,7 @@ void *_roalloc(size_t sz, bool zeroed){
 			if(++i == 20){
 				//putMemMgr("OOM: %u Bytes (alloc)\n", sz);
 				
-				showmsg->showFatalError("Out of Memory - failed to allocate %u Bytes\n", sz);
+				ShowFatalError("Out of Memory - failed to allocate %u Bytes\n", sz);
 				exit(1); //
 				return NULL;
 			}
@@ -735,7 +735,7 @@ void *_rorealloc(void *ptr, size_t newSize, bool zeroed){
 			if(++i == 20){
 				//putMemMgr("OOM: %u bytes (realloc)\n", newSize);
 
-				showmsg->showFatalError("Out of Memory - cannot allocate %u Bytes\n", newSize);
+				ShowFatalError("Out of Memory - cannot allocate %u Bytes\n", newSize);
 				exit(1);
 
 				return NULL;

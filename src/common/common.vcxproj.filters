@@ -130,9 +130,6 @@
     <ClCompile Include="random.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="showmsg.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="socket.c">
       <Filter>Source Files</Filter>
     </ClCompile>

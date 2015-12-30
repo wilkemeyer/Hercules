@@ -60,7 +60,6 @@
     <ClCompile Include="mutex.c" />
     <ClCompile Include="nullpo.c" />
     <ClCompile Include="random.c" />
-    <ClCompile Include="showmsg.c" />
     <ClCompile Include="socket.c" />
     <ClCompile Include="sql.c" />
     <ClCompile Include="strlib.c" />

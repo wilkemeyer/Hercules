@@ -861,7 +861,7 @@ const char *sysinfo_arch(void) {
  * @retval false if this isn't a 64 bit build (i.e. it is a 32 bit build).
  */
 bool sysinfo_is64bit(void) {
-#ifdef _LP64
+#if defined(_LP64) || defined(_M_AMD64)
 	return true;
 #else
 	return false;
