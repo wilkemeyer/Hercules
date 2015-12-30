@@ -59,9 +59,6 @@
     <ClCompile Include="roalloc.cpp">
       <Filter>Source Files\allocator</Filter>
     </ClCompile>
-    <ClCompile Include="tick.cpp">
-      <Filter>Source Files\time</Filter>
-    </ClCompile>
     <ClCompile Include="Logging\logger.cpp">
       <Filter>Source Files\Logging</Filter>
     </ClCompile>
@@ -76,6 +73,12 @@
     </ClCompile>
     <ClCompile Include="debug\debug.cpp">
       <Filter>Source Files\debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Time\tick.cpp">
+      <Filter>Source Files\time</Filter>
+    </ClCompile>
+    <ClCompile Include="Time\Timer.cpp">
+      <Filter>Source Files\time</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -127,9 +130,6 @@
     <ClInclude Include="exception\fatal.h">
       <Filter>Header Files\Exception</Filter>
     </ClInclude>
-    <ClInclude Include="tick.h">
-      <Filter>Header Files\time</Filter>
-    </ClInclude>
     <ClInclude Include="ini.hpp">
       <Filter>Header Files\config</Filter>
     </ClInclude>
@@ -156,6 +156,12 @@
     </ClInclude>
     <ClInclude Include="debug\debug.h">
       <Filter>Header Files\debug</Filter>
+    </ClInclude>
+    <ClInclude Include="Time\tick.h">
+      <Filter>Header Files\time</Filter>
+    </ClInclude>
+    <ClInclude Include="Time\Timer.h">
+      <Filter>Header Files\time</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

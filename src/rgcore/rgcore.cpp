@@ -67,7 +67,7 @@ void rgCore_init(const char *appName){
 
 	// Initialzie Other Subsystems:
 	tick_init();
-
+	timer::init();
 
 	
 	// Create GUI & Hide Console WIndow
@@ -99,6 +99,7 @@ void rgCore_final() {
 
 	}
 
+	timer::final();
 	tick_final();
 	roalloc_final();
 

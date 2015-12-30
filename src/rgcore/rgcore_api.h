@@ -41,7 +41,8 @@
 #include "ini.hpp"
 
 // Time/Tick
-#include "tick.h"
+#include "Time/tick.h"
+#include "Time/Timer.h"
 
 // Exception/Error(Fatal)
 #include "exception/Exception.hpp"
