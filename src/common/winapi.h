@@ -54,3 +54,6 @@
 #include <io.h>
 #include <Mswsock.h>
 #include <MMSystem.h>
+
+#include <RichEdit.h>
+#include <Windowsx.h>

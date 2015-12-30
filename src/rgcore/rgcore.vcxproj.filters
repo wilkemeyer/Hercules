@@ -36,6 +36,12 @@
     <Filter Include="Source Files\Logging">
       <UniqueIdentifier>{491eb094-9e8c-4303-b210-d57e6750dfd8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\gui">
+      <UniqueIdentifier>{78e86893-f7d2-4366-9c1a-c8fec2e8396a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\gui">
+      <UniqueIdentifier>{0f839674-af7a-430e-bd28-6ec151c8a7b2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="rgcore.cpp">
@@ -58,6 +64,9 @@
     </ClCompile>
     <ClCompile Include="Logging\globalLoggerDefines.cpp">
       <Filter>Source Files\Logging</Filter>
+    </ClCompile>
+    <ClCompile Include="gui\win_ui.cpp">
+      <Filter>Source Files\gui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -129,6 +138,9 @@
     </ClInclude>
     <ClInclude Include="Logging\globalLoggerDefines.h">
       <Filter>Header Files\Logging</Filter>
+    </ClInclude>
+    <ClInclude Include="gui\win_ui.h">
+      <Filter>Header Files\gui</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

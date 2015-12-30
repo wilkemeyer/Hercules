@@ -81,6 +81,8 @@ struct core_interface {
 	char *server_name;
 	enum server_types server_type;
 
+	void (*request_shutdown)();
+
 	/// Called when a terminate signal is received. (Ctrl+C pressed)
 	/// If NULL, runflag is set to CORE_ST_STOP instead.
 	void (*shutdown_callback)(void);

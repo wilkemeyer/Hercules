@@ -56,8 +56,8 @@ coreLogger::coreLogger(){
 	//
 	// Enable Terminal Logging (as long as there is no GUI)
 	//
-	enableTerminalLogging(LOGLEVEL_ALL);
-
+	// enableTerminalLogging(LOGLEVEL_ALL);
+	// No Terminal Logging -> its a windows GUI Program.
 
 	//
 	// TraceLog (Logs Everything)

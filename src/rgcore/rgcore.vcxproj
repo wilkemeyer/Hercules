@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="gui\win_ui.cpp" />
     <ClCompile Include="Logging\coreLogger.cpp" />
     <ClCompile Include="Logging\globalLoggerDefines.cpp" />
     <ClCompile Include="Logging\logger.cpp" />
@@ -37,6 +38,7 @@
     <ClInclude Include="arch.h" />
     <ClInclude Include="exception\Exception.hpp" />
     <ClInclude Include="exception\fatal.h" />
+    <ClInclude Include="gui\win_ui.h" />
     <ClInclude Include="ini.hpp" />
     <ClInclude Include="Logging\coreLogger.h" />
     <ClInclude Include="Logging\globalLoggerDefines.h" />

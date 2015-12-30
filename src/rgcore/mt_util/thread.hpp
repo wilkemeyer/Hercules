@@ -161,14 +161,18 @@ namespace rgCore {
 
 				_this->setNameInDebugger();
 
-				ShowDebug("New Thread '%s'\n", _this->m_name);
-
+#ifdef _DEBUG
+				if(Logging::g_globalLogger != NULL)
+					ShowDebug("New Thread '%s'\n", _this->m_name);
+#endif
 				ret = _this->m_threadProc(_this);
 
 				atomic::Exchange(&_this->m_isRunning, 0);
 
-				ShowDebug("Thread Terminated '%s' (ExitCode: %u)\n", _this->m_name, ret);
-
+#ifdef _DEBUG
+				if(Logging::g_globalLogger != NULL)
+					ShowDebug("Thread Terminated '%s' (ExitCode: %u)\n", _this->m_name, ret);
+#endif
 				return ret;
 			}//end: threadMain
 

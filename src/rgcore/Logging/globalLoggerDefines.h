@@ -24,6 +24,31 @@ extern ILogger *g_globalLogger;
 } }
 
 
+//
+// ROorg 
+//
+
+#ifdef _DEBUG
+#define putLog(format, ...)		rgCore::Logging::g_globalLogger->writeEx(rgCore::Logging::ILogger::LOGLEVEL_INFO,		__FILE__, __LINE__, __FUNCTION__, format, __VA_ARGS__)
+#define putWrn(format, ...)		rgCore::Logging::g_globalLogger->writeEx(rgCore::Logging::ILogger::LOGLEVEL_WARNING,	__FILE__, __LINE__, __FUNCTION__, format, __VA_ARGS__)
+#define putErr(format, ...)		rgCore::Logging::g_globalLogger->writeEx(rgCore::Logging::ILogger::LOGLEVEL_ERROR,		__FILE__, __LINE__, __FUNCTION__, format, __VA_ARGS__)
+#define putMemMgr(format, ...)	rgCore::Logging::g_globalLogger->writeEx(rgCore::Logging::ILogger::LOGLEVEL_MEMMGR,		__FILE__, __LINE__, __FUNCTION__, format, __VA_ARGS__)
+#define putDbg(format, ...)		rgCore::Logging::g_globalLogger->writeEx(rgCore::Logging::ILogger::LOGLEVEL_DEBUG,		__FILE__, __LINE__, __FUNCTION__, format, __VA_ARGS__)
+#else
+#define putLog(format, ...)		rgCore::Logging::g_globalLogger->write(rgCore::Logging::ILogger::LOGLEVEL_INFO,		format, __VA_ARGS__)
+#define putWrn(format, ...)		rgCore::Logging::g_globalLogger->write(rgCore::Logging::ILogger::LOGLEVEL_WARNING,	format, __VA_ARGS__)
+#define putErr(format, ...)		rgCore::Logging::g_globalLogger->write(rgCore::Logging::ILogger::LOGLEVEL_ERROR,	format, __VA_ARGS__)
+#define putMemMgr(format, ...)	rgCore::Logging::g_globalLogger->write(rgCore::Logging::ILogger::LOGLEVEL_MEMMGR,	format, __VA_ARGS__)
+#define putDbg(format, ...)	
+#define 
+#endif
+
+
+
+//
+// Athena showmsg (LEGACY) Compatibility:
+// 
+
 #define ClearScreen()
 #define vShowMessage(fmt, list)	// @TODO -> list = ap
 #define ShowMessage(fmt, ...) (rgCore::Logging::g_globalLogger->writeEx(rgCore::Logging::ILogger::LOGLEVEL_INFO,	__FILE__,	__LINE__,	__FUNCTION__, fmt,  ##__VA_ARGS__))

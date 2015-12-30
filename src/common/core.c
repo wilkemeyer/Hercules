@@ -36,6 +36,7 @@
 #include "sysinfo.h"
 #include "nullpo.h"
 
+using namespace rgCore;
 
 
 #ifndef MINICORE
@@ -183,6 +184,19 @@ void signals_init (void) {
 }
 #endif
 
+
+void request_shutdown(){
+	
+	if(shutdown_callback != NULL){
+		shutdown_callback();
+	
+	}else{
+		core->runflag = CORE_ST_STOP;// auto-shutdown
+
+	}
+}//end: request_shutdown()
+
+
 /**
  * Warns the user if executed as superuser (root)
  */
@@ -193,6 +207,9 @@ void usercheck(void) {
 }
 
 void core_defaults(void) {
+	
+	core->request_shutdown = request_shutdown;
+
 	nullpo_defaults();
 	sysinfo_defaults();
 	console_defaults();
@@ -386,11 +403,100 @@ void cmdline_defaults(void)
 	cmdline->arg_next_value = cmdline_arg_next_value;
 	cmdline->arg_source = cmdline_arg_source;
 }
+
+
+
+/****
+ * Main Thread
+ * 
+ */
+DWORD __stdcall serverMain(util::thread *_self){
+	DWORD retval = EXIT_SUCCESS;
+
+	putDbg("serverMain: Begin Initialization\n");
+
+	cmdline->init();
+
+	cmdline->exec(core->arg_c, core->arg_v, CMDLINE_OPT_SILENT);
+
+	sysinfo->init();
+
+	console->display_title();
+
+	usercheck();
+
+#ifdef MINICORE // minimalist Core
+	do_init(core->arg_c, core->arg_v);
+	do_final();
+#else// not MINICORE
+
+	Sql_Init();
+	rathread_init();
+	DB->init();
+	signals_init();
+
+#ifdef _WIN32
+	cevents_init();
+#endif
+
+	timer->init();
+
+	/* timer first */
+	rnd_init();
+	srand((unsigned int)timer->gettick());
+
+	console->init();
+
+	sockt->init();
+
+	do_init(core->arg_c, core->arg_v);
+
+
+	putDbg("serverMain: Initializaiton Finished, Entering MainLoop\n");
+
+	// Main runtime cycle
+	while(core->runflag != CORE_ST_STOP) {
+		int next = timer->perform(timer->gettick_nocache());
+		sockt->perform(next);
+	}
+
+	putDbg("serverMain: Begin Finalization\n");
+
+	console->final();
+
+	retval = (DWORD)do_final();
+	timer->final();
+	sockt->final();
+	DB->final();
+	rathread_final();
+	ers_final();
+#endif
+	cmdline->final();
+	sysinfo->final();
+
+	putDbg("serverMain: Finished Finailization\n");
+
+	rgCore_releaseIdleLoop();
+
+	return retval;
+}//end: serverMain()
+
+
+
+
+
+
+
 /*======================================
- * CORE : MAINROUTINE
+ * CORE : MAINROUTINE 
+ * Tasks Performed:
+ *  - Pre Init
+ *  - rgCore Init
+ *  - UI handling
+ *  - rgCore Final
+ *  - post Final
  *--------------------------------------*/
 int main (int argc, char **argv) {
-	int retval = EXIT_SUCCESS;
 	{// initialize program arguments
 		char *p1 = SERVER_NAME = argv[0];
 		char *p2 = p1;
@@ -425,61 +531,36 @@ int main (int argc, char **argv) {
 	}
 
 
-	cmdline->init();
+	// 
+	// Create serverMain Thread (old athena main)
+	//
+	util::thread *hServerMain = new util::thread("Athena Server Main", serverMain);
 
-	cmdline->exec(argc, argv, CMDLINE_OPT_SILENT);
 
-	sysinfo->init();
-	
-	console->display_title();
 
-	usercheck();
+	//
+	// Process rgCore MainLoop:
+	//
+	rgCore_idleLoop();
 
-#ifdef MINICORE // minimalist Core
-	do_init(argc,argv);
-	do_final();
-#else// not MINICORE
 
-	Sql_Init();
-	rathread_init();
-	DB->init();
-	signals_init();
+	putLog("Finalization -> Waiting for ServerMain Thread Finalization!\n");
+	hServerMain->wait();
 
-#ifdef _WIN32
-	cevents_init();
-#endif
+	// The ServerMain Thread sets athena-exit-code as exitParam
+	int retval = (int)hServerMain->getExitParam();
 
-	timer->init();
+	// Free up thread ressources
+	delete hServerMain;
+	hServerMain = NULL;
 
-	/* timer first */
-	rnd_init();
-	srand((unsigned int)timer->gettick());
 
-	console->init();
 
-	sockt->init();
-
-	do_init(argc,argv);
-
-	// Main runtime cycle
-	while (core->runflag != CORE_ST_STOP) {
-		int next = timer->perform(timer->gettick_nocache());
-		sockt->perform(next);
-	}
-
-	console->final();
-
-	retval = do_final();
-	timer->final();
-	sockt->final();
-	DB->final();
-	rathread_final();
-	ers_final();
-#endif
-	cmdline->final();
-	sysinfo->final(); 
-	
+	//
+	// rgCore Final:
+	//
 	rgCore_final();
+	
 
 	return retval;
-}
+}//end: main()
