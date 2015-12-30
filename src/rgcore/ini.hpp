@@ -54,7 +54,7 @@ __forceinline void iniGetString(const char *fileName,  const char *sectionName, 
 __forceinline void iniGetAppString(const char *section, const char *varName, const char *defaultValue, char *destBuffer, size_t szDestBuffer){
 	char fn[256];
 
-	sprintf_s(fn, "conf/%s.ini", rgCore_getAppName());
+	sprintf_s(fn, INI_DEFAULT_APP_CONFIG, rgCore_getAppName());
 
 	
 	iniGetString(fn, section, varName, defaultValue, destBuffer, szDestBuffer);
@@ -76,7 +76,7 @@ __forceinline bool iniGetBoolean(const char *fileName,  const char *sectionName,
 __forceinline bool iniGetAppBoolean(const char *section, const char *varName, bool defaultValue) {
 	char fn[256];
 
-	sprintf_s(fn, "conf/%s.ini", rgCore_getAppName());
+	sprintf_s(fn, INI_DEFAULT_APP_CONFIG, rgCore_getAppName());
 
 
 	return iniGetBoolean(fn, section, varName, defaultValue);
@@ -143,7 +143,7 @@ __forceinline __int64 iniGetInteger(const char *fileName,  const char *sectionNa
 __forceinline __int64 iniGetAppInteger(const char *section, const char *varName, __int64 defaultValue) {
 	char fn[256];
 
-	sprintf_s(fn, "conf/%s.ini", rgCore_getAppName());
+	sprintf_s(fn, INI_DEFAULT_APP_CONFIG, rgCore_getAppName());
 
 
 	return iniGetInteger(fn, section, varName, defaultValue);
