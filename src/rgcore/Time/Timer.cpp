@@ -147,8 +147,8 @@ void timer::final(){
 	g_running = false; 
 	cond_List->broadcast();
 	for(size_t i = 0; i < nWorker; i++){
-		WaitForSingleObject(hWorkerThread[i], INFINITE);
-		CloseHandle(hWorkerThread[i]);
+		hWorkerThread[i]->wait();
+		delete hWorkerThread[i];
 		hWorkerThread[i] = NULL;
 	}
 

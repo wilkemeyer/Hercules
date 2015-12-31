@@ -26,6 +26,7 @@
     <ClCompile Include="Logging\logger.cpp" />
     <ClCompile Include="rgcore.cpp" />
     <ClCompile Include="roalloc.cpp" />
+    <ClCompile Include="sqldb\asyncDB.cpp" />
     <ClCompile Include="sqldb\syncDB.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -49,6 +50,8 @@
     <ClInclude Include="Logging\ILogger.h" />
     <ClInclude Include="Logging\logger.h" />
     <ClInclude Include="mt_util\atomic.hpp" />
+    <ClInclude Include="mt_util\atomicSList.hpp" />
+    <ClInclude Include="mt_util\atomicSList64.hpp" />
     <ClInclude Include="mt_util\box.hpp" />
     <ClInclude Include="mt_util\cond.hpp" />
     <ClInclude Include="mt_util\dynLib.hpp" />
@@ -61,6 +64,7 @@
     <ClInclude Include="rgcore.h" />
     <ClInclude Include="rgcore_api.h" />
     <ClInclude Include="roalloc.h" />
+    <ClInclude Include="sqldb\asyncDB.h" />
     <ClInclude Include="sqldb\syncDB.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="Time\tick.h" />

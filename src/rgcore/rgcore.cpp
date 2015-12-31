@@ -69,7 +69,9 @@ void rgCore_init(const char *appName){
 	tick_init();
 	timer::init();
 
-	
+	asyncDB_init();
+
+
 	// Create GUI & Hide Console WIndow
 	{
 		HWND cHwnd = GetConsoleWindow();
@@ -98,6 +100,8 @@ void rgCore_final() {
 		}
 
 	}
+
+	asyncDB_final();
 
 	timer::final();
 	tick_final();

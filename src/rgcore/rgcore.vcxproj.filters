@@ -54,6 +54,9 @@
     <Filter Include="Source Files\sqldb">
       <UniqueIdentifier>{0bdbf8a3-a804-471c-8a86-1b28da0e7637}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\MT/Util\SList">
+      <UniqueIdentifier>{a6e6cb78-b473-452b-b09e-997f7718a8b4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="rgcore.cpp">
@@ -87,6 +90,9 @@
       <Filter>Source Files\time</Filter>
     </ClCompile>
     <ClCompile Include="sqldb\syncDB.cpp">
+      <Filter>Source Files\sqldb</Filter>
+    </ClCompile>
+    <ClCompile Include="sqldb\asyncDB.cpp">
       <Filter>Source Files\sqldb</Filter>
     </ClCompile>
   </ItemGroup>
@@ -174,6 +180,15 @@
     </ClInclude>
     <ClInclude Include="sqldb\syncDB.h">
       <Filter>Header Files\sqldb</Filter>
+    </ClInclude>
+    <ClInclude Include="sqldb\asyncDB.h">
+      <Filter>Header Files\sqldb</Filter>
+    </ClInclude>
+    <ClInclude Include="mt_util\atomicSList.hpp">
+      <Filter>Header Files\MT/Util\SList</Filter>
+    </ClInclude>
+    <ClInclude Include="mt_util\atomicSList64.hpp">
+      <Filter>Header Files\MT/Util\SList</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

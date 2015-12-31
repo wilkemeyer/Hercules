@@ -10,6 +10,7 @@ namespace rgCore {
 				*m_func = '\0';
 				*m_file = '\0';
 				*m_message = '\0';
+				m_code = 0;
 			}
 
 
@@ -25,6 +26,18 @@ namespace rgCore {
 				m_message[sizeof(m_message)-1] = '\0';
 			}//end: Exception()
 
+			__forceinline Exception(int code, const char *format, ...) {
+				*m_func = '\0';
+				*m_file = '\0';
+				m_code = code;
+
+				va_list ap;
+
+				va_start(ap, format);
+				size_t szMsg = vsnprintf_s(m_message, sizeof(m_message), format, ap);
+				va_end(ap);
+				m_message[sizeof(m_message)-1] = '\0';
+			}//end: Exception()
 
 			__forceinline Exception(const char *format, va_list ap) {
 				*m_func = '\0';
@@ -94,6 +107,10 @@ namespace rgCore {
 				return m_message;
 			}//end: getMessage()
 			
+			__forceinline int getCode(){
+				return m_code;
+			}
+
 
 		protected:
 
@@ -138,6 +155,7 @@ namespace rgCore {
 			char m_file[128];
 			char m_func[128];
 			int m_line;
+			int m_code;
 
 
 		};//end: class Exception

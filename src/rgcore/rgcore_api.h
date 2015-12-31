@@ -80,3 +80,5 @@
 
 // SQLDB
 #include "sqldb/syncDB.h"
+#include "sqldb/asyncDB.h"
+
