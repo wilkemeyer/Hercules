@@ -62,3 +62,6 @@
 #include <MMSystem.h>
 #include <TlHelp32.h>
 
+
+#include <sql.h>
+#include <sqlext.h>

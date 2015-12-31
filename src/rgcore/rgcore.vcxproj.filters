@@ -48,6 +48,12 @@
     <Filter Include="Source Files\debug">
       <UniqueIdentifier>{8c77c29f-e579-471c-835c-86dd6972b513}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\sqldb">
+      <UniqueIdentifier>{7c0bd20b-8d6e-4855-a8ec-bfb3c0604364}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\sqldb">
+      <UniqueIdentifier>{0bdbf8a3-a804-471c-8a86-1b28da0e7637}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="rgcore.cpp">
@@ -79,6 +85,9 @@
     </ClCompile>
     <ClCompile Include="Time\Timer.cpp">
       <Filter>Source Files\time</Filter>
+    </ClCompile>
+    <ClCompile Include="sqldb\syncDB.cpp">
+      <Filter>Source Files\sqldb</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -162,6 +171,9 @@
     </ClInclude>
     <ClInclude Include="Time\Timer.h">
       <Filter>Header Files\time</Filter>
+    </ClInclude>
+    <ClInclude Include="sqldb\syncDB.h">
+      <Filter>Header Files\sqldb</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

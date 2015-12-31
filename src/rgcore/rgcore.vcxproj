@@ -26,6 +26,7 @@
     <ClCompile Include="Logging\logger.cpp" />
     <ClCompile Include="rgcore.cpp" />
     <ClCompile Include="roalloc.cpp" />
+    <ClCompile Include="sqldb\syncDB.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -60,6 +61,7 @@
     <ClInclude Include="rgcore.h" />
     <ClInclude Include="rgcore_api.h" />
     <ClInclude Include="roalloc.h" />
+    <ClInclude Include="sqldb\syncDB.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="Time\tick.h" />
     <ClInclude Include="Time\Timer.h" />
