@@ -71,6 +71,11 @@ void rgCore_init(const char *appName){
 
 	asyncDB_init();
 
+	// Network 
+	network::netBuffer::init();
+	network::PendingIOMgr_init();
+	rgNet_init();
+
 
 	// Create GUI & Hide Console WIndow
 	{
@@ -101,6 +106,12 @@ void rgCore_final() {
 
 	}
 
+	rgNet_final();
+	network::PendingIOMgr_final();
+	network::netBuffer::final();
+	
+
+	//
 	asyncDB_final();
 
 	timer::final();

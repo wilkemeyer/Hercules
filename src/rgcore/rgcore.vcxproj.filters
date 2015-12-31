@@ -57,6 +57,12 @@
     <Filter Include="Header Files\MT/Util\SList">
       <UniqueIdentifier>{a6e6cb78-b473-452b-b09e-997f7718a8b4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\network">
+      <UniqueIdentifier>{c1470966-c1e3-4d1a-b913-7dc831b0706c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\network">
+      <UniqueIdentifier>{66aad990-d10e-449f-adb9-3becf808693e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="rgcore.cpp">
@@ -94,6 +100,15 @@
     </ClCompile>
     <ClCompile Include="sqldb\asyncDB.cpp">
       <Filter>Source Files\sqldb</Filter>
+    </ClCompile>
+    <ClCompile Include="network\netBuffer.cpp">
+      <Filter>Source Files\network</Filter>
+    </ClCompile>
+    <ClCompile Include="network\PendingIO.cpp">
+      <Filter>Source Files\network</Filter>
+    </ClCompile>
+    <ClCompile Include="network\rgNet.cpp">
+      <Filter>Source Files\network</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -189,6 +204,15 @@
     </ClInclude>
     <ClInclude Include="mt_util\atomicSList64.hpp">
       <Filter>Header Files\MT/Util\SList</Filter>
+    </ClInclude>
+    <ClInclude Include="network\netBuffer.h">
+      <Filter>Header Files\network</Filter>
+    </ClInclude>
+    <ClInclude Include="network\PendingIO.h">
+      <Filter>Header Files\network</Filter>
+    </ClInclude>
+    <ClInclude Include="network\rgNet.h">
+      <Filter>Header Files\network</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

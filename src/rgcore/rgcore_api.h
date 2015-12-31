@@ -82,3 +82,7 @@
 #include "sqldb/syncDB.h"
 #include "sqldb/asyncDB.h"
 
+// Network
+#include "network/rgNet.h"
+#include "network/netBuffer.h"
+#include "network/PendingIO.h"

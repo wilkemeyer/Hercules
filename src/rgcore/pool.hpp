@@ -485,7 +485,8 @@ private:
 	bool gcProc() {
 		//Pool<T> *_this = (Pool*)data;
 		Pool<T>::Node *iter, *skipBegin, *skipEnd;
-		size_t nSkipped, curTick, nRecycled;
+		size_t nSkipped, nRecycled;
+		Time::tick_t curTick;
 
 		// Prevent running concurrently..
 		while(1) {

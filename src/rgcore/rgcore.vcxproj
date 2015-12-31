@@ -24,6 +24,9 @@
     <ClCompile Include="Logging\coreLogger.cpp" />
     <ClCompile Include="Logging\globalLoggerDefines.cpp" />
     <ClCompile Include="Logging\logger.cpp" />
+    <ClCompile Include="network\netBuffer.cpp" />
+    <ClCompile Include="network\PendingIO.cpp" />
+    <ClCompile Include="network\rgNet.cpp" />
     <ClCompile Include="rgcore.cpp" />
     <ClCompile Include="roalloc.cpp" />
     <ClCompile Include="sqldb\asyncDB.cpp" />
@@ -60,6 +63,9 @@
     <ClInclude Include="mt_util\os.h" />
     <ClInclude Include="mt_util\stackbase.hpp" />
     <ClInclude Include="mt_util\thread.hpp" />
+    <ClInclude Include="network\netBuffer.h" />
+    <ClInclude Include="network\PendingIO.h" />
+    <ClInclude Include="network\rgNet.h" />
     <ClInclude Include="pool.hpp" />
     <ClInclude Include="rgcore.h" />
     <ClInclude Include="rgcore_api.h" />

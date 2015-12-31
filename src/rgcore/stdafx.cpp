@@ -5,6 +5,10 @@
 // DBGHelp:
 #pragma comment(lib, "..\\..\\3rdparty\\dbghelp_x64\\lib\\dbghelp.lib")
 
+// Networking/Socket
+#pragma comment(lib, "ws2_32.lib")
+#pragma comment(lib, "Mswsock.lib")
+
 // 
 #if defined(_DEBUG)
 #pragma comment(lib, "..\\..\\3rdparty\\tbb\\bin\\Win64\\Debug\\tbbmalloc_debug64.lib")
