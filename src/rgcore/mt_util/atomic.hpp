@@ -161,7 +161,7 @@ namespace rgCore {
 		/**
 		 * Adds Value to Addend, returns the old value _before_ addition (initial)
 		 */
-		static __forceinline atomic64_t ExchangeAdd(volatile atomic_t *Addend, int Value) {
+		static __forceinline atomic_t ExchangeAdd(volatile atomic_t *Addend, int Value) {
 			return _InterlockedExchangeAdd(Addend, Value);
 		}//end: ExchangeAdd
 
@@ -176,7 +176,7 @@ namespace rgCore {
 		/**
 		 * Adds Value to Addend, returns the old value addition 
 		 */
-		static __forceinline atomic64_t Add(volatile atomic_t *Addend, int Value) {
+		static __forceinline atomic_t Add(volatile atomic_t *Addend, int Value) {
 			return _InterlockedAdd(Addend, Value);
 		}//end: ExchangeAdd
 
