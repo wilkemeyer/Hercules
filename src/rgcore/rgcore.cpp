@@ -68,7 +68,7 @@ void rgCore_init(const char *appName){
 	// Initialzie Other Subsystems:
 	tick_init();
 	timer::init();
-
+	rbdb::rbdbBase::globalInit();
 	asyncDB_init();
 
 	// Network 
@@ -113,7 +113,7 @@ void rgCore_final() {
 
 	//
 	asyncDB_final();
-
+	rbdb::rbdbBase::globalFinal();
 	timer::final();
 	tick_final();
 	roalloc_final();
