@@ -57,7 +57,7 @@
 #include "mt_util/getpagesize.hpp"
 #include "mt_util/dynLib.hpp"
 #include "mt_util/stackbase.hpp"
-
+#include "mt_util/rwlock.hpp"
 #include "mt_util/spinlock.hpp"
 
 #if defined(ARCH_AMD64)
@@ -77,6 +77,14 @@
 
 // Memory Allocation / Pool
 #include "pool.hpp"
+
+
+// RBDB (uses Pool)
+#include "rbdb/rbdbBase.h"
+#include "rbdb/rbdb.h"		// INT DB
+#include "rbdb/hashdb.h"	// Hash DB 
+#include "rbdb/strdb.h"
+
 
 // SQLDB
 #include "sqldb/syncDB.h"

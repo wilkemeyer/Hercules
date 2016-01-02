@@ -63,6 +63,12 @@
     <Filter Include="Source Files\network">
       <UniqueIdentifier>{66aad990-d10e-449f-adb9-3becf808693e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\rbdb">
+      <UniqueIdentifier>{79b4ffcb-45fc-466e-89c8-edb1d475fb9e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\rbdb">
+      <UniqueIdentifier>{abd061f7-c0e3-4242-b5f8-871db0aa344b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="rgcore.cpp">
@@ -109,6 +115,18 @@
     </ClCompile>
     <ClCompile Include="network\rgNet.cpp">
       <Filter>Source Files\network</Filter>
+    </ClCompile>
+    <ClCompile Include="rbdb\hashdb.cpp">
+      <Filter>Source Files\rbdb</Filter>
+    </ClCompile>
+    <ClCompile Include="rbdb\rbdb.cpp">
+      <Filter>Source Files\rbdb</Filter>
+    </ClCompile>
+    <ClCompile Include="rbdb\rbdbBase.cpp">
+      <Filter>Source Files\rbdb</Filter>
+    </ClCompile>
+    <ClCompile Include="rbdb\strdb.cpp">
+      <Filter>Source Files\rbdb</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -213,6 +231,21 @@
     </ClInclude>
     <ClInclude Include="network\rgNet.h">
       <Filter>Header Files\network</Filter>
+    </ClInclude>
+    <ClInclude Include="rbdb\hashdb.h">
+      <Filter>Header Files\rbdb</Filter>
+    </ClInclude>
+    <ClInclude Include="rbdb\rbdb.h">
+      <Filter>Header Files\rbdb</Filter>
+    </ClInclude>
+    <ClInclude Include="rbdb\rbdbBase.h">
+      <Filter>Header Files\rbdb</Filter>
+    </ClInclude>
+    <ClInclude Include="rbdb\strdb.h">
+      <Filter>Header Files\rbdb</Filter>
+    </ClInclude>
+    <ClInclude Include="mt_util\rwlock.hpp">
+      <Filter>Header Files\MT/Util</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
