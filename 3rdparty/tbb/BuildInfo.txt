@@ -1,8 +1,8 @@
 Windows 64 Bit Version
-	Build on 10/08/2015 by Florian Wilkemeyer
-	Source: https://git.f-ws.net/blockz/intel-tbb.git	#85f91ecb
+	Build on 02/01/2016 by Florian Wilkemeyer
+	Source: https://github.com/wilkemeyer/intel-tbb	#b40c9a0
 	Compiler: Visual Studio 2015 Win64
 	Build Type Release: Release-MT
 	Build Type Debug: Debug-MT
 	
-	Version: TBB 4.4 (based on tbb44_20150728)
+	Version: TBB 4.4 Update 2 (based on tbb44_20151115)
