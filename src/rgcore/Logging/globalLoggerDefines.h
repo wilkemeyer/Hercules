@@ -40,7 +40,6 @@ extern ILogger *g_globalLogger;
 #define putErr(format, ...)		rgCore::Logging::g_globalLogger->write(rgCore::Logging::ILogger::LOGLEVEL_ERROR,	format, __VA_ARGS__)
 #define putMemMgr(format, ...)	rgCore::Logging::g_globalLogger->write(rgCore::Logging::ILogger::LOGLEVEL_MEMMGR,	format, __VA_ARGS__)
 #define putDbg(format, ...)	
-#define 
 #endif
 
 
