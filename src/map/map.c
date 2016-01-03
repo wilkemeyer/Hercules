@@ -24,8 +24,8 @@
 CMap map_s;
 CMap *map = NULL;
 
-struct mapit_interface mapit_s;
-struct mapit_interface *mapit;
+CMapit mapit_s;
+CMapit *mapit = NULL;
 
 
 // Subsystem Globals:
@@ -2289,7 +2289,7 @@ struct s_mapiterator
 /// @param flags Flags of the iterator
 /// @param type Target types
 /// @return Iterator
-struct s_mapiterator* mapit_alloc(enum e_mapitflags flags, enum bl_type types) {
+struct s_mapiterator* CMapit::alloc(enum e_mapitflags flags, enum bl_type types) {
 	struct s_mapiterator* iter;
 
 	iter = ers_alloc(map->iterator_ers, struct s_mapiterator);
@@ -2304,7 +2304,7 @@ struct s_mapiterator* mapit_alloc(enum e_mapitflags flags, enum bl_type types) {
 /// Frees the iterator.
 ///
 /// @param iter Iterator
-void mapit_free(struct s_mapiterator* iter) {
+void CMapit::free(struct s_mapiterator* iter) {
 	nullpo_retv(iter);
 
 	dbi_destroy(iter->dbi);
@@ -2316,7 +2316,7 @@ void mapit_free(struct s_mapiterator* iter) {
 ///
 /// @param iter Iterator
 /// @return first block_list or NULL
-struct block_list* mapit_first(struct s_mapiterator* iter) {
+struct block_list* CMapit::first(struct s_mapiterator* iter) {
 	struct block_list* bl;
 
 	nullpo_retr(NULL,iter);
@@ -2333,7 +2333,7 @@ struct block_list* mapit_first(struct s_mapiterator* iter) {
 ///
 /// @param iter Iterator
 /// @return last block_list or NULL
-struct block_list* mapit_last(struct s_mapiterator* iter) {
+struct block_list* CMapit::last(struct s_mapiterator* iter) {
 	struct block_list* bl;
 
 	nullpo_retr(NULL,iter);
@@ -2350,7 +2350,7 @@ struct block_list* mapit_last(struct s_mapiterator* iter) {
 ///
 /// @param iter Iterator
 /// @return next block_list or NULL
-struct block_list* mapit_next(struct s_mapiterator* iter) {
+struct block_list* CMapit::next(struct s_mapiterator* iter) {
 	struct block_list* bl;
 
 	nullpo_retr(NULL,iter);
@@ -2371,7 +2371,7 @@ struct block_list* mapit_next(struct s_mapiterator* iter) {
 ///
 /// @param iter Iterator
 /// @return previous block_list or NULL
-struct block_list* mapit_prev(struct s_mapiterator* iter) {
+struct block_list* CMapit::prev(struct s_mapiterator* iter) {
 	struct block_list* bl;
 
 	nullpo_retr(NULL,iter);
@@ -2391,7 +2391,7 @@ struct block_list* mapit_prev(struct s_mapiterator* iter) {
 ///
 /// @param iter Iterator
 /// @return true if it exists
-bool mapit_exists(struct s_mapiterator* iter) {
+bool CMapit::exists(struct s_mapiterator* iter) {
 	nullpo_retr(false,iter);
 
 	return dbi_exists(iter->dbi);
@@ -6040,11 +6040,4 @@ void map_defaults(void) {
 	 **/
 	mapit = &mapit_s;
 
-	mapit->alloc = mapit_alloc;
-	mapit->free = mapit_free;
-	mapit->first = mapit_first;
-	mapit->last = mapit_last;
-	mapit->next = mapit_next;
-	mapit->prev = mapit_prev;
-	mapit->exists = mapit_exists;
 }

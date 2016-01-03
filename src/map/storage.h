@@ -37,23 +37,26 @@ enum storage_flag {
 	STORAGE_FLAG_GUILD  = 2, // Guild Storage open
 };
 
-struct storage_interface {
+class CStorage {
+public:
 	/* */
-	void (*reconnect) (void);
+	static void reconnect (void);
 	/* */
-	int (*delitem) (struct map_session_data* sd, int n, int amount);
-	int (*open) (struct map_session_data *sd);
-	int (*add) (struct map_session_data *sd,int index,int amount);
-	int (*get) (struct map_session_data *sd,int index,int amount);
-	int (*additem) (struct map_session_data* sd, struct item* item_data, int amount);
-	int (*addfromcart) (struct map_session_data *sd,int index,int amount);
-	int (*gettocart) (struct map_session_data *sd,int index,int amount);
-	void (*close) (struct map_session_data *sd);
-	void (*pc_quit) (struct map_session_data *sd, int flag);
-	int (*comp_item) (const void *i1_, const void *i2_);
-	void (*sortitem) (struct item* items, unsigned int size);
-	int (*reconnect_sub) (DBKey key, DBData *data, va_list ap);
+	static int delitem (struct map_session_data* sd, int n, int amount);
+	static int open (struct map_session_data *sd);
+	static int add (struct map_session_data *sd,int index,int amount);
+	static int get (struct map_session_data *sd,int index,int amount);
+	static int additem (struct map_session_data* sd, struct item* item_data, int amount);
+	static int addfromcart (struct map_session_data *sd,int index,int amount);
+	static int gettocart (struct map_session_data *sd,int index,int amount);
+	static void close (struct map_session_data *sd);
+	static void pc_quit (struct map_session_data *sd, int flag);
+	static int comp_item (const void *i1_, const void *i2_);
+	static void sortitem (struct item* items, unsigned int size);
+	static int reconnect_sub (DBKey key, DBData *data, va_list ap);
 };
+extern CStorage *storage;
+
 
 class CGstorage {
 public:
@@ -85,6 +88,5 @@ void storage_defaults(void);
 void gstorage_defaults(void);
 #endif // HERCULES_CORE
 
-HPShared struct storage_interface *storage;
 
 #endif /* MAP_STORAGE_H */

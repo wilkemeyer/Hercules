@@ -795,15 +795,17 @@ enum e_mapitflags {
 struct s_mapiterator;
 
 /* temporary until the map.c "Hercules Renewal Phase One" design is complete. */
-struct mapit_interface {
-	struct s_mapiterator*   (*alloc) (enum e_mapitflags flags, enum bl_type types);
-	void                    (*free) (struct s_mapiterator* iter);
-	struct block_list*      (*first) (struct s_mapiterator* iter);
-	struct block_list*      (*last) (struct s_mapiterator* iter);
-	struct block_list*      (*next) (struct s_mapiterator* iter);
-	struct block_list*      (*prev) (struct s_mapiterator* iter);
-	bool                    (*exists) (struct s_mapiterator* iter);
+class CMapit {
+public:
+	static struct s_mapiterator*   alloc (enum e_mapitflags flags, enum bl_type types);
+	static void                    free (struct s_mapiterator* iter);
+	static struct block_list*      first (struct s_mapiterator* iter);
+	static struct block_list*      last (struct s_mapiterator* iter);
+	static struct block_list*      next (struct s_mapiterator* iter);
+	static struct block_list*      prev (struct s_mapiterator* iter);
+	static bool                    exists (struct s_mapiterator* iter);
 };
+extern CMapit *mapit;
 
 #define mapit_getallusers() (mapit->alloc(MAPIT_NORMAL,BL_PC))
 #define mapit_geteachpc()   (mapit->alloc(MAPIT_NORMAL,BL_PC))
@@ -1126,6 +1128,5 @@ extern CMap *map;
 void map_defaults(void);
 #endif // HERCULES_CORE
 
-HPShared struct mapit_interface *mapit;
 
 #endif /* MAP_MAP_H */

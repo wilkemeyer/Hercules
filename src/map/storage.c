@@ -23,14 +23,13 @@
 CGstorage gstorage_s;
 CGstorage *gstorage = NULL;
 
-struct storage_interface storage_s;
-struct storage_interface *storage;
-
+CStorage storage_s;
+CStorage *storage = NULL;
 
 /*==========================================
  * Sort items in the warehouse
  *------------------------------------------*/
-int storage_comp_item(const void *i1_, const void *i2_)
+int CStorage::comp_item(const void *i1_, const void *i2_)
 {
 	struct item *i1 = (struct item *)i1_;
 	struct item *i2 = (struct item *)i2_;
@@ -44,8 +43,8 @@ int storage_comp_item(const void *i1_, const void *i2_)
 	return i1->nameid - i2->nameid;
 }
 
-//Sort item by storage_comp_item (nameid)
-void storage_sortitem(struct item* items, unsigned int size)
+//Sort item by CStorage::comp_item(nameid)
+void CStorage::sortitem(struct item* items, unsigned int size)
 {
 	nullpo_retv(items);
 
@@ -59,7 +58,7 @@ void storage_sortitem(struct item* items, unsigned int size)
  * Parses storage and saves 'dirty' ones upon reconnect. [Skotlex]
  * @see DBApply
  */
-int storage_reconnect_sub(DBKey key, DBData *data, va_list ap)
+int CStorage::reconnect_sub(DBKey key, DBData *data, va_list ap)
 {
 	auto stor = (struct guild_storage *)DB->data2ptr(data);
 	if (stor->dirty && stor->storage_status == 0) //Save closed storages.
@@ -69,7 +68,7 @@ int storage_reconnect_sub(DBKey key, DBData *data, va_list ap)
 }
 
 //Function to be invoked upon server reconnection to char. To save all 'dirty' storages [Skotlex]
-void do_reconnect_storage(void) {
+void CStorage::reconnect(void) {
 	gstorage->db->foreach(gstorage->db, storage->reconnect_sub);
 }
 
@@ -78,7 +77,7 @@ void do_reconnect_storage(void) {
  * 0 - success
  * 1 - fail
  *------------------------------------------*/
-int storage_storageopen(struct map_session_data *sd)
+int CStorage::open(struct map_session_data *sd)
 {
 	nullpo_ret(sd);
 
@@ -121,7 +120,7 @@ int compare_item(struct item *a, struct item *b)
 /*==========================================
  * Internal add-item function.
  *------------------------------------------*/
-int storage_additem(struct map_session_data* sd, struct item* item_data, int amount) {
+int CStorage::additem(struct map_session_data* sd, struct item* item_data, int amount) {
 	struct storage_data* stor = &sd->status.storage;
 	struct item_data *data;
 	int i;
@@ -181,7 +180,7 @@ int storage_additem(struct map_session_data* sd, struct item* item_data, int amo
 /*==========================================
  * Internal del-item function
  *------------------------------------------*/
-int storage_delitem(struct map_session_data* sd, int n, int amount)
+int CStorage::delitem(struct map_session_data* sd, int n, int amount)
 {
 	if( sd->status.storage.items[n].nameid == 0 || sd->status.storage.items[n].amount < amount )
 		return 1;
@@ -206,7 +205,7 @@ int storage_delitem(struct map_session_data* sd, int n, int amount)
  *   0 : fail
  *   1 : success
  *------------------------------------------*/
-int storage_storageadd(struct map_session_data* sd, int index, int amount) {
+int CStorage::add(struct map_session_data* sd, int index, int amount) {
 	nullpo_ret(sd);
 
 	if( sd->status.storage.storage_amount > MAX_STORAGE )
@@ -236,7 +235,7 @@ int storage_storageadd(struct map_session_data* sd, int index, int amount) {
  *   0 : fail
  *   1 : success
  *------------------------------------------*/
-int storage_storageget(struct map_session_data* sd, int index, int amount)
+int CStorage::get(struct map_session_data* sd, int index, int amount)
 {
 	int flag;
 
@@ -264,7 +263,7 @@ int storage_storageget(struct map_session_data* sd, int index, int amount)
  *   0 : fail
  *   1 : success
  *------------------------------------------*/
-int storage_storageaddfromcart(struct map_session_data* sd, int index, int amount)
+int CStorage::addfromcart(struct map_session_data* sd, int index, int amount)
 {
 	nullpo_ret(sd);
 
@@ -293,7 +292,7 @@ int storage_storageaddfromcart(struct map_session_data* sd, int index, int amoun
  *   0 : fail
  *   1 : success
  *------------------------------------------*/
-int storage_storagegettocart(struct map_session_data* sd, int index, int amount) {
+int CStorage::gettocart(struct map_session_data* sd, int index, int amount) {
 	int flag = 0;
 	nullpo_ret(sd);
 
@@ -320,7 +319,7 @@ int storage_storagegettocart(struct map_session_data* sd, int index, int amount)
 /*==========================================
  * Modified By Valaris to save upon closing [massdriller]
  *------------------------------------------*/
-void storage_storageclose(struct map_session_data* sd) {
+void CStorage::close(struct map_session_data* sd) {
 	nullpo_retv(sd);
 
 	clif->storageclose(sd);
@@ -334,7 +333,7 @@ void storage_storageclose(struct map_session_data* sd) {
 /*==========================================
  * When quitting the game.
  *------------------------------------------*/
-void storage_storage_quit(struct map_session_data* sd, int flag) {
+void CStorage::pc_quit(struct map_session_data* sd, int flag) {
 	nullpo_retv(sd);
 
 	if (map->save_settings&4)
@@ -739,22 +738,6 @@ void CGstorage::final(void) {
 }
 void storage_defaults(void) {
 	storage = &storage_s;
-
-	/* */
-	storage->reconnect = do_reconnect_storage;
-	/* */
-	storage->delitem = storage_delitem;
-	storage->open = storage_storageopen;
-	storage->add = storage_storageadd;
-	storage->get = storage_storageget;
-	storage->additem = storage_additem;
-	storage->addfromcart = storage_storageaddfromcart;
-	storage->gettocart = storage_storagegettocart;
-	storage->close = storage_storageclose;
-	storage->pc_quit = storage_storage_quit;
-	storage->comp_item = storage_comp_item;
-	storage->sortitem = storage_sortitem;
-	storage->reconnect_sub = storage_reconnect_sub;
 }
 void gstorage_defaults(void) {
 	gstorage = &gstorage_s;

@@ -528,294 +528,298 @@ struct string_translation {
 /**
  * Interface
  **/
-struct script_interface {
+class CScript {
+public:
 	/* */
-	DBMap *st_db;
-	unsigned int active_scripts;
-	unsigned int next_id;
-	struct eri *st_ers;
-	struct eri *stack_ers;
+	static DBMap *st_db;
+	static unsigned int active_scripts;
+	static unsigned int next_id;
+	static struct eri *st_ers;
+	static struct eri *stack_ers;
 	/* */
-	VECTOR_DECL(struct script_queue) hq;
-	VECTOR_DECL(struct script_queue_iterator) hqi;
+	VECTOR_STRUCT_DECL(_HQStruct, struct script_queue);
+	VECTOR_STRUCT_DECL(_HQIteratorStruct, struct script_queue_iterator);
+	static struct _HQStruct hq;
+	static struct _HQIteratorStruct hqi;
 	/*  */
-	char **buildin;
-	unsigned int buildin_count;
+	static char **buildin;
+	static unsigned int buildin_count;
 	/**
 	 * used to generate quick script_array entries
 	 **/
-	struct eri *array_ers;
+	static struct eri *array_ers;
 	/* */
-	struct str_data_struct *str_data;
-	int str_data_size; // size of the data
-	int str_num; // next id to be assigned
+	static struct str_data_struct *str_data;
+	static int str_data_size; // size of the data
+	static int str_num; // next id to be assigned
 	// str_buf holds the strings themselves
-	char *str_buf;
-	size_t str_size; // size of the buffer
-	int str_pos; // next position to be assigned
-	int str_hash[SCRIPT_HASH_SIZE];
+	static char *str_buf;
+	static size_t str_size; // size of the buffer
+	static int str_pos; // next position to be assigned
+	static int str_hash[SCRIPT_HASH_SIZE];
 	/* */
-	char *word_buf;
-	size_t word_size;
+	static char *word_buf;
+	static size_t word_size;
 	/* Script string storage */
-	char *string_list;
-	int string_list_size;
-	int string_list_pos;
+	static char *string_list;
+	static int string_list_size;
+	static int string_list_pos;
 	/*  */
-	unsigned short current_item_id;
+	static unsigned short current_item_id;
 	/* */
-	struct script_label_entry *labels;
-	int label_count;
-	int labels_size;
+	static struct script_label_entry *labels;
+	static int label_count;
+	static int labels_size;
 	/* */
-	struct Script_Config config;
+	static struct Script_Config config;
 	/* */
 	/// temporary buffer for passing around compiled bytecode
 	/// @see add_scriptb, set_label, parse_script
-	unsigned char* buf;
-	int pos, size;
+	static unsigned char* buf;
+	static int pos, size;
 	/* */
-	struct script_syntax_data syntax;
+	static struct script_syntax_data syntax;
 	/* */
-	int parse_options;
+	static int parse_options;
 	// important buildin function references for usage in scripts
-	int buildin_set_ref;
-	int buildin_callsub_ref;
-	int buildin_callfunc_ref;
-	int buildin_getelementofarray_ref;
+	static int buildin_set_ref;
+	static int buildin_callsub_ref;
+	static int buildin_callfunc_ref;
+	static int buildin_getelementofarray_ref;
 	/* */
-	jmp_buf     error_jump;
-	char*       error_msg;
-	const char* error_pos;
-	int         error_report; // if the error should produce output
+	static jmp_buf     error_jump;
+	static char*       error_msg;
+	static const char* error_pos;
+	static int         error_report; // if the error should produce output
 	// Used by disp_warning_message
-	const char* parser_current_src;
-	const char* parser_current_file;
-	int         parser_current_line;
-	int parse_syntax_for_flag;
+	static const char* parser_current_src;
+	static const char* parser_current_file;
+	static int         parser_current_line;
+	static int parse_syntax_for_flag;
 	// aegis->athena slot position conversion table
-	unsigned int equip[SCRIPT_EQUIP_TABLE_SIZE];
+	static unsigned int equip[SCRIPT_EQUIP_TABLE_SIZE];
 	/* */
 	/* Caches compiled autoscript item code. */
 	/* Note: This is not cleared when reloading itemdb. */
-	DBMap* autobonus_db; // char* script -> char* bytecode
-	DBMap* userfunc_db; // const char* func_name -> struct script_code*
+	static DBMap* autobonus_db; // char* script -> char* bytecode
+	static DBMap* userfunc_db; // const char* func_name -> struct script_code*
 	/* */
-	int potion_flag; //For use on Alchemist improved potions/Potion Pitcher. [Skotlex]
-	int potion_hp, potion_per_hp, potion_sp, potion_per_sp;
-	int potion_target;
+	static int potion_flag; //For use on Alchemist improved potions/Potion Pitcher. [Skotlex]
+	static int potion_hp, potion_per_hp, potion_sp, potion_per_sp;
+	static int potion_target;
 	/* */
-	unsigned int *generic_ui_array;
-	unsigned int generic_ui_array_size;
+	static unsigned int *generic_ui_array;
+	static unsigned int generic_ui_array_size;
 	/* Set during startup when attempting to export the lang, unset after server initialization is over */
-	FILE *lang_export_fp;
-	char *lang_export_file;/* for lang_export_fp */
+	static FILE *lang_export_fp;
+	static char *lang_export_file;/* for lang_export_fp */
 	/* set and unset on npc_parse_script */
-	const char *parser_current_npc_name;
+	static const char *parser_current_npc_name;
 	/* */
-	int buildin_mes_offset;
-	int buildin_select_offset;
-	int buildin_lang_macro_offset;
+	static int buildin_mes_offset;
+	static int buildin_select_offset;
+	static int buildin_lang_macro_offset;
 	/* */
-	DBMap *translation_db;/* npc_name => DBMap (strings) */
-	char **translation_buf;/*  */
-	uint32 translation_buf_size;
+	static DBMap *translation_db;/* npc_name => DBMap (strings) */
+	static char **translation_buf;/*  */
+	static uint32 translation_buf_size;
 	/* */
-	char **languages;
-	uint8 max_lang_id;
+	static char **languages;
+	static uint8 max_lang_id;
 	/* */
-	struct script_string_buf parse_simpleexpr_str;
-	struct script_string_buf lang_export_line_buf;
-	struct script_string_buf lang_export_unescaped_buf;
+	static struct script_string_buf parse_simpleexpr_str;
+	static struct script_string_buf lang_export_line_buf;
+	static struct script_string_buf lang_export_unescaped_buf;
 	/* */
-	int parse_cleanup_timer_id;
+	static int parse_cleanup_timer_id;
 	/*  */
-	void (*init) (bool minimal);
-	void (*final) (void);
-	int  (*reload) (void);
+	static void init (bool minimal);
+	static void final (void);
+	static int  reload (void);
 	/* parse */
-	struct script_code* (*parse) (const char* src,const char* file,int line,int options, int *retval);
-	bool (*add_builtin) (const struct script_function *buildin, bool override);
-	void (*parse_builtin) (void);
-	const char* (*parse_subexpr) (const char* p,int limit);
-	const char* (*skip_space) (const char* p);
-	void (*error) (const char* src, const char* file, int start_line, const char* error_msg, const char* error_pos);
-	void (*warning) (const char* src, const char* file, int start_line, const char* error_msg, const char* error_pos);
+	static struct script_code* parse (const char* src,const char* file,int line,int options, int *retval);
+	static bool add_builtin (const struct script_function *buildin, bool override);
+	static void parse_builtin (void);
+	static const char* parse_subexpr (const char* p,int limit);
+	static const char* skip_space (const char* p);
+	static void error (const char* src, const char* file, int start_line, const char* error_msg, const char* error_pos);
+	static void warning (const char* src, const char* file, int start_line, const char* error_msg, const char* error_pos);
 	/* */
-	bool (*addScript) (char *name, char *args, bool (*func)(struct script_state *st), bool isDeprecated);
-	int (*conv_num) (struct script_state *st,struct script_data *data);
-	const char* (*conv_str) (struct script_state *st,struct script_data *data);
-	TBL_PC *(*rid2sd) (struct script_state *st);
-	TBL_PC *(*id2sd) (struct script_state *st, int account_id);
-	TBL_PC *(*charid2sd) (struct script_state *st, int char_id);
-	TBL_PC *(*nick2sd) (struct script_state *st, const char *name);
-	void (*detach_rid) (struct script_state* st);
-	struct script_data* (*push_val)(struct script_stack* stack, enum c_op type, int64 val, struct reg_db *ref);
-	struct script_data *(*get_val) (struct script_state* st, struct script_data* data);
-	char* (*get_val_ref_str) (struct script_state* st, struct reg_db *n, struct script_data* data);
-	char* (*get_val_scope_str) (struct script_state* st, struct reg_db *n, struct script_data* data);
-	char* (*get_val_npc_str) (struct script_state* st, struct reg_db *n, struct script_data* data);
-	char* (*get_val_instance_str) (struct script_state* st, const char* name, struct script_data* data);
-	int (*get_val_ref_num) (struct script_state* st, struct reg_db *n, struct script_data* data);
-	int (*get_val_scope_num) (struct script_state* st, struct reg_db *n, struct script_data* data);
-	int (*get_val_npc_num) (struct script_state* st, struct reg_db *n, struct script_data* data);
-	int (*get_val_instance_num) (struct script_state* st, const char* name, struct script_data* data);
-	void* (*get_val2) (struct script_state* st, int64 uid, struct reg_db *ref);
-	struct script_data* (*push_str) (struct script_stack* stack, enum c_op type, char* str);
-	struct script_data* (*push_copy) (struct script_stack* stack, int pos);
-	void (*pop_stack) (struct script_state* st, int start, int end);
-	void (*set_constant) (const char* name, int value, bool isparameter);
-	void (*set_constant2) (const char *name, int value, bool isparameter);
-	bool (*get_constant) (const char* name, int* value);
-	void (*label_add)(int key, int pos);
-	void (*run) (struct script_code *rootscript, int pos, int rid, int oid);
-	void (*run_npc) (struct script_code *rootscript, int pos, int rid, int oid);
-	void (*run_pet) (struct script_code *rootscript, int pos, int rid, int oid);
-	void (*run_main) (struct script_state *st);
-	int (*run_timer) (int tid, int64 tick, int id, intptr_t data);
-	int (*set_var) (struct map_session_data *sd, char *name, void *val);
-	void (*stop_instances) (struct script_code *code);
-	void (*free_code) (struct script_code* code);
-	void (*free_vars) (struct DBMap *var_storage);
-	struct script_state* (*alloc_state) (struct script_code* rootscript, int pos, int rid, int oid);
-	void (*free_state) (struct script_state* st);
-	void (*add_pending_ref) (struct script_state *st, struct reg_db *ref);
-	void (*run_autobonus) (const char *autobonus,int id, int pos);
-	void (*cleararray_pc) (struct map_session_data* sd, const char* varname, void* value);
-	void (*setarray_pc) (struct map_session_data* sd, const char* varname, uint32 idx, void* value, int* refcache);
-	int (*config_read) (char *cfgName);
-	int (*add_str) (const char* p);
-	const char* (*get_str) (int id);
-	int (*search_str) (const char* p);
-	void (*setd_sub) (struct script_state *st, struct map_session_data *sd, const char *varname, int elem, void *value, struct reg_db *ref);
-	void (*attach_state) (struct script_state* st);
+	static bool addScript (char *name, char *args, bool (*func)(struct script_state *st), bool isDeprecated);
+	static int conv_num (struct script_state *st,struct script_data *data);
+	static const char* conv_str (struct script_state *st,struct script_data *data);
+	static TBL_PC *rid2sd (struct script_state *st);
+	static TBL_PC *id2sd (struct script_state *st, int account_id);
+	static TBL_PC *charid2sd (struct script_state *st, int char_id);
+	static TBL_PC *nick2sd (struct script_state *st, const char *name);
+	static void detach_rid (struct script_state* st);
+	static struct script_data* push_val(struct script_stack* stack, enum c_op type, int64 val, struct reg_db *ref);
+	static struct script_data *get_val (struct script_state* st, struct script_data* data);
+	static char* get_val_ref_str (struct script_state* st, struct reg_db *n, struct script_data* data);
+	static char* get_val_scope_str (struct script_state* st, struct reg_db *n, struct script_data* data);
+	static char* get_val_npc_str (struct script_state* st, struct reg_db *n, struct script_data* data);
+	static char* get_val_instance_str (struct script_state* st, const char* name, struct script_data* data);
+	static int get_val_ref_num (struct script_state* st, struct reg_db *n, struct script_data* data);
+	static int get_val_scope_num (struct script_state* st, struct reg_db *n, struct script_data* data);
+	static int get_val_npc_num (struct script_state* st, struct reg_db *n, struct script_data* data);
+	static int get_val_instance_num (struct script_state* st, const char* name, struct script_data* data);
+	static void* get_val2 (struct script_state* st, int64 uid, struct reg_db *ref);
+	static struct script_data* push_str (struct script_stack* stack, enum c_op type, char* str);
+	static struct script_data* push_copy (struct script_stack* stack, int pos);
+	static void pop_stack (struct script_state* st, int start, int end);
+	static void set_constant (const char* name, int value, bool isparameter);
+	static void set_constant2 (const char *name, int value, bool isparameter);
+	static bool get_constant (const char* name, int* value);
+	static void label_add(int key, int pos);
+	static void run (struct script_code *rootscript, int pos, int rid, int oid);
+	static void run_npc (struct script_code *rootscript, int pos, int rid, int oid);
+	static void run_pet (struct script_code *rootscript, int pos, int rid, int oid);
+	static void run_main (struct script_state *st);
+	static int run_timer (int tid, int64 tick, int id, intptr_t data);
+	static int set_var (struct map_session_data *sd, char *name, void *val);
+	static void stop_instances (struct script_code *code);
+	static void free_code (struct script_code* code);
+	static void free_vars (struct DBMap *var_storage);
+	static struct script_state* alloc_state (struct script_code* rootscript, int pos, int rid, int oid);
+	static void free_state (struct script_state* st);
+	static void add_pending_ref (struct script_state *st, struct reg_db *ref);
+	static void run_autobonus (const char *autobonus,int id, int pos);
+	static void cleararray_pc (struct map_session_data* sd, const char* varname, void* value);
+	static void setarray_pc (struct map_session_data* sd, const char* varname, uint32 idx, void* value, int* refcache);
+	static int config_read (char *cfgName);
+	static int add_str (const char* p);
+	static const char* get_str (int id);
+	static int search_str (const char* p);
+	static void setd_sub (struct script_state *st, struct map_session_data *sd, const char *varname, int elem, void *value, struct reg_db *ref);
+	static void attach_state (struct script_state* st);
 	/* */
-	struct script_queue *(*queue) (int idx);
-	bool (*queue_add) (int idx, int var);
-	bool (*queue_del) (int idx);
-	bool (*queue_remove) (int idx, int var);
-	int (*queue_create) (void);
-	bool (*queue_clear) (int idx);
+	static struct script_queue *queue (int idx);
+	static bool queue_add (int idx, int var);
+	static bool queue_del (int idx);
+	static bool queue_remove (int idx, int var);
+	static int queue_create (void);
+	static bool queue_clear (int idx);
 	/* */
-	const char * (*parse_curly_close) (const char *p);
-	const char * (*parse_syntax_close) (const char *p);
-	const char * (*parse_syntax_close_sub) (const char *p, int *flag);
-	const char * (*parse_syntax) (const char *p);
-	c_op (*get_com) (unsigned char *scriptbuf, int *pos);
-	int (*get_num) (unsigned char *scriptbuf, int *pos);
-	const char* (*op2name) (int op);
-	void (*reportsrc) (struct script_state *st);
-	void (*reportdata) (struct script_data *data);
-	void (*reportfunc) (struct script_state *st);
-	void (*disp_warning_message) (const char *mes, const char *pos);
-	void (*check_event) (struct script_state *st, const char *evt);
-	unsigned int (*calc_hash) (const char *p);
-	void (*addb) (int a);
-	void (*addc) (int a);
-	void (*addi) (int a);
-	void (*addl) (int l);
-	void (*set_label) (int l, int pos, const char *script_pos);
-	const char* (*skip_word) (const char *p);
-	int (*add_word) (const char *p);
-	const char* (*parse_callfunc) (const char *p, int require_paren, int is_custom);
-	void (*parse_nextline) (bool first, const char *p);
-	const char* (*parse_variable) (const char *p);
-	const char* (*parse_simpleexpr) (const char *p);
-	const char* (*parse_expr) (const char *p);
-	const char* (*parse_line) (const char *p);
-	void (*read_constdb) (void);
-	const char* (*print_line) (StringBuf *buf, const char *p, const char *mark, int line);
-	void (*errorwarning_sub) (StringBuf *buf, const char *src, const char *file, int start_line, const char *error_msg, const char *error_pos);
-	int (*set_reg) (struct script_state *st, TBL_PC *sd, int64 num, const char *name, const void *value, struct reg_db *ref);
-	void (*set_reg_ref_str) (struct script_state* st, struct reg_db *n, int64 num, const char* name, const char *str);
-	void (*set_reg_scope_str) (struct script_state* st, struct reg_db *n, int64 num, const char* name, const char *str);
-	void (*set_reg_npc_str) (struct script_state* st, struct reg_db *n, int64 num, const char* name, const char *str);
-	void (*set_reg_instance_str) (struct script_state* st, int64 num, const char* name, const char *str);
-	void (*set_reg_ref_num) (struct script_state* st, struct reg_db *n, int64 num, const char* name, int val);
-	void (*set_reg_scope_num) (struct script_state* st, struct reg_db *n, int64 num, const char* name, int val);
-	void (*set_reg_npc_num) (struct script_state* st, struct reg_db *n, int64 num, const char* name, int val);
-	void (*set_reg_instance_num) (struct script_state* st, int64 num, const char* name, int val);
-	void (*stack_expand) (struct script_stack *stack);
-	struct script_data* (*push_retinfo) (struct script_stack *stack, struct script_retinfo *ri, struct reg_db *ref);
-	void (*op_3) (struct script_state *st, int op);
-	void (*op_2str) (struct script_state *st, int op, const char *s1, const char *s2);
-	void (*op_2num) (struct script_state *st, int op, int i1, int i2);
-	void (*op_2) (struct script_state *st, int op);
-	void (*op_1) (struct script_state *st, int op);
-	void (*check_buildin_argtype) (struct script_state *st, int func);
-	void (*detach_state) (struct script_state *st, bool dequeue_event);
-	int (*db_free_code_sub) (DBKey key, DBData *data, va_list ap);
-	void (*add_autobonus) (const char *autobonus);
-	int (*menu_countoptions) (const char *str, int max_count, int *total);
-	int (*buildin_areawarp_sub) (struct block_list *bl, va_list ap);
-	int (*buildin_areapercentheal_sub) (struct block_list *bl, va_list ap);
-	void (*buildin_delitem_delete) (struct map_session_data *sd, int idx, int *amount, bool delete_items);
-	bool (*buildin_delitem_search) (struct map_session_data *sd, struct item *it, bool exact_match);
-	int (*buildin_killmonster_sub_strip) (struct block_list *bl, va_list ap);
-	int (*buildin_killmonster_sub) (struct block_list *bl, va_list ap);
-	int (*buildin_killmonsterall_sub_strip) (struct block_list *bl, va_list ap);
-	int (*buildin_killmonsterall_sub) (struct block_list *bl, va_list ap);
-	int (*buildin_announce_sub) (struct block_list *bl, va_list ap);
-	int (*buildin_getareausers_sub) (struct block_list *bl, va_list ap);
-	int (*buildin_getareadropitem_sub) (struct block_list *bl, va_list ap);
-	int (*mapflag_pvp_sub) (struct block_list *bl, va_list ap);
-	int (*buildin_pvpoff_sub) (struct block_list *bl, va_list ap);
-	int (*buildin_maprespawnguildid_sub_pc) (struct map_session_data *sd, va_list ap);
-	int (*buildin_maprespawnguildid_sub_mob) (struct block_list *bl, va_list ap);
-	int (*buildin_mobcount_sub) (struct block_list *bl, va_list ap);
-	int (*playbgm_sub) (struct block_list *bl, va_list ap);
-	int (*playbgm_foreachpc_sub) (struct map_session_data *sd, va_list args);
-	int (*soundeffect_sub) (struct block_list *bl, va_list ap);
-	int (*buildin_query_sql_sub) (struct script_state *st, Sql *handle);
-	int (*buildin_instance_warpall_sub) (struct block_list *bl, va_list ap);
-	int (*buildin_mobuseskill_sub) (struct block_list *bl, va_list ap);
-	int (*cleanfloor_sub) (struct block_list *bl, va_list ap);
-	int (*run_func) (struct script_state *st);
-	const char *(*getfuncname) (struct script_state *st);
+	static const char * parse_curly_close (const char *p);
+	static const char * parse_syntax_close (const char *p);
+	static const char * parse_syntax_close_sub (const char *p, int *flag);
+	static const char * parse_syntax (const char *p);
+	static c_op get_com (unsigned char *scriptbuf, int *pos);
+	static int get_num (unsigned char *scriptbuf, int *pos);
+	static const char* op2name (int op);
+	static void reportsrc (struct script_state *st);
+	static void reportdata (struct script_data *data);
+	static void reportfunc (struct script_state *st);
+	static void disp_warning_message (const char *mes, const char *pos);
+	static void check_event (struct script_state *st, const char *evt);
+	static unsigned int calc_hash (const char *p);
+	static void addb (int a);
+	static void addc (int a);
+	static void addi (int a);
+	static void addl (int l);
+	static void set_label (int l, int pos, const char *script_pos);
+	static const char* skip_word (const char *p);
+	static int add_word (const char *p);
+	static const char* parse_callfunc (const char *p, int require_paren, int is_custom);
+	static void parse_nextline (bool first, const char *p);
+	static const char* parse_variable (const char *p);
+	static const char* parse_simpleexpr (const char *p);
+	static const char* parse_expr (const char *p);
+	static const char* parse_line (const char *p);
+	static void read_constdb (void);
+	static const char* print_line (StringBuf *buf, const char *p, const char *mark, int line);
+	static void errorwarning_sub (StringBuf *buf, const char *src, const char *file, int start_line, const char *error_msg, const char *error_pos);
+	static int set_reg (struct script_state *st, TBL_PC *sd, int64 num, const char *name, const void *value, struct reg_db *ref);
+	static void set_reg_ref_str (struct script_state* st, struct reg_db *n, int64 num, const char* name, const char *str);
+	static void set_reg_scope_str (struct script_state* st, struct reg_db *n, int64 num, const char* name, const char *str);
+	static void set_reg_npc_str (struct script_state* st, struct reg_db *n, int64 num, const char* name, const char *str);
+	static void set_reg_instance_str (struct script_state* st, int64 num, const char* name, const char *str);
+	static void set_reg_ref_num (struct script_state* st, struct reg_db *n, int64 num, const char* name, int val);
+	static void set_reg_scope_num (struct script_state* st, struct reg_db *n, int64 num, const char* name, int val);
+	static void set_reg_npc_num (struct script_state* st, struct reg_db *n, int64 num, const char* name, int val);
+	static void set_reg_instance_num (struct script_state* st, int64 num, const char* name, int val);
+	static void stack_expand (struct script_stack *stack);
+	static struct script_data* push_retinfo (struct script_stack *stack, struct script_retinfo *ri, struct reg_db *ref);
+	static void op_3 (struct script_state *st, int op);
+	static void op_2str (struct script_state *st, int op, const char *s1, const char *s2);
+	static void op_2num (struct script_state *st, int op, int i1, int i2);
+	static void op_2 (struct script_state *st, int op);
+	static void op_1 (struct script_state *st, int op);
+	static void check_buildin_argtype (struct script_state *st, int func);
+	static void detach_state (struct script_state *st, bool dequeue_event);
+	static int db_free_code_sub (DBKey key, DBData *data, va_list ap);
+	static void add_autobonus (const char *autobonus);
+	static int menu_countoptions (const char *str, int max_count, int *total);
+	static int buildin_areawarp_sub (struct block_list *bl, va_list ap);
+	static int buildin_areapercentheal_sub (struct block_list *bl, va_list ap);
+	static void buildin_delitem_delete (struct map_session_data *sd, int idx, int *amount, bool delete_items);
+	static bool buildin_delitem_search (struct map_session_data *sd, struct item *it, bool exact_match);
+	static int buildin_killmonster_sub_strip (struct block_list *bl, va_list ap);
+	static int buildin_killmonster_sub (struct block_list *bl, va_list ap);
+	static int buildin_killmonsterall_sub_strip (struct block_list *bl, va_list ap);
+	static int buildin_killmonsterall_sub (struct block_list *bl, va_list ap);
+	static int buildin_announce_sub (struct block_list *bl, va_list ap);
+	static int buildin_getareausers_sub (struct block_list *bl, va_list ap);
+	static int buildin_getareadropitem_sub (struct block_list *bl, va_list ap);
+	static int mapflag_pvp_sub (struct block_list *bl, va_list ap);
+	static int buildin_pvpoff_sub (struct block_list *bl, va_list ap);
+	static int buildin_maprespawnguildid_sub_pc (struct map_session_data *sd, va_list ap);
+	static int buildin_maprespawnguildid_sub_mob (struct block_list *bl, va_list ap);
+	static int buildin_mobcount_sub (struct block_list *bl, va_list ap);
+	static int playbgm_sub (struct block_list *bl, va_list ap);
+	static int playbgm_foreachpc_sub (struct map_session_data *sd, va_list args);
+	static int soundeffect_sub (struct block_list *bl, va_list ap);
+	static int buildin_query_sql_sub (struct script_state *st, Sql *handle);
+	static int buildin_instance_warpall_sub (struct block_list *bl, va_list ap);
+	static int buildin_mobuseskill_sub (struct block_list *bl, va_list ap);
+	static int cleanfloor_sub (struct block_list *bl, va_list ap);
+	static int run_func (struct script_state *st);
+	static const char *getfuncname (struct script_state *st);
 	// for ENABLE_CASE_CHECK
-	unsigned int (*calc_hash_ci) (const char *p);
-	struct casecheck_data local_casecheck;
-	struct casecheck_data global_casecheck;
+	static unsigned int calc_hash_ci (const char *p);
+	static struct casecheck_data local_casecheck;
+	static struct casecheck_data global_casecheck;
 	// end ENABLE_CASE_CHECK
 	/**
 	 * Array Handling
 	 **/
-	struct reg_db *(*array_src) (struct script_state *st, struct map_session_data *sd, const char *name, struct reg_db *ref);
-	void (*array_update) (struct reg_db *src, int64 num, bool empty);
-	void (*array_delete) (struct reg_db *src, struct script_array *sa);
-	void (*array_remove_member) (struct reg_db *src, struct script_array *sa, unsigned int idx);
-	void (*array_add_member) (struct script_array *sa, unsigned int idx);
-	unsigned int (*array_size) (struct script_state *st, struct map_session_data *sd, const char *name, struct reg_db *ref);
-	unsigned int (*array_highest_key) (struct script_state *st, struct map_session_data *sd, const char *name, struct reg_db *ref);
-	int (*array_free_db) (DBKey key, DBData *data, va_list ap);
-	void (*array_ensure_zero) (struct script_state *st, struct map_session_data *sd, int64 uid, struct reg_db *ref);
+	static struct reg_db *array_src (struct script_state *st, struct map_session_data *sd, const char *name, struct reg_db *ref);
+	static void array_update (struct reg_db *src, int64 num, bool empty);
+	static void array_delete (struct reg_db *src, struct script_array *sa);
+	static void array_remove_member (struct reg_db *src, struct script_array *sa, unsigned int idx);
+	static void array_add_member (struct script_array *sa, unsigned int idx);
+	static unsigned int array_size (struct script_state *st, struct map_session_data *sd, const char *name, struct reg_db *ref);
+	static unsigned int array_highest_key (struct script_state *st, struct map_session_data *sd, const char *name, struct reg_db *ref);
+	static int array_free_db (DBKey key, DBData *data, va_list ap);
+	static void array_ensure_zero (struct script_state *st, struct map_session_data *sd, int64 uid, struct reg_db *ref);
 	/* */
-	void (*reg_destroy_single) (struct map_session_data *sd, int64 reg, struct script_reg_state *data);
-	int (*reg_destroy) (DBKey key, DBData *data, va_list ap);
+	static void reg_destroy_single (struct map_session_data *sd, int64 reg, struct script_reg_state *data);
+	static int reg_destroy (DBKey key, DBData *data, va_list ap);
 	/* */
-	void (*generic_ui_array_expand) (unsigned int plus);
-	unsigned int *(*array_cpy_list) (struct script_array *sa);
+	static void generic_ui_array_expand (unsigned int plus);
+	static unsigned int *array_cpy_list (struct script_array *sa);
 	/* */
-	void (*hardcoded_constants) (void);
-	unsigned short (*mapindexname2id) (struct script_state *st, const char* name);
-	int (*string_dup) (char *str);
-	void (*load_translations) (void);
-	void (*load_translation) (const char *file, uint8 lang_id, uint32 *total);
-	int (*translation_db_destroyer) (DBKey key, DBData *data, va_list ap);
-	void (*clear_translations) (bool reload);
-	int (*parse_cleanup_timer) (int tid, int64 tick, int id, intptr_t data);
-	uint8 (*add_language) (const char *name);
-	const char *(*get_translation_file_name) (const char *file);
-	void (*parser_clean_leftovers) (void);
-	void (*run_use_script) (struct map_session_data *sd, struct item_data *data, int oid);
-	void (*run_item_equip_script) (struct map_session_data *sd, struct item_data *data, int oid);
-	void (*run_item_unequip_script) (struct map_session_data *sd, struct item_data *data, int oid);
+	static void hardcoded_constants (void);
+	static unsigned short mapindexname2id (struct script_state *st, const char* name);
+	static int string_dup (char *str);
+	static void load_translations (void);
+	static void load_translation (const char *file, uint8 lang_id, uint32 *total);
+	static int translation_db_destroyer (DBKey key, DBData *data, va_list ap);
+	static void clear_translations (bool reload);
+	static int parse_cleanup_timer (int tid, int64 tick, int id, intptr_t data);
+	static uint8 add_language (const char *name);
+	static const char *get_translation_file_name (const char *file);
+	static void parser_clean_leftovers (void);
+	static void run_use_script (struct map_session_data *sd, struct item_data *data, int oid);
+	static void run_item_equip_script (struct map_session_data *sd, struct item_data *data, int oid);
+	static void run_item_unequip_script (struct map_session_data *sd, struct item_data *data, int oid);
 };
+
+extern CScript *script;
 
 #ifdef HERCULES_CORE
 void script_defaults(void);
 #endif // HERCULES_CORE
 
-HPShared struct script_interface *script;
 
 #endif /* MAP_SCRIPT_H */
