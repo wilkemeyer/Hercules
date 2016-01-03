@@ -79,7 +79,8 @@
 /**
  * mapindex.c interface
  **/
-struct mapindex_interface {
+class CMapindex {
+public:
 	char config_file[80];
 	/* mapname (str) -> index (int) */
 	DBMap *db;
@@ -96,25 +97,27 @@ struct mapindex_interface {
 		char name[MAP_NAME_LENGTH];
 	} list[MAX_MAPINDEX];
 	/* */
-	int (*init) (void);
-	void (*final) (void);
+	static int init (void);
+	static void final (void);
 	/* */
-	int (*addmap) (int index, const char* name);
-	void (*removemap) (int index);
-	const char* (*getmapname) (const char* string, char* output);
+	static int addmap (int index, const char* name);
+	static void removemap (int index);
+	static const char* getmapname (const char* string, char* output);
 	/* TODO: server shouldn't be handling the extension, game client automatically adds .gat/.rsw/.whatever
 	 * and there are official map names taking advantage of it that we cant support due to the .gat room being saved */
-	const char* (*getmapname_ext) (const char* string, char* output);
+	static const char* getmapname_ext (const char* string, char* output);
 	/* TODO: Hello World! make up your mind, this thing is int on some places and unsigned short on others */
-	unsigned short (*name2id) (const char*);
-	const char * (*id2name) (uint16 id, const char *file, int line, const char *func);
-	bool (*check_default) (void);
+	static unsigned short name2id (const char*);
+	static const char * id2name (uint16 id, const char *file, int line, const char *func);
+	static bool check_default (void);
 };
+
+/*** MAPINDEX SINGLETON ***/
+extern CMapindex *mapindex;
 
 #ifdef HERCULES_CORE
 void mapindex_defaults(void);
 #endif // HERCULES_CORE
 
-HPShared struct mapindex_interface *mapindex;
 
 #endif /* COMMON_MAPINDEX_H */

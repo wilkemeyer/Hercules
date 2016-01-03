@@ -152,14 +152,16 @@
 	if (Assert_chk(t)) break; else (void)0
 
 
-struct nullpo_interface {
-	void (*assert_report) (const char *file, int line, const char *func, const char *targetname, const char *title);
+class CNullpo {
+public:
+	static void assert_report (const char *file, int line, const char *func, const char *targetname, const char *title);
 };
+
+extern CNullpo *nullpo;
 
 #ifdef HERCULES_CORE
 void nullpo_defaults(void);
 #endif // HERCULES_CORE
 
-HPShared struct nullpo_interface *nullpo;
 
 #endif /* COMMON_NULLPO_H */

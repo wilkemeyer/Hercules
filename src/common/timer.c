@@ -21,8 +21,9 @@
 #include "stdafx.h"
 
 
-struct timer_interface timer_s;
-struct timer_interface *timer;
+CTimer timer_s;
+CTimer *timer = NULL;
+
 
 // If the server can't handle processing thousands of monsters
 // or many connected clients, please increase TIMER_MIN_INTERVAL.
@@ -66,7 +67,7 @@ struct timer_func_list {
 } *tfl_root = NULL;
 
 /// Sets the name of a timer function.
-int timer_add_func_list(TimerFunc func, char* name) {
+int CTimer::add_func_list(TimerFunc func, char* name) {
 	struct timer_func_list* tfl;
 
 	if (name) {
@@ -118,25 +119,25 @@ static int64 sys_tick(void) {
 static int64 gettick_cache;
 static int gettick_count = 1;
 
-int64 timer_gettick_nocache(void) {
+int64 CTimer::gettick_nocache(void) {
 	gettick_count = TICK_CACHE;
 	gettick_cache = sys_tick();
 	return gettick_cache;
 }
 
-int64 timer_gettick(void) {
+int64 CTimer::gettick(void) {
 	return ( --gettick_count == 0 ) ? gettick_nocache() : gettick_cache;
 }
 //////////////////////////////
 #else
 //////////////////////////////
 // tick doesn't get cached
-int64 timer_gettick_nocache(void)
+int64 CTimer::gettick_nocache(void)
 {
 	return sys_tick();
 }
 
-int64 timer_gettick(void) {
+int64 CTimer::gettick(void) {
 	return sys_tick();
 }
 //////////////////////////////////////////////////////////////////////////
@@ -195,7 +196,7 @@ static int acquire_timer(void) {
 
 /// Starts a new timer that is deleted once it expires (single-use).
 /// Returns the timer's id.
-int timer_add(int64 tick, TimerFunc func, int id, intptr_t data) {
+int CTimer::add(int64 tick, TimerFunc func, int id, intptr_t data) {
 	int tid;
 
 	tid = acquire_timer();
@@ -212,7 +213,7 @@ int timer_add(int64 tick, TimerFunc func, int id, intptr_t data) {
 
 /// Starts a new timer that automatically restarts itself (infinite loop until manually removed).
 /// Returns the timer's id, or INVALID_TIMER if it fails.
-int timer_add_interval(int64 tick, TimerFunc func, int id, intptr_t data, int interval) {
+int CTimer::add_interval(int64 tick, TimerFunc func, int id, intptr_t data, int interval) {
 	int tid;
 
 	if (interval < 1) {
@@ -234,14 +235,14 @@ int timer_add_interval(int64 tick, TimerFunc func, int id, intptr_t data, int in
 }
 
 /// Retrieves internal timer data
-const struct TimerData* timer_get(int tid) {
+const struct TimerData* CTimer::get(int tid) {
 	return ( tid >= 0 && tid < timer_data_num ) ? &timer_data[tid] : NULL;
 }
 
 /// Marks a timer specified by 'id' for immediate deletion once it expires.
 /// Param 'func' is used for debug/verification purposes.
 /// Returns 0 on success, < 0 on failure.
-int timer_do_delete(int tid, TimerFunc func) {
+int CTimer::_delete(int tid, TimerFunc func) {
 	if( tid < 0 || tid >= timer_data_num ) {
 		ShowError("timer_do_delete error : no such timer %d (%p(%s))\n", tid, func, search_timer_func_list(func));
 		return -1;
@@ -260,7 +261,7 @@ int timer_do_delete(int tid, TimerFunc func) {
 
 /// Marks a timer specified by 'id' for immediate deletion once it expires.
 /// Returns 0 on success, < 0 on failure.
-int timer_do_delete_nocheck(int tid) {
+int CTimer::_delete_nocheck(int tid) {
 	if(tid < 0 || tid >= timer_data_num) {
 		ShowError("timer_do_delete_nocheck error : no such timer %d");
 		return -1;
@@ -275,7 +276,7 @@ int timer_do_delete_nocheck(int tid) {
 
 /// Adjusts a timer's expiration time.
 /// Returns the new tick value, or -1 if it fails.
-int64 timer_addtick(int tid, int64 tick) {
+int64 CTimer::addtick(int tid, int64 tick) {
 	return timer->settick(tid, timer_data[tid].tick+tick);
 }
 
@@ -287,7 +288,7 @@ int64 timer_addtick(int tid, int64 tick) {
  * @return The new tick value.
  * @retval -1 in case of failure.
  */
-int64 timer_settick(int tid, int64 tick)
+int64 CTimer::settick(int tid, int64 tick)
 {
 	int i;
 
@@ -317,7 +318,7 @@ int64 timer_settick(int tid, int64 tick)
  * @param tick The current tick.
  * @return The value of the smallest non-expired timer (or 1 second if there aren't any).
  */
-int do_timer(int64 tick)
+int CTimer::perform(int64 tick)
 {
 	int64 diff = TIMER_MAX_INTERVAL; // return value
 
@@ -370,11 +371,11 @@ int do_timer(int64 tick)
 	return (int)cap_value(diff, TIMER_MIN_INTERVAL, TIMER_MAX_INTERVAL);
 }
 
-unsigned long timer_get_uptime(void) {
+unsigned long CTimer::get_uptime(void) {
 	return (unsigned long)difftime(time(NULL), start_time);
 }
 
-void timer_init(void)
+void CTimer::init(void)
 {
 #if defined(ENABLE_RDTSC)
 	rdtsc_calibrate();
@@ -383,7 +384,7 @@ void timer_init(void)
 	time(&start_time);
 }
 
-void timer_final(void) {
+void CTimer::final(void) {
 	struct timer_func_list *tfl;
 	struct timer_func_list *next;
 
@@ -404,20 +405,4 @@ void timer_final(void) {
 *-------------------------------------*/
 void timer_defaults(void) {
 	timer = &timer_s;
-
-	/* funcs */
-	timer->gettick = timer_gettick;
-	timer->gettick_nocache = timer_gettick_nocache;
-	timer->add = timer_add;
-	timer->add_interval = timer_add_interval;
-	timer->add_func_list = timer_add_func_list;
-	timer->get = timer_get;
-	timer->_delete = timer_do_delete;
-	timer->_delete_nocheck = timer_do_delete_nocheck;
-	timer->addtick = timer_addtick;
-	timer->settick = timer_settick;
-	timer->get_uptime = timer_get_uptime;
-	timer->perform = do_timer;
-	timer->init = timer_init;
-	timer->final = timer_final;
 }

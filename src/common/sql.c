@@ -26,8 +26,8 @@ void hercules_mysql_error_handler(unsigned int ecode);
 int mysql_reconnect_type;
 unsigned int mysql_reconnect_count;
 
-struct sql_interface sql_s;
-struct sql_interface *SQL;
+CSQL sql_s;
+CSQL *SQL = NULL;
 
 /// Sql handle
 struct Sql {
@@ -65,7 +65,7 @@ struct SqlStmt {
 ///////////////////////////////////////////////////////////////////////////////
 
 /// Allocates and initializes a new Sql handle.
-Sql* Sql_Malloc(void)
+Sql* CSQL::Malloc(void)
 {
 	Sql* self;
 
@@ -82,7 +82,7 @@ Sql* Sql_Malloc(void)
 static int Sql_P_Keepalive(Sql* self);
 
 /// Establishes a connection.
-int Sql_Connect(Sql* self, const char* user, const char* passwd, const char* host, uint16 port, const char* db)
+int CSQL::Connect(Sql* self, const char* user, const char* passwd, const char* host, uint16 port, const char* db)
 {
 	if( self == NULL )
 		return SQL_ERROR;
@@ -105,7 +105,7 @@ int Sql_Connect(Sql* self, const char* user, const char* passwd, const char* hos
 }
 
 /// Retrieves the timeout of the connection.
-int Sql_GetTimeout(Sql* self, uint32* out_timeout)
+int CSQL::GetTimeout(Sql* self, uint32* out_timeout)
 {
 	if( self && out_timeout && SQL_SUCCESS == SQL->Query(self, "SHOW VARIABLES LIKE 'wait_timeout'") ) {
 		char* data;
@@ -122,7 +122,7 @@ int Sql_GetTimeout(Sql* self, uint32* out_timeout)
 }
 
 /// Retrieves the name of the columns of a table into out_buf, with the separator after each name.
-int Sql_GetColumnNames(Sql* self, const char* table, char* out_buf, size_t buf_len, char sep)
+int CSQL::GetColumnNames(Sql* self, const char* table, char* out_buf, size_t buf_len, char sep)
 {
 	char* data;
 	size_t len;
@@ -150,7 +150,7 @@ int Sql_GetColumnNames(Sql* self, const char* table, char* out_buf, size_t buf_l
 }
 
 /// Changes the encoding of the connection.
-int Sql_SetEncoding(Sql* self, const char* encoding)
+int CSQL::SetEncoding(Sql* self, const char* encoding)
 {
 	if( self && mysql_set_character_set(&self->handle, encoding) == 0 )
 		return SQL_SUCCESS;
@@ -158,7 +158,7 @@ int Sql_SetEncoding(Sql* self, const char* encoding)
 }
 
 /// Pings the connection.
-int Sql_Ping(Sql* self)
+int CSQL::Ping(Sql* self)
 {
 	if( self && mysql_ping(&self->handle) == 0 )
 		return SQL_SUCCESS;
@@ -172,7 +172,7 @@ static int Sql_P_KeepaliveTimer(int tid, int64 tick, int id, intptr_t data)
 {
 	Sql* self = (Sql*)data;
 	ShowInfo("Pinging SQL server to keep connection alive...\n");
-	Sql_Ping(self);
+	CSQL::Ping(self);
 	return 0;
 }
 
@@ -188,7 +188,7 @@ static int Sql_P_Keepalive(Sql* self)
 	timeout = 28800; // 8 hours
 
 	// request the timeout value from the mysql server
-	Sql_GetTimeout(self, &timeout);
+	CSQL::GetTimeout(self, &timeout);
 
 	if( timeout < 60 )
 		timeout = 60;
@@ -200,7 +200,7 @@ static int Sql_P_Keepalive(Sql* self)
 }
 
 /// Escapes a string.
-size_t Sql_EscapeString(Sql* self, char *out_to, const char *from)
+size_t CSQL::EscapeString(Sql* self, char *out_to, const char *from)
 {
 	if( self )
 		return (size_t)mysql_real_escape_string(&self->handle, out_to, from, (unsigned long)strlen(from));
@@ -209,7 +209,7 @@ size_t Sql_EscapeString(Sql* self, char *out_to, const char *from)
 }
 
 /// Escapes a string.
-size_t Sql_EscapeStringLen(Sql* self, char *out_to, const char *from, size_t from_len)
+size_t CSQL::EscapeStringLen(Sql* self, char *out_to, const char *from, size_t from_len)
 {
 	if( self )
 		return (size_t)mysql_real_escape_string(&self->handle, out_to, from, (unsigned long)from_len);
@@ -218,8 +218,8 @@ size_t Sql_EscapeStringLen(Sql* self, char *out_to, const char *from, size_t fro
 }
 
 /// Executes a query.
-int Sql_Query(Sql *self, const char *query, ...) __attribute__((format(printf, 2, 3)));
-int Sql_Query(Sql *self, const char *query, ...) {
+//int CSQL::Query(Sql *self, const char *query, ...) __attribute__((format(printf, 2, 3)));
+int CSQL::Query(Sql *self, const char *query, ...) {
 	int res;
 	va_list args;
 
@@ -231,7 +231,7 @@ int Sql_Query(Sql *self, const char *query, ...) {
 }
 
 /// Executes a query.
-int Sql_QueryV(Sql* self, const char* query, va_list args)
+int CSQL::QueryV(Sql* self, const char* query, va_list args)
 {
 	if( self == NULL )
 		return SQL_ERROR;
@@ -256,7 +256,7 @@ int Sql_QueryV(Sql* self, const char* query, va_list args)
 }
 
 /// Executes a query.
-int Sql_QueryStr(Sql* self, const char* query)
+int CSQL::QueryStr(Sql* self, const char* query)
 {
 	if( self == NULL )
 		return SQL_ERROR;
@@ -281,7 +281,7 @@ int Sql_QueryStr(Sql* self, const char* query)
 }
 
 /// Returns the number of the AUTO_INCREMENT column of the last INSERT/UPDATE query.
-uint64 Sql_LastInsertId(Sql* self)
+uint64 CSQL::LastInsertId(Sql* self)
 {
 	if( self )
 		return (uint64)mysql_insert_id(&self->handle);
@@ -290,7 +290,7 @@ uint64 Sql_LastInsertId(Sql* self)
 }
 
 /// Returns the number of columns in each row of the result.
-uint32 Sql_NumColumns(Sql* self)
+uint32 CSQL::NumColumns(Sql* self)
 {
 	if( self && self->result )
 		return (uint32)mysql_num_fields(self->result);
@@ -298,7 +298,7 @@ uint32 Sql_NumColumns(Sql* self)
 }
 
 /// Returns the number of rows in the result.
-uint64 Sql_NumRows(Sql* self)
+uint64 CSQL::NumRows(Sql* self)
 {
 	if( self && self->result )
 		return (uint64)mysql_num_rows(self->result);
@@ -306,7 +306,7 @@ uint64 Sql_NumRows(Sql* self)
 }
 
 /// Fetches the next row.
-int Sql_NextRow(Sql* self) {
+int CSQL::NextRow(Sql* self) {
 	if( self && self->result ) {
 		self->row = mysql_fetch_row(self->result);
 		if( self->row ) {
@@ -321,7 +321,7 @@ int Sql_NextRow(Sql* self) {
 }
 
 /// Gets the data of a column.
-int Sql_GetData(Sql* self, size_t col, char** out_buf, size_t* out_len)
+int CSQL::GetData(Sql* self, size_t col, char** out_buf, size_t* out_len)
 {
 	if( self && self->row ) {
 		if( col < SQL->NumColumns(self) ) {
@@ -337,7 +337,7 @@ int Sql_GetData(Sql* self, size_t col, char** out_buf, size_t* out_len)
 }
 
 /// Frees the result of the query.
-void Sql_FreeResult(Sql* self) {
+void CSQL::FreeResult(Sql* self) {
 	if( self && self->result ) {
 		mysql_free_result(self->result);
 		self->result = NULL;
@@ -347,7 +347,7 @@ void Sql_FreeResult(Sql* self) {
 }
 
 /// Shows debug information (last query).
-void Sql_ShowDebug_(Sql* self, const char* debug_file, const unsigned long debug_line)
+void CSQL::ShowDebug_(Sql* self, const char* debug_file, const unsigned long debug_line)
 {
 	if( self == NULL )
 		ShowDebug("at %s:%lu - self is NULL\n", debug_file, debug_line);
@@ -358,7 +358,7 @@ void Sql_ShowDebug_(Sql* self, const char* debug_file, const unsigned long debug
 }
 
 /// Frees a Sql handle returned by Sql_Malloc.
-void Sql_Free(Sql* self) {
+void CSQL::Free(Sql* self) {
 	if( self )
 	{
 		SQL->FreeResult(self);
@@ -521,7 +521,7 @@ static void SqlStmt_P_ShowDebugTruncatedColumn(SqlStmt* self, size_t i)
 }
 
 /// Allocates and initializes a new SqlStmt handle.
-SqlStmt* SqlStmt_Malloc(Sql* sql) {
+SqlStmt* CSQL::StmtMalloc(Sql* sql) {
 	SqlStmt* self;
 	MYSQL_STMT* stmt;
 
@@ -548,8 +548,8 @@ SqlStmt* SqlStmt_Malloc(Sql* sql) {
 }
 
 /// Prepares the statement.
-int SqlStmt_Prepare(SqlStmt *self, const char *query, ...) __attribute__((format(printf, 2, 3)));
-int SqlStmt_Prepare(SqlStmt *self, const char *query, ...) {
+//int CSQL::StmtPrepare(SqlStmt *self, const char *query, ...) __attribute__((format(printf, 2, 3)));
+int CSQL::StmtPrepare(SqlStmt *self, const char *query, ...) {
 	int res;
 	va_list args;
 
@@ -561,7 +561,7 @@ int SqlStmt_Prepare(SqlStmt *self, const char *query, ...) {
 }
 
 /// Prepares the statement.
-int SqlStmt_PrepareV(SqlStmt* self, const char* query, va_list args)
+int CSQL::StmtPrepareV(SqlStmt* self, const char* query, va_list args)
 {
 	if( self == NULL )
 		return SQL_ERROR;
@@ -581,7 +581,7 @@ int SqlStmt_PrepareV(SqlStmt* self, const char* query, va_list args)
 }
 
 /// Prepares the statement.
-int SqlStmt_PrepareStr(SqlStmt* self, const char* query)
+int CSQL::StmtPrepareStr(SqlStmt* self, const char* query)
 {
 	if( self == NULL )
 		return SQL_ERROR;
@@ -601,7 +601,7 @@ int SqlStmt_PrepareStr(SqlStmt* self, const char* query)
 }
 
 /// Returns the number of parameters in the prepared statement.
-size_t SqlStmt_NumParams(SqlStmt* self)
+size_t CSQL::StmtNumParams(SqlStmt* self)
 {
 	if( self )
 		return (size_t)mysql_stmt_param_count(self->stmt);
@@ -610,7 +610,7 @@ size_t SqlStmt_NumParams(SqlStmt* self)
 }
 
 /// Binds a parameter to a buffer.
-int SqlStmt_BindParam(SqlStmt* self, size_t idx, enum SqlDataType buffer_type, void* buffer, size_t buffer_len)
+int CSQL::StmtBindParam(SqlStmt* self, size_t idx, enum SqlDataType buffer_type, void* buffer, size_t buffer_len)
 {
 	if( self == NULL )
 	return SQL_ERROR;
@@ -638,7 +638,7 @@ int SqlStmt_BindParam(SqlStmt* self, size_t idx, enum SqlDataType buffer_type, v
 }
 
 /// Executes the prepared statement.
-int SqlStmt_Execute(SqlStmt* self)
+int CSQL::StmtExecute(SqlStmt* self)
 {
 	if( self == NULL )
 		return SQL_ERROR;
@@ -663,7 +663,7 @@ int SqlStmt_Execute(SqlStmt* self)
 }
 
 /// Returns the number of the AUTO_INCREMENT column of the last INSERT/UPDATE statement.
-uint64 SqlStmt_LastInsertId(SqlStmt* self)
+uint64 CSQL::StmtLastInsertId(SqlStmt* self)
 {
 	if( self )
 		return (uint64)mysql_stmt_insert_id(self->stmt);
@@ -672,7 +672,7 @@ uint64 SqlStmt_LastInsertId(SqlStmt* self)
 }
 
 /// Returns the number of columns in each row of the result.
-size_t SqlStmt_NumColumns(SqlStmt* self)
+size_t CSQL::StmtNumColumns(SqlStmt* self)
 {
 	if( self )
 		return (size_t)mysql_stmt_field_count(self->stmt);
@@ -681,7 +681,7 @@ size_t SqlStmt_NumColumns(SqlStmt* self)
 }
 
 /// Binds the result of a column to a buffer.
-int SqlStmt_BindColumn(SqlStmt *self, size_t idx, enum SqlDataType buffer_type, void *buffer, size_t buffer_len, uint32 *out_length, int8 *out_is_null) {
+int CSQL::StmtBindColumn(SqlStmt *self, size_t idx, enum SqlDataType buffer_type, void *buffer, size_t buffer_len, uint32 *out_length, int8 *out_is_null) {
 	if (self == NULL)
 		return SQL_ERROR;
 
@@ -722,7 +722,7 @@ int SqlStmt_BindColumn(SqlStmt *self, size_t idx, enum SqlDataType buffer_type, 
 }
 
 /// Returns the number of rows in the result.
-uint64 SqlStmt_NumRows(SqlStmt* self)
+uint64 CSQL::StmtNumRows(SqlStmt* self)
 {
 	if( self )
 		return (uint64)mysql_stmt_num_rows(self->stmt);
@@ -731,7 +731,7 @@ uint64 SqlStmt_NumRows(SqlStmt* self)
 }
 
 /// Fetches the next row.
-int SqlStmt_NextRow(SqlStmt* self)
+int CSQL::StmtNextRow(SqlStmt* self)
 {
 	int err;
 	size_t i;
@@ -814,14 +814,14 @@ int SqlStmt_NextRow(SqlStmt* self)
 }
 
 /// Frees the result of the statement execution.
-void SqlStmt_FreeResult(SqlStmt* self)
+void CSQL::StmtFreeResult(SqlStmt* self)
 {
 	if( self )
 		mysql_stmt_free_result(self->stmt);
 }
 
 /// Shows debug information (with statement).
-void SqlStmt_ShowDebug_(SqlStmt* self, const char* debug_file, const unsigned long debug_line)
+void CSQL::StmtShowDebug_(SqlStmt* self, const char* debug_file, const unsigned long debug_line)
 {
 	if( self == NULL )
 		ShowDebug("at %s:%lu -  self is NULL\n", debug_file, debug_line);
@@ -832,11 +832,11 @@ void SqlStmt_ShowDebug_(SqlStmt* self, const char* debug_file, const unsigned lo
 }
 
 /// Frees a SqlStmt returned by SqlStmt_Malloc.
-void SqlStmt_Free(SqlStmt* self)
+void CSQL::StmtFree(SqlStmt* self)
 {
 	if( self )
 	{
-		SqlStmt_FreeResult(self);
+		CSQL::StmtFreeResult(self);
 		StrBuf->Destroy(&self->buf);
 		mysql_stmt_close(self->stmt);
 		if( self->params )
@@ -946,7 +946,7 @@ void Sql_HerculesUpdateCheck(Sql* self) {
 			unsigned int timestampui = (unsigned int)atol(timestamp);
 			if( SQL_ERROR == SQL->Query(self, "SELECT 1 FROM `sql_updates` WHERE `timestamp` = '%u' LIMIT 1", timestampui) )
 				Sql_ShowDebug(self);
-			if( Sql_NumRows(self) != 1 ) {
+			if( CSQL::NumRows(self) != 1 ) {
 				StrBuf->Printf(&buf,CL_MAGENTA "[SQL]" CL_RESET ": -- '" CL_WHITE "%s" CL_RESET "'\n", path);
 				performed++;
 			}
@@ -988,7 +988,7 @@ void Sql_HerculesUpdateSkip(Sql* self,const char *filename) {
 		unsigned int timestampui = (unsigned int)atol(timestamp);
 		if( SQL_ERROR == SQL->Query(self, "SELECT 1 FROM `sql_updates` WHERE `timestamp` = '%u' LIMIT 1", timestampui) )
 			Sql_ShowDebug(self);
-		else if( Sql_NumRows(self) == 1 ) {
+		else if( CSQL::NumRows(self) == 1 ) {
 			ShowError("Upgrade '%s' has already been skipped\n",filename);
 		} else {
 			if( SQL_ERROR == SQL->Query(self, "INSERT INTO `sql_updates` (`timestamp`,`ignored`) VALUES ('%u','Yes') ", timestampui) )
@@ -1008,40 +1008,5 @@ void Sql_Init(void) {
 void sql_defaults(void) {
 	SQL = &sql_s;
 
-	SQL->Connect = Sql_Connect;
-	SQL->GetTimeout = Sql_GetTimeout;
-	SQL->GetColumnNames = Sql_GetColumnNames;
-	SQL->SetEncoding = Sql_SetEncoding;
-	SQL->Ping = Sql_Ping;
-	SQL->EscapeString = Sql_EscapeString;
-	SQL->EscapeStringLen = Sql_EscapeStringLen;
-	SQL->Query = Sql_Query;
-	SQL->QueryV = Sql_QueryV;
-	SQL->QueryStr = Sql_QueryStr;
-	SQL->LastInsertId = Sql_LastInsertId;
-	SQL->NumColumns = Sql_NumColumns;
-	SQL->NumRows = Sql_NumRows;
-	SQL->NextRow = Sql_NextRow;
-	SQL->GetData = Sql_GetData;
-	SQL->FreeResult = Sql_FreeResult;
-	SQL->ShowDebug_ = Sql_ShowDebug_;
-	SQL->Free = Sql_Free;
-	SQL->Malloc = Sql_Malloc;
-
-	/* SqlStmt defaults [Susu] */
-	SQL->StmtBindColumn = SqlStmt_BindColumn;
-	SQL->StmtBindParam = SqlStmt_BindParam;
-	SQL->StmtExecute = SqlStmt_Execute;
-	SQL->StmtFree = SqlStmt_Free;
-	SQL->StmtFreeResult = SqlStmt_FreeResult;
-	SQL->StmtLastInsertId = SqlStmt_LastInsertId;
-	SQL->StmtMalloc = SqlStmt_Malloc;
-	SQL->StmtNextRow = SqlStmt_NextRow;
-	SQL->StmtNumColumns = SqlStmt_NumColumns;
-	SQL->StmtNumParams = SqlStmt_NumParams;
-	SQL->StmtNumRows = SqlStmt_NumRows;
-	SQL->StmtPrepare = SqlStmt_Prepare;
-	SQL->StmtPrepareStr = SqlStmt_PrepareStr;
-	SQL->StmtPrepareV = SqlStmt_PrepareV;
-	SQL->StmtShowDebug_ = SqlStmt_ShowDebug_;
+	
 }

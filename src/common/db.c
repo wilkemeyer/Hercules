@@ -88,8 +88,8 @@
 
 #include "stdafx.h"
 
-struct db_interface DB_s;
-struct db_interface *DB;
+CDB DB_s;
+CDB *DB = NULL;
 
 /*****************************************************************************\
  *  (1) Private typedefs, enums, structures, defines and global variables of *
@@ -111,7 +111,7 @@ struct db_interface *DB;
  * @private
  * @see #DBStats
  * @see #stats
- * @see #db_final(void)
+ * @see #CDB::final(void)
  */
 //#define DB_ENABLE_STATS
 
@@ -189,7 +189,7 @@ struct db_free {
  * @param maxlen Maximum length of strings in DB_STRING and DB_ISTRING databases
  * @param global_lock Global lock of the database
  * @private
- * @see #db_alloc(const char*,int,DBType,DBOptions,unsigned short)
+ * @see #CDB::alloc(const char*,int,DBType,DBOptions,unsigned short)
  */
 typedef struct DBMap_impl {
 	// Database interface
@@ -880,7 +880,7 @@ static void db_free_unlock(DBMap_impl* db)
  * @return 0 if equal, negative if lower and positive if higher
  * @see DBType#DB_INT
  * @see #DBComparator
- * @see #db_default_cmp(DBType)
+ * @see #CDB::default_cmp(DBType)
  */
 static int db_int_cmp(DBKey key1, DBKey key2, unsigned short maxlen)
 {
@@ -902,7 +902,7 @@ static int db_int_cmp(DBKey key1, DBKey key2, unsigned short maxlen)
  * @return 0 if equal, negative if lower and positive if higher
  * @see DBType#DB_UINT
  * @see #DBComparator
- * @see #db_default_cmp(DBType)
+ * @see #CDB::default_cmp(DBType)
  */
 static int db_uint_cmp(DBKey key1, DBKey key2, unsigned short maxlen)
 {
@@ -923,7 +923,7 @@ static int db_uint_cmp(DBKey key1, DBKey key2, unsigned short maxlen)
  * @return 0 if equal, negative if lower and positive if higher
  * @see DBType#DB_STRING
  * @see #DBComparator
- * @see #db_default_cmp(DBType)
+ * @see #CDB::default_cmp(DBType)
  */
 static int db_string_cmp(DBKey key1, DBKey key2, unsigned short maxlen)
 {
@@ -941,7 +941,7 @@ static int db_string_cmp(DBKey key1, DBKey key2, unsigned short maxlen)
  * @return 0 if equal, negative if lower and positive if higher
  * @see DBType#DB_ISTRING
  * @see #DBComparator
- * @see #db_default_cmp(DBType)
+ * @see #CDB::default_cmp(DBType)
  */
 static int db_istring_cmp(DBKey key1, DBKey key2, unsigned short maxlen)
 {
@@ -960,7 +960,7 @@ static int db_istring_cmp(DBKey key1, DBKey key2, unsigned short maxlen)
  * @return 0 if equal, negative if lower and positive if higher
  * @see DBType#DB_INT64
  * @see #DBComparator
- * @see #db_default_cmp(DBType)
+ * @see #CDB::default_cmp(DBType)
  */
 static int db_int64_cmp(DBKey key1, DBKey key2, unsigned short maxlen)
 {
@@ -982,7 +982,7 @@ static int db_int64_cmp(DBKey key1, DBKey key2, unsigned short maxlen)
  * @return 0 if equal, negative if lower and positive if higher
  * @see DBType#DB_UINT64
  * @see #DBComparator
- * @see #db_default_cmp(DBType)
+ * @see #CDB::default_cmp(DBType)
  */
 static int db_uint64_cmp(DBKey key1, DBKey key2, unsigned short maxlen)
 {
@@ -1003,7 +1003,7 @@ static int db_uint64_cmp(DBKey key1, DBKey key2, unsigned short maxlen)
  * @return hash of the key
  * @see DBType#DB_INT
  * @see #DBHasher
- * @see #db_default_hash(DBType)
+ * @see #CDB::default_hash(DBType)
  */
 static uint64 db_int_hash(DBKey key, unsigned short maxlen)
 {
@@ -1021,7 +1021,7 @@ static uint64 db_int_hash(DBKey key, unsigned short maxlen)
  * @return hash of the key
  * @see DBType#DB_UINT
  * @see #DBHasher
- * @see #db_default_hash(DBType)
+ * @see #CDB::default_hash(DBType)
  */
 static uint64 db_uint_hash(DBKey key, unsigned short maxlen)
 {
@@ -1037,7 +1037,7 @@ static uint64 db_uint_hash(DBKey key, unsigned short maxlen)
  * @return hash of the key
  * @see DBType#DB_STRING
  * @see #DBHasher
- * @see #db_default_hash(DBType)
+ * @see #CDB::default_hash(DBType)
  */
 static uint64 db_string_hash(DBKey key, unsigned short maxlen)
 {
@@ -1063,7 +1063,7 @@ static uint64 db_string_hash(DBKey key, unsigned short maxlen)
  * @param maxlen Maximum length of the key to hash
  * @return hash of the key
  * @see DBType#DB_ISTRING
- * @see #db_default_hash(DBType)
+ * @see #CDB::default_hash(DBType)
  */
 static uint64 db_istring_hash(DBKey key, unsigned short maxlen)
 {
@@ -1092,7 +1092,7 @@ static uint64 db_istring_hash(DBKey key, unsigned short maxlen)
  * @return hash of the key
  * @see DBType#DB_INT64
  * @see #DBHasher
- * @see #db_default_hash(DBType)
+ * @see #CDB::default_hash(DBType)
  */
 static uint64 db_int64_hash(DBKey key, unsigned short maxlen)
 {
@@ -1110,7 +1110,7 @@ static uint64 db_int64_hash(DBKey key, unsigned short maxlen)
  * @return hash of the key
  * @see DBType#DB_UINT64
  * @see #DBHasher
- * @see #db_default_hash(DBType)
+ * @see #CDB::default_hash(DBType)
  */
 static uint64 db_uint64_hash(DBKey key, unsigned short maxlen)
 {
@@ -1141,7 +1141,7 @@ static void db_release_nothing(DBKey key, DBData data, DBRelease which)
  * @param which What is being requested to be released
  * @protected
  * @see #DBReleaser
- * @see #db_default_release(DBType,DBOptions)
+ * @see #CDB::default_release(DBType,DBOptions)
  */
 static void db_release_key(DBKey key, DBData data, DBRelease which)
 {
@@ -1159,7 +1159,7 @@ static void db_release_key(DBKey key, DBData data, DBRelease which)
  * @see #DBData
  * @see #DBRelease
  * @see #DBReleaser
- * @see #db_default_release(DBType,DBOptions)
+ * @see #CDB::default_release(DBType,DBOptions)
  */
 static void db_release_data(DBKey key, DBData data, DBRelease which)
 {
@@ -1181,7 +1181,7 @@ static void db_release_data(DBKey key, DBData data, DBRelease which)
  * @see #DBData
  * @see #DBRelease
  * @see #DBReleaser
- * @see #db_default_release(DBType,DBOptions)
+ * @see #CDB::default_release(DBType,DBOptions)
  */
 static void db_release_both(DBKey key, DBData data, DBRelease which)
 {
@@ -2387,10 +2387,10 @@ static DBOptions db_obj_options(DBMap* self)
  * @param options Original options of the database
  * @return Fixed options of the database
  * @private
- * @see #db_default_release(DBType,DBOptions)
- * @see #db_alloc(const char *,int,DBType,DBOptions,unsigned short)
+ * @see #CDB::default_release(DBType,DBOptions)
+ * @see #CDB::alloc(const char *,int,DBType,DBOptions,unsigned short)
  */
-DBOptions db_fix_options(DBType type, DBOptions options)
+DBOptions CDB::fix_options(DBType type, DBOptions options)
 {
 	DB_COUNTSTAT(db_fix_options);
 	switch (type) {
@@ -2420,7 +2420,7 @@ DBOptions db_fix_options(DBType type, DBOptions options)
  * @see #db_int64_cmp(DBKey,DBKey,unsigned short)
  * @see #db_uint64_cmp(DBKey,DBKey,unsigned short)
  */
-DBComparator db_default_cmp(DBType type)
+DBComparator CDB::default_cmp(DBType type)
 {
 	DB_COUNTSTAT(db_default_cmp);
 	switch (type) {
@@ -2448,7 +2448,7 @@ DBComparator db_default_cmp(DBType type)
  * @see #db_int64_hash(DBKey,unsigned short)
  * @see #db_uint64_hash(DBKey,unsigned short)
  */
-DBHasher db_default_hash(DBType type)
+DBHasher CDB::default_hash(DBType type)
 {
 	DB_COUNTSTAT(db_default_hash);
 	switch (type) {
@@ -2467,7 +2467,7 @@ DBHasher db_default_hash(DBType type)
 /**
  * Returns the default releaser for the specified type of database with the
  * specified options.
- * NOTE: the options are fixed with {@link #db_fix_options(DBType,DBOptions)}
+ * NOTE: the options are fixed with {@link #CDB::fix_options(DBType,DBOptions)}
  * before choosing the releaser.
  * @param type Type of database
  * @param options Options of the database
@@ -2477,9 +2477,9 @@ DBHasher db_default_hash(DBType type)
  * @see #db_release_key(DBKey,DBData,DBRelease)
  * @see #db_release_data(DBKey,DBData,DBRelease)
  * @see #db_release_both(DBKey,DBData,DBRelease)
- * @see #db_custom_release(DBRelease)
+ * @see #CDB::custom_release(DBRelease)
  */
-DBReleaser db_default_release(DBType type, DBOptions options)
+DBReleaser CDB::default_release(DBType type, DBOptions options)
 {
 	DB_COUNTSTAT(db_default_release);
 	options = DB->fix_options(type, options);
@@ -2502,9 +2502,9 @@ DBReleaser db_default_release(DBType type, DBOptions options)
  * @see #db_release_key(DBKey,DBData,DBRelease)
  * @see #db_release_data(DBKey,DBData,DBRelease)
  * @see #db_release_both(DBKey,DBData,DBRelease)
- * @see #db_default_release(DBType,DBOptions)
+ * @see #CDB::default_release(DBType,DBOptions)
  */
-DBReleaser db_custom_release(DBRelease which)
+DBReleaser CDB::custom_release(DBRelease which)
 {
 	DB_COUNTSTAT(db_custom_release);
 	switch (which) {
@@ -2520,7 +2520,7 @@ DBReleaser db_custom_release(DBRelease which)
 
 /**
  * Allocate a new database of the specified type.
- * NOTE: the options are fixed by {@link #db_fix_options(DBType,DBOptions)}
+ * NOTE: the options are fixed by {@link #CDB::fix_options(DBType,DBOptions)}
  * before creating the database.
  * @param file File where the database is being allocated
  * @param line Line of the file where the database is being allocated
@@ -2531,9 +2531,9 @@ DBReleaser db_custom_release(DBRelease which)
  * @return The interface of the database
  * @public
  * @see #DBMap_impl
- * @see #db_fix_options(DBType,DBOptions)
+ * @see #CDB::fix_options(DBType,DBOptions)
  */
-DBMap* db_alloc(const char *file, const char *func, int line, DBType type, DBOptions options, unsigned short maxlen) {
+DBMap* CDB::alloc(const char *file, const char *func, int line, DBType type, DBOptions options, unsigned short maxlen) {
 	DBMap_impl* db;
 	unsigned int i;
 	char ers_name[50];
@@ -2606,7 +2606,7 @@ DBMap* db_alloc(const char *file, const char *func, int line, DBType type, DBOpt
  * @return The key as a DBKey union
  * @public
  */
-DBKey db_i2key(int key)
+DBKey CDB::i2key(int key)
 {
 	DBKey ret;
 
@@ -2621,7 +2621,7 @@ DBKey db_i2key(int key)
  * @return The key as a DBKey union
  * @public
  */
-DBKey db_ui2key(unsigned int key)
+DBKey CDB::ui2key(unsigned int key)
 {
 	DBKey ret;
 
@@ -2636,7 +2636,7 @@ DBKey db_ui2key(unsigned int key)
  * @return The key as a DBKey union
  * @public
  */
-DBKey db_str2key(const char *key)
+DBKey CDB::str2key(const char *key)
 {
 	DBKey ret;
 
@@ -2651,7 +2651,7 @@ DBKey db_str2key(const char *key)
  * @return The key as a DBKey union
  * @public
  */
-DBKey db_i642key(int64 key)
+DBKey CDB::i642key(int64 key)
 {
 	DBKey ret;
 
@@ -2666,7 +2666,7 @@ DBKey db_i642key(int64 key)
  * @return The key as a DBKey union
  * @public
  */
-DBKey db_ui642key(uint64 key)
+DBKey CDB::ui642key(uint64 key)
 {
 	DBKey ret;
 
@@ -2681,7 +2681,7 @@ DBKey db_ui642key(uint64 key)
  * @return The data as a DBData struct
  * @public
  */
-DBData db_i2data(int data)
+DBData CDB::i2data(int data)
 {
 	DBData ret;
 
@@ -2697,7 +2697,7 @@ DBData db_i2data(int data)
  * @return The data as a DBData struct
  * @public
  */
-DBData db_ui2data(unsigned int data)
+DBData CDB::ui2data(unsigned int data)
 {
 	DBData ret;
 
@@ -2713,7 +2713,7 @@ DBData db_ui2data(unsigned int data)
  * @return The data as a DBData struct
  * @public
  */
-DBData db_ptr2data(void *data)
+DBData CDB::ptr2data(void *data)
 {
 	DBData ret;
 
@@ -2730,7 +2730,7 @@ DBData db_ptr2data(void *data)
  * @return Integer value of the data.
  * @public
  */
-int db_data2i(DBData *data)
+int CDB::data2i(DBData *data)
 {
 	DB_COUNTSTAT(db_data2i);
 	if (data && DB_DATA_INT == data->type)
@@ -2745,7 +2745,7 @@ int db_data2i(DBData *data)
  * @return Unsigned int value of the data.
  * @public
  */
-unsigned int db_data2ui(DBData *data)
+unsigned int CDB::data2ui(DBData *data)
 {
 	DB_COUNTSTAT(db_data2ui);
 	if (data && DB_DATA_UINT == data->type)
@@ -2760,7 +2760,7 @@ unsigned int db_data2ui(DBData *data)
  * @return Void* value of the data.
  * @public
  */
-void* db_data2ptr(DBData *data)
+void* CDB::data2ptr(DBData *data)
 {
 	DB_COUNTSTAT(db_data2ptr);
 	if (data && DB_DATA_PTR == data->type)
@@ -2771,9 +2771,9 @@ void* db_data2ptr(DBData *data)
 /**
  * Initializes the database system.
  * @public
- * @see #db_final(void)
+ * @see #CDB::final(void)
  */
-void db_init(void) {
+void CDB::init(void) {
 	db_iterator_ers = ers_new(sizeof(struct DBIterator_impl),"db.c::db_iterator_ers",(ERSOptions)(ERS_OPT_CLEAN|ERS_OPT_FLEX_CHUNK));
 	db_alloc_ers = ers_new(sizeof(struct DBMap_impl),"db.c::db_alloc_ers",(ERSOptions)(ERS_OPT_CLEAN|ERS_OPT_FLEX_CHUNK));
 	ers_chunk_size(db_alloc_ers, 50);
@@ -2784,9 +2784,9 @@ void db_init(void) {
 /**
  * Finalizes the database system.
  * @public
- * @see #db_init(void)
+ * @see #CDB::init(void)
  */
-void db_final(void)
+void CDB::final(void)
 {
 #ifdef DB_ENABLE_STATS
 	DB_COUNTSTAT(db_final);
@@ -3012,26 +3012,7 @@ void linkdb_final( struct linkdb_node** head )
 	}
 	*head = NULL;
 }
+
 void db_defaults(void) {
 	DB = &DB_s;
-	DB->alloc = db_alloc;
-	DB->custom_release = db_custom_release;
-	DB->data2i = db_data2i;
-	DB->data2ptr = db_data2ptr;
-	DB->data2ui = db_data2ui;
-	DB->default_cmp = db_default_cmp;
-	DB->default_hash = db_default_hash;
-	DB->default_release = db_default_release;
-	DB->final = db_final;
-	DB->fix_options = db_fix_options;
-	DB->i2data = db_i2data;
-	DB->i2key = db_i2key;
-	DB->init = db_init;
-	DB->ptr2data = db_ptr2data;
-	DB->str2key = db_str2key;
-	DB->ui2data = db_ui2data;
-	DB->ui2key = db_ui2key;
-	DB->i642key = db_i642key;
-	DB->ui642key = db_ui642key;
-
 }

@@ -24,8 +24,8 @@
 /**
  * Socket Interface Source
  **/
-struct socket_interface sockt_s;
-struct socket_interface *sockt;
+CSockt sockt_s;
+CSockt *sockt = NULL;
 
 struct socket_data **session;
 
@@ -261,7 +261,7 @@ int null_parse(int fd) { return 0; }
 
 ParseFunc default_func_parse = null_parse;
 
-void set_defaultparse(ParseFunc defaultparse)
+void CSockt::set_defaultparse(ParseFunc defaultparse)
 {
 	default_func_parse = defaultparse;
 }
@@ -269,7 +269,7 @@ void set_defaultparse(ParseFunc defaultparse)
 /*======================================
  * CORE : Socket options
  *--------------------------------------*/
-void set_nonblocking(int fd, unsigned long yes)
+void CSockt::set_nonblocking(int fd, unsigned long yes)
 {
 	// FIONBIO Use with a nonzero argp parameter to enable the nonblocking mode of socket s.
 	// The argp parameter is zero if nonblocking is to be disabled.
@@ -345,9 +345,9 @@ void setsocketopts(int fd, struct hSockOpt *opt)
 /*======================================
  * CORE : Socket Sub Function
  *--------------------------------------*/
-void set_eof(int fd)
+void CSockt::eof(int fd)
 {
-	if (sockt->session_is_active(fd)) {
+	if (sockt->CSockt::session_is_active(fd)) {
 #ifdef SEND_SHORTLIST
 		// Add this socket to the shortlist for eof handling.
 		send_shortlist_add_fd(fd);
@@ -360,7 +360,7 @@ int recv_to_fifo(int fd)
 {
 	ssize_t len;
 
-	if (!sockt->session_is_active(fd))
+	if (!sockt->CSockt::session_is_active(fd))
 		return -1;
 
 	len = sRecv(fd, (char *) sockt->session[fd]->rdata + sockt->session[fd]->rdata_size, (int)RFIFOSPACE(fd), 0);
@@ -397,7 +397,7 @@ int send_from_fifo(int fd)
 {
 	ssize_t len;
 
-	if (!sockt->session_is_valid(fd))
+	if (!sockt->CSockt::session_is_valid(fd))
 		return -1;
 
 	if( sockt->session[fd]->wdata_size == 0 )
@@ -440,13 +440,13 @@ int send_from_fifo(int fd)
 }
 
 /// Best effort - there's no warranty that the data will be sent.
-void flush_fifo(int fd)
+void CSockt::flush(int fd)
 {
 	if(sockt->session[fd] != NULL)
 		sockt->session[fd]->func_send(fd);
 }
 
-void flush_fifos(void)
+void CSockt::flush_fifos(void)
 {
 	int i;
 	for(i = 1; i < sockt->fd_max; i++)
@@ -480,7 +480,7 @@ int connect_client(int listen_fd) {
 	}
 
 	setsocketopts(fd,NULL);
-	sockt->set_nonblocking(fd, 1);
+	sockt->CSockt::set_nonblocking(fd, 1);
 
 #ifndef MINICORE
 	if( ip_rules && !connect_check(ntohl(client_address.sin_addr.s_addr)) ) {
@@ -498,7 +498,7 @@ int connect_client(int listen_fd) {
 	return fd;
 }
 
-int make_listen_bind(uint32 ip, uint16 port)
+int CSockt::make_listen_bind(uint32 ip, uint16 port)
 {
 	struct sockaddr_in server_address = { 0 };
 	int fd;
@@ -522,7 +522,7 @@ int make_listen_bind(uint32 ip, uint16 port)
 	}
 
 	setsocketopts(fd,NULL);
-	sockt->set_nonblocking(fd, 1);
+	sockt->CSockt::set_nonblocking(fd, 1);
 
 	server_address.sin_family      = AF_INET;
 	server_address.sin_addr.s_addr = htonl(ip);
@@ -549,7 +549,7 @@ int make_listen_bind(uint32 ip, uint16 port)
 	return fd;
 }
 
-int make_connection(uint32 ip, uint16 port, struct hSockOpt *opt) {
+int CSockt::make_connection(uint32 ip, uint16 port, struct hSockOpt *opt) {
 	struct sockaddr_in remote_address = { 0 };
 	int fd;
 	int result;
@@ -588,7 +588,7 @@ int make_connection(uint32 ip, uint16 port, struct hSockOpt *opt) {
 		return -1;
 	}
 	//Now the socket can be made non-blocking. [Skotlex]
-	sockt->set_nonblocking(fd, 1);
+	sockt->CSockt::set_nonblocking(fd, 1);
 
 	if (sockt->fd_max <= fd) sockt->fd_max = fd + 1;
 	sFD_SET(fd,&readfds);
@@ -616,7 +616,7 @@ static int create_session(int fd, RecvFunc func_recv, SendFunc func_send, ParseF
 
 static void delete_session(int fd)
 {
-	if (sockt->session_is_valid(fd)) {
+	if (sockt->CSockt::session_is_valid(fd)) {
 #ifdef SHOW_SERVER_STATS
 		socket_data_qi -= sockt->session[fd]->rdata_size - sockt->session[fd]->rdata_pos;
 		socket_data_qo -= sockt->session[fd]->wdata_size;
@@ -631,9 +631,9 @@ static void delete_session(int fd)
 	}
 }
 
-int realloc_fifo(int fd, unsigned int rfifo_size, unsigned int wfifo_size)
+int CSockt::realloc_fifo(int fd, unsigned int rfifo_size, unsigned int wfifo_size)
 {
-	if (!sockt->session_is_valid(fd))
+	if (!sockt->CSockt::session_is_valid(fd))
 		return 0;
 
 	if( sockt->session[fd]->max_rdata != rfifo_size && sockt->session[fd]->rdata_size < rfifo_size) {
@@ -648,11 +648,11 @@ int realloc_fifo(int fd, unsigned int rfifo_size, unsigned int wfifo_size)
 	return 0;
 }
 
-int realloc_writefifo(int fd, size_t addition)
+int CSockt::realloc_writefifo(int fd, size_t addition)
 {
 	size_t newsize;
 
-	if (!sockt->session_is_valid(fd)) // might not happen
+	if (!sockt->CSockt::session_is_valid(fd)) // might not happen
 		return 0;
 
 	if (sockt->session[fd]->wdata_size + addition  > sockt->session[fd]->max_wdata) {
@@ -676,11 +676,11 @@ int realloc_writefifo(int fd, size_t addition)
 }
 
 /// advance the RFIFO cursor (marking 'len' bytes as processed)
-int rfifoskip(int fd, size_t len)
+int CSockt::rfifoskip(int fd, size_t len)
 {
 	struct socket_data *s;
 
-	if (!sockt->session_is_active(fd))
+	if (!sockt->CSockt::session_is_active(fd))
 		return 0;
 
 	s = sockt->session[fd];
@@ -698,12 +698,12 @@ int rfifoskip(int fd, size_t len)
 }
 
 /// advance the WFIFO cursor (marking 'len' bytes for sending)
-int wfifoset(int fd, size_t len)
+int CSockt::wfifoset(int fd, size_t len)
 {
 	size_t newreserve;
 	struct socket_data* s = sockt->session[fd];
 
-	if (!sockt->session_is_valid(fd) || s->wdata == NULL)
+	if (!sockt->CSockt::session_is_valid(fd) || s->wdata == NULL)
 		return 0;
 
 	// we have written len bytes to the buffer already before calling WFIFOSET
@@ -754,7 +754,7 @@ int wfifoset(int fd, size_t len)
 	newreserve = s->flag.server ? FIFOSIZE_SERVERLINK / 4 : WFIFO_SIZE;
 
 	// readjust the buffer to include the chosen reserve
-	sockt->realloc_writefifo(fd, newreserve);
+	sockt->CSockt::realloc_writefifo(fd, newreserve);
 
 #ifdef SEND_SHORTLIST
 	send_shortlist_add_fd(fd);
@@ -763,7 +763,7 @@ int wfifoset(int fd, size_t len)
 	return 0;
 }
 
-int do_sockets(int next)
+int CSockt::perform(int next)
 {
 	fd_set rfd;
 	struct timeval timeout;
@@ -1181,7 +1181,7 @@ int socket_config_read(const char* cfgName)
 	return 0;
 }
 
-void socket_final(void)
+void CSockt::final(void)
 {
 	int i;
 #ifndef MINICORE
@@ -1210,7 +1210,7 @@ void socket_final(void)
 }
 
 /// Closes a socket.
-void socket_close(int fd)
+void CSockt::close(int fd)
 {
 	if( fd <= 0 ||fd >= FD_SETSIZE )
 		return;// invalid
@@ -1224,7 +1224,7 @@ void socket_close(int fd)
 
 /// Retrieve local ips in host byte order.
 /// Uses loopback is no address is found.
-int socket_getips(uint32* ips, int max)
+int CSockt::getips(uint32* ips, int max)
 {
 	int num = 0;
 
@@ -1305,7 +1305,7 @@ int socket_getips(uint32* ips, int max)
 	return num;
 }
 
-void socket_init(void)
+void CSockt::init(void)
 {
 	char *SOCKET_CONF_FILENAME = "conf/packet.conf";
 	uint64 rlim_cur = FD_SETSIZE;
@@ -1384,18 +1384,18 @@ void socket_init(void)
 	ShowInfo("Server supports up to '"CL_WHITE"%"PRId64""CL_RESET"' concurrent connections.\n", rlim_cur);
 }
 
-bool session_is_valid(int fd)
+bool CSockt::session_is_valid(int fd)
 {
 	return ( fd > 0 && fd < FD_SETSIZE && sockt->session[fd] != NULL );
 }
 
-bool session_is_active(int fd)
+bool CSockt::session_is_active(int fd)
 {
-	return ( sockt->session_is_valid(fd) && !sockt->session[fd]->flag.eof );
+	return ( sockt->CSockt::session_is_valid(fd) && !sockt->session[fd]->flag.eof );
 }
 
 // Resolves hostname into a numeric ip.
-uint32 host2ip(const char* hostname)
+uint32 CSockt::host2ip(const char* hostname)
 {
 	struct hostent* h = gethostbyname(hostname);
 	return (h != NULL) ? ntohl(*(uint32*)h->h_addr) : 0;
@@ -1409,7 +1409,7 @@ uint32 host2ip(const char* hostname)
  *
  * @return A pointer to the output string.
  */
-const char *ip2str(uint32 ip, char *ip_str)
+const char *CSockt::ip2str(uint32 ip, char *ip_str)
 {
 	struct in_addr addr;
 	addr.s_addr = htonl(ip);
@@ -1417,20 +1417,20 @@ const char *ip2str(uint32 ip, char *ip_str)
 }
 
 // Converts a dot-formatted ip string into a numeric ip.
-uint32 str2ip(const char* ip_str)
+uint32 CSockt::str2ip(const char* ip_str)
 {
 	return ntohl(inet_addr(ip_str));
 }
 
 // Reorders bytes from network to little endian (Windows).
 // Necessary for sending port numbers to the RO client until Gravity notices that they forgot ntohs() calls.
-uint16 ntows(uint16 netshort)
+uint16 CSockt::ntows(uint16 netshort)
 {
 	return ((netshort & 0xFF) << 8) | ((netshort & 0xFF00) >> 8);
 }
 
 /* [Ind/Hercules] - socket_datasync */
-void socket_datasync(int fd, bool send) {
+void CSockt::datasync(int fd, bool send) {
 	struct {
 		unsigned int length;/* short is not enough for some */
 	} data_list[] = {
@@ -1501,7 +1501,7 @@ void send_shortlist_add_fd(int fd)
 	int i;
 	int bit;
 
-	if (!sockt->session_is_valid(fd))
+	if (!sockt->CSockt::session_is_valid(fd))
 		return;// out of range
 
 	i = fd/32;
@@ -1579,7 +1579,7 @@ void send_shortlist_do_sends()
  * @retval 0 if it is a WAN IP.
  * @return the appropriate LAN server address to send, if it is a LAN IP.
  */
-uint32 socket_lan_subnet_check(uint32 ip, struct s_subnet *info)
+uint32 CSockt::lan_subnet_check(uint32 ip, struct s_subnet *info)
 {
 	int i;
 	ARR_FIND(0, VECTOR_LENGTH(sockt->lan_subnets), i, SUBNET_MATCH(ip, VECTOR_INDEX(sockt->lan_subnets, i).ip, VECTOR_INDEX(sockt->lan_subnets, i).mask));
@@ -1603,7 +1603,7 @@ uint32 socket_lan_subnet_check(uint32 ip, struct s_subnet *info)
  * @retval true if we allow server connections from the given IP.
  * @retval false otherwise.
  */
-bool socket_allowed_ip_check(uint32 ip)
+bool CSockt::allowed_ip_check(uint32 ip)
 {
 	int i;
 	ARR_FIND(0, VECTOR_LENGTH(sockt->allowed_ips), i, SUBNET_MATCH(ip, VECTOR_INDEX(sockt->allowed_ips, i).ip, VECTOR_INDEX(sockt->allowed_ips, i).mask));
@@ -1619,7 +1619,7 @@ bool socket_allowed_ip_check(uint32 ip)
  * @retval true if we trust the given IP.
  * @retval false otherwise.
  */
-bool socket_trusted_ip_check(uint32 ip)
+bool CSockt::trusted_ip_check(uint32 ip)
 {
 	int i;
 	ARR_FIND(0, VECTOR_LENGTH(sockt->trusted_ips), i, SUBNET_MATCH(ip, VECTOR_INDEX(sockt->trusted_ips, i).ip, VECTOR_INDEX(sockt->trusted_ips, i).mask));
@@ -1639,7 +1639,7 @@ bool socket_trusted_ip_check(uint32 ip)
  * @param[in]     groupname Current group name, for output/logging reasons.
  * @return The amount of entries read, zero in case of errors.
  */
-int socket_net_config_read_sub(config_setting_t *t, struct s_subnet_vector *list, const char *filename, const char *groupname)
+int CSockt::net_config_read_sub(config_setting_t *t, struct s_subnet_vector *list, const char *filename, const char *groupname)
 {
 	int i, len;
 	char ipbuf[64], maskbuf[64];
@@ -1662,8 +1662,8 @@ int socket_net_config_read_sub(config_setting_t *t, struct s_subnet_vector *list
 		}
 		VECTOR_PUSHZEROED(*list);
 		entry = &VECTOR_LAST(*list);
-		entry->ip = sockt->str2ip(ipbuf);
-		entry->mask = sockt->str2ip(maskbuf);
+		entry->ip = sockt->CSockt::str2ip(ipbuf);
+		entry->mask = sockt->CSockt::str2ip(maskbuf);
 	}
 	return (int)VECTOR_LENGTH(*list);
 }
@@ -1673,7 +1673,7 @@ int socket_net_config_read_sub(config_setting_t *t, struct s_subnet_vector *list
  *
  * @param filename The filename to read from.
  */
-void socket_net_config_read(const char *filename)
+void CSockt::net_config_read(const char *filename)
 {
 	config_t network_config;
 	int i;
@@ -1727,38 +1727,5 @@ void socket_defaults(void) {
 	VECTOR_INIT(sockt->allowed_ips);
 	VECTOR_INIT(sockt->trusted_ips);
 
-	sockt->init = socket_init;
-	sockt->final = socket_final;
-	/* */
-	sockt->perform = do_sockets;
-	/* */
-	sockt->datasync = socket_datasync;
-	/* */
-	sockt->make_listen_bind = make_listen_bind;
-	sockt->make_connection = make_connection;
-	sockt->realloc_fifo = realloc_fifo;
-	sockt->realloc_writefifo = realloc_writefifo;
-	sockt->wfifoset = wfifoset;
-	sockt->rfifoskip = rfifoskip;
-	sockt->close = socket_close;
-	/* */
-	sockt->session_is_valid = session_is_valid;
-	sockt->session_is_active = session_is_active;
-	/* */
-	sockt->flush = flush_fifo;
-	sockt->flush_fifos = flush_fifos;
-	sockt->set_nonblocking = set_nonblocking;
-	sockt->set_defaultparse = set_defaultparse;
-	sockt->host2ip = host2ip;
-	sockt->ip2str = ip2str;
-	sockt->str2ip = str2ip;
-	sockt->ntows = ntows;
-	sockt->getips = socket_getips;
-	sockt->eof = set_eof;
 
-	sockt->lan_subnet_check = socket_lan_subnet_check;
-	sockt->allowed_ip_check = socket_allowed_ip_check;
-	sockt->trusted_ip_check = socket_trusted_ip_check;
-	sockt->net_config_read_sub = socket_net_config_read_sub;
-	sockt->net_config_read = socket_net_config_read;
 }

@@ -736,7 +736,8 @@ struct DBMap {
  *  db_final           - Finalizes the database system.                      *
 \*****************************************************************************/
 
-struct db_interface {
+class CDB {
+public:
 /**
  * Returns the fixed options according to the database type.
  * Sets required options and unsets unsupported options.
@@ -749,7 +750,7 @@ struct db_interface {
  * @see #DBOptions
  * @see #db_default_release(DBType,DBOptions)
  */
-DBOptions (*fix_options) (DBType type, DBOptions options);
+	static DBOptions fix_options (DBType type, DBOptions options);
 
 /**
  * Returns the default comparator for the type of database.
@@ -759,7 +760,7 @@ DBOptions (*fix_options) (DBType type, DBOptions options);
  * @see #DBType
  * @see #DBComparator
  */
-DBComparator (*default_cmp) (DBType type);
+	static DBComparator default_cmp (DBType type);
 
 /**
  * Returns the default hasher for the specified type of database.
@@ -769,7 +770,7 @@ DBComparator (*default_cmp) (DBType type);
  * @see #DBType
  * @see #DBHasher
  */
-DBHasher (*default_hash) (DBType type);
+	static DBHasher default_hash (DBType type);
 
 /**
  * Returns the default releaser for the specified type of database with the
@@ -786,7 +787,7 @@ DBHasher (*default_hash) (DBType type);
  * @see #db_fix_options(DBType,DBOptions)
  * @see #db_custom_release(DBRelease)
  */
-DBReleaser (*default_release) (DBType type, DBOptions options);
+	static DBReleaser default_release (DBType type, DBOptions options);
 
 /**
  * Returns the releaser that behaves as <code>which</code> specifies.
@@ -797,7 +798,7 @@ DBReleaser (*default_release) (DBType type, DBOptions options);
  * @see #DBReleaser
  * @see #db_default_release(DBType,DBOptions)
  */
-DBReleaser (*custom_release)  (DBRelease which);
+	static DBReleaser custom_release  (DBRelease which);
 
 /**
  * Allocate a new database of the specified type.
@@ -820,7 +821,7 @@ DBReleaser (*custom_release)  (DBRelease which);
  * @see #db_default_release(DBType,DBOptions)
  * @see #db_fix_options(DBType,DBOptions)
  */
-DBMap* (*alloc) (const char *file, const char *func, int line, DBType type, DBOptions options, unsigned short maxlen);
+	static DBMap* alloc (const char *file, const char *func, int line, DBType type, DBOptions options, unsigned short maxlen);
 
 /**
  * Manual cast from 'int' to the union DBKey.
@@ -828,7 +829,7 @@ DBMap* (*alloc) (const char *file, const char *func, int line, DBType type, DBOp
  * @return The key as a DBKey union
  * @public
  */
-DBKey (*i2key) (int key);
+	static DBKey i2key (int key);
 
 /**
  * Manual cast from 'unsigned int' to the union DBKey.
@@ -836,7 +837,7 @@ DBKey (*i2key) (int key);
  * @return The key as a DBKey union
  * @public
  */
-DBKey (*ui2key) (unsigned int key);
+	static DBKey ui2key (unsigned int key);
 
 /**
  * Manual cast from 'unsigned char *' to the union DBKey.
@@ -844,7 +845,7 @@ DBKey (*ui2key) (unsigned int key);
  * @return The key as a DBKey union
  * @public
  */
-DBKey (*str2key) (const char *key);
+	static DBKey str2key (const char *key);
 
 /**
  * Manual cast from 'int64' to the union DBKey.
@@ -852,7 +853,7 @@ DBKey (*str2key) (const char *key);
  * @return The key as a DBKey union
  * @public
  */
-DBKey (*i642key) (int64 key);
+	static DBKey i642key (int64 key);
 
 /**
  * Manual cast from 'uint64' to the union DBKey.
@@ -860,7 +861,7 @@ DBKey (*i642key) (int64 key);
  * @return The key as a DBKey union
  * @public
  */
-DBKey (*ui642key) (uint64 key);
+	static DBKey ui642key (uint64 key);
 
 /**
  * Manual cast from 'int' to the struct DBData.
@@ -868,7 +869,7 @@ DBKey (*ui642key) (uint64 key);
  * @return The data as a DBData struct
  * @public
  */
-DBData (*i2data) (int data);
+	static DBData i2data (int data);
 
 /**
  * Manual cast from 'unsigned int' to the struct DBData.
@@ -876,7 +877,7 @@ DBData (*i2data) (int data);
  * @return The data as a DBData struct
  * @public
  */
-DBData (*ui2data) (unsigned int data);
+	static DBData ui2data (unsigned int data);
 
 /**
  * Manual cast from 'void *' to the struct DBData.
@@ -884,7 +885,7 @@ DBData (*ui2data) (unsigned int data);
  * @return The data as a DBData struct
  * @public
  */
-DBData (*ptr2data) (void *data);
+	static DBData ptr2data (void *data);
 
 /**
  * Gets int type data from struct DBData.
@@ -893,7 +894,7 @@ DBData (*ptr2data) (void *data);
  * @return Integer value of the data.
  * @public
  */
-int (*data2i) (DBData *data);
+	static int data2i (DBData *data);
 
 /**
  * Gets unsigned int type data from struct DBData.
@@ -902,7 +903,7 @@ int (*data2i) (DBData *data);
  * @return Unsigned int value of the data.
  * @public
  */
-unsigned int (*data2ui) (DBData *data);
+	static unsigned int data2ui (DBData *data);
 
 /**
  * Gets void* type data from struct DBData.
@@ -911,14 +912,14 @@ unsigned int (*data2ui) (DBData *data);
  * @return Void* value of the data.
  * @public
  */
-void* (*data2ptr) (DBData *data);
+	static void* data2ptr (DBData *data);
 
 /**
  * Initialize the database system.
  * @public
  * @see #db_final(void)
  */
-void (*init) (void);
+	static void init (void);
 
 /**
  * Finalize the database system.
@@ -926,8 +927,12 @@ void (*init) (void);
  * @public
  * @see #db_init(void)
  */
-void (*final) (void);
+	static void final (void);
 };
+
+/*** DB SINGLETON ***/
+extern CDB *DB;
+
 
 // Link DB System - From jAthena
 struct linkdb_node {
@@ -951,7 +956,6 @@ void  linkdb_foreach (struct linkdb_node** head, LinkDBFunc func, ...);
 void db_defaults(void);
 #endif // HERCULES_CORE
 
-HPShared struct db_interface *DB;
 
 /**
  * Array Helper macros

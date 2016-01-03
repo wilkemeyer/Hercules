@@ -156,7 +156,8 @@ VECTOR_STRUCT_DECL(s_subnet_vector, struct s_subnet);
 /**
  * Socket.c interface, mostly for reading however.
  **/
-struct socket_interface {
+class CSockt {
+public:
 	int fd_max;
 	/* */
 	time_t stall_time;
@@ -172,50 +173,52 @@ struct socket_interface {
 	struct s_subnet_vector allowed_ips; ///< Allowed server IP ranges
 
 	/* */
-	void (*init) (void);
-	void (*final) (void);
+	static void init (void);
+	static void final (void);
 	/* */
-	int (*perform) (int next);
+	static int perform (int next);
 	/* [Ind/Hercules] - socket_datasync */
-	void (*datasync) (int fd, bool send);
+	static void datasync (int fd, bool send);
 	/* */
-	int (*make_listen_bind) (uint32 ip, uint16 port);
-	int (*make_connection) (uint32 ip, uint16 port, struct hSockOpt *opt);
-	int (*realloc_fifo) (int fd, unsigned int rfifo_size, unsigned int wfifo_size);
-	int (*realloc_writefifo) (int fd, size_t addition);
-	int (*wfifoset) (int fd, size_t len);
-	int (*rfifoskip) (int fd, size_t len);
-	void (*close) (int fd);
+	static int make_listen_bind (uint32 ip, uint16 port);
+	static int make_connection (uint32 ip, uint16 port, struct hSockOpt *opt);
+	static int realloc_fifo (int fd, unsigned int rfifo_size, unsigned int wfifo_size);
+	static int realloc_writefifo (int fd, size_t addition);
+	static int wfifoset (int fd, size_t len);
+	static int rfifoskip (int fd, size_t len);
+	static void close (int fd);
 	/* */
-	bool (*session_is_valid) (int fd);
-	bool (*session_is_active) (int fd);
+	static bool session_is_valid (int fd);
+	static bool session_is_active (int fd);
 	/* */
-	void (*flush) (int fd);
-	void (*flush_fifos) (void);
-	void (*set_nonblocking) (int fd, unsigned long yes);
-	void (*set_defaultparse) (ParseFunc defaultparse);
+	static void flush (int fd);
+	static void flush_fifos (void);
+	static void set_nonblocking (int fd, unsigned long yes);
+	static void set_defaultparse (ParseFunc defaultparse);
 	/* hostname/ip conversion functions */
-	uint32 (*host2ip) (const char* hostname);
-	const char * (*ip2str) (uint32 ip, char *ip_str);
-	uint32 (*str2ip) (const char* ip_str);
+	static uint32 host2ip (const char* hostname);
+	static const char * ip2str (uint32 ip, char *ip_str);
+	static uint32 str2ip (const char* ip_str);
 	/* */
-	uint16 (*ntows) (uint16 netshort);
+	static uint16 ntows (uint16 netshort);
 	/* */
-	int (*getips) (uint32* ips, int max);
+	static int getips (uint32* ips, int max);
 	/* */
-	void (*eof) (int fd);
+	static void eof (int fd);
 
-	uint32 (*lan_subnet_check) (uint32 ip, struct s_subnet *info);
-	bool (*allowed_ip_check) (uint32 ip);
-	bool (*trusted_ip_check) (uint32 ip);
-	int (*net_config_read_sub) (config_setting_t *t, struct s_subnet_vector *list, const char *filename, const char *groupname);
-	void (*net_config_read) (const char *filename);
+	static uint32 lan_subnet_check (uint32 ip, struct s_subnet *info);
+	static bool allowed_ip_check (uint32 ip);
+	static bool trusted_ip_check (uint32 ip);
+	static int net_config_read_sub (config_setting_t *t, struct s_subnet_vector *list, const char *filename, const char *groupname);
+	static void net_config_read (const char *filename);
 };
+
+/*** Socket Singleton ***/
+extern CSockt *sockt;
 
 #ifdef HERCULES_CORE
 void socket_defaults(void);
 #endif // HERCULES_CORE
 
-HPShared struct socket_interface *sockt;
 
 #endif /* COMMON_SOCKET_H */

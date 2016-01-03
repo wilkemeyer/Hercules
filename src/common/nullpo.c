@@ -22,9 +22,8 @@
 #include "stdafx.h"
 
 
-
-struct nullpo_interface nullpo_s;
-struct nullpo_interface *nullpo;
+CNullpo nullpo_s;
+CNullpo *nullpo = NULL;
 
 /**
  * Reports failed assertions or NULL pointers
@@ -35,7 +34,7 @@ struct nullpo_interface *nullpo;
  * @param targetname Name of the checked symbol
  * @param title      Message title to display (i.e. failed assertion or nullpo info)
  */
-void assert_report(const char *file, int line, const char *func, const char *targetname, const char *title) {
+void CNullpo::assert_report(const char *file, int line, const char *func, const char *targetname, const char *title) {
 #ifdef HAVE_EXECINFO
 	void *array[10];
 	int size;
@@ -65,5 +64,4 @@ void assert_report(const char *file, int line, const char *func, const char *tar
  **/
 void nullpo_defaults(void) {
 	nullpo = &nullpo_s;
-	nullpo->assert_report = assert_report;
 }
