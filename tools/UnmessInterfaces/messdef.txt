@@ -1,0 +1,188 @@
+//  Conversion Enabled?
+// =0  disabled, =1 enabled
+//
+=0
+
+!map
+
+// The interface name is otional
+// due to limitations it's not possible to define two interfaces in one file 
+// per messdb, you'll have to do 2 runs.
+script#script_interface:
+	script->init = do_init_script;
+	script->final = do_final_script;
+	script->reload = script_reload;
+	
+	script->parse = parse_script;
+	script->add_builtin = script_add_builtin;
+	script->parse_builtin = script_parse_builtin;
+	script->skip_space = script_skip_space;
+	script->error = script_error;
+	script->warning = script_warning;
+	script->parse_subexpr = script_parse_subexpr;
+
+	script->addScript = script_hp_add;
+	script->conv_num = conv_num;
+	script->conv_str = conv_str;
+	script->rid2sd = script_rid2sd;
+	script->id2sd = script_id2sd;
+	script->charid2sd = script_charid2sd;
+	script->nick2sd = script_nick2sd;
+	script->detach_rid = script_detach_rid;
+	script->push_val = push_val;
+	script->get_val = get_val;
+	script->get_val2 = get_val2;
+	script->get_val_ref_str = get_val_npcscope_str;
+	script->get_val_scope_str = get_val_npcscope_str;
+	script->get_val_npc_str = get_val_npcscope_str;
+	script->get_val_instance_str = get_val_instance_str;
+	script->get_val_ref_num = get_val_npcscope_num;
+	script->get_val_scope_num = get_val_npcscope_num;
+	script->get_val_npc_num = get_val_npcscope_num;
+	script->get_val_instance_num = get_val_instance_num;
+	script->push_str = push_str;
+	script->push_copy = push_copy;
+	script->pop_stack = pop_stack;
+	script->set_constant = script_set_constant;
+	script->set_constant2 = script_set_constant2;
+	script->get_constant = script_get_constant;
+	script->label_add = script_label_add;
+	script->run = run_script;
+	script->run_npc = run_script;
+	script->run_pet = run_script;
+	script->run_main = run_script_main;
+	script->run_timer = run_script_timer;
+	script->set_var = set_var;
+	script->stop_instances = script_stop_instances;
+	script->free_code = script_free_code;
+	script->free_vars = script_free_vars;
+	script->alloc_state = script_alloc_state;
+	script->free_state = script_free_state;
+	script->add_pending_ref = script_add_pending_ref;
+	script->run_autobonus = script_run_autobonus;
+	script->cleararray_pc = script_cleararray_pc;
+	script->setarray_pc = script_setarray_pc;
+	script->config_read = script_config_read;
+	script->add_str = script_add_str;
+	script->get_str = script_get_str;
+	script->search_str = script_search_str;
+	script->setd_sub = setd_sub;
+	script->attach_state = script_attach_state;
+
+	script->queue = script_hqueue_get;
+	script->queue_add = script_hqueue_add;
+	script->queue_del = script_hqueue_del;
+	script->queue_remove = script_hqueue_remove;
+	script->queue_create = script_hqueue_create;
+	script->queue_clear = script_hqueue_clear;
+
+	script->parse_curly_close = parse_curly_close;
+	script->parse_syntax_close = parse_syntax_close;
+	script->parse_syntax_close_sub = parse_syntax_close_sub;
+	script->parse_syntax = parse_syntax;
+	script->get_com = get_com;
+	script->get_num = get_num;
+	script->op2name = script_op2name;
+	script->reportsrc = script_reportsrc;
+	script->reportdata = script_reportdata;
+	script->reportfunc = script_reportfunc;
+	script->disp_warning_message = disp_warning_message;
+	script->check_event = check_event;
+	script->calc_hash = calc_hash;
+	script->addb = add_scriptb;
+	script->addc = add_scriptc;
+	script->addi = add_scripti;
+	script->addl = add_scriptl;
+	script->set_label = set_label;
+	script->skip_word = skip_word;
+	script->add_word = add_word;
+	script->parse_callfunc = parse_callfunc;
+	script->parse_nextline = parse_nextline;
+	script->parse_variable = parse_variable;
+	script->parse_simpleexpr = parse_simpleexpr;
+	script->parse_expr = parse_expr;
+	script->parse_line = parse_line;
+	script->read_constdb = read_constdb;
+	script->print_line = script_print_line;
+	script->errorwarning_sub = script_errorwarning_sub;
+	script->set_reg = set_reg;
+	script->set_reg_ref_str = set_reg_npcscope_str;
+	script->set_reg_scope_str = set_reg_npcscope_str;
+	script->set_reg_npc_str = set_reg_npcscope_str;
+	script->set_reg_instance_str = set_reg_instance_str;
+	script->set_reg_ref_num = set_reg_npcscope_num;
+	script->set_reg_scope_num = set_reg_npcscope_num;
+	script->set_reg_npc_num = set_reg_npcscope_num;
+	script->set_reg_instance_num = set_reg_instance_num;
+
+	script->stack_expand = stack_expand;
+	script->push_retinfo = push_retinfo;
+	script->op_3 = op_3;
+	script->op_2str = op_2str;
+	script->op_2num = op_2num;
+	script->op_2 = op_2;
+	script->op_1 = op_1;
+	script->check_buildin_argtype = script_check_buildin_argtype;
+	script->detach_state = script_detach_state;
+	script->db_free_code_sub = db_script_free_code_sub;
+	script->add_autobonus = script_add_autobonus;
+	script->menu_countoptions = menu_countoptions;
+	script->buildin_areawarp_sub = buildin_areawarp_sub;
+	script->buildin_areapercentheal_sub = buildin_areapercentheal_sub;
+	script->buildin_delitem_delete = buildin_delitem_delete;
+	script->buildin_delitem_search = buildin_delitem_search;
+	script->buildin_killmonster_sub_strip = buildin_killmonster_sub_strip;
+	script->buildin_killmonster_sub = buildin_killmonster_sub;
+	script->buildin_killmonsterall_sub_strip = buildin_killmonsterall_sub_strip;
+	script->buildin_killmonsterall_sub = buildin_killmonsterall_sub;
+	script->buildin_announce_sub = buildin_announce_sub;
+	script->buildin_getareausers_sub = buildin_getareausers_sub;
+	script->buildin_getareadropitem_sub = buildin_getareadropitem_sub;
+	script->mapflag_pvp_sub = script_mapflag_pvp_sub;
+	script->buildin_pvpoff_sub = buildin_pvpoff_sub;
+	script->buildin_maprespawnguildid_sub_pc = buildin_maprespawnguildid_sub_pc;
+	script->buildin_maprespawnguildid_sub_mob = buildin_maprespawnguildid_sub_mob;
+	script->buildin_mobcount_sub = buildin_mobcount_sub;
+	script->playbgm_sub = playbgm_sub;
+	script->playbgm_foreachpc_sub = playbgm_foreachpc_sub;
+	script->soundeffect_sub = soundeffect_sub;
+	script->buildin_query_sql_sub = buildin_query_sql_sub;
+	script->buildin_instance_warpall_sub = buildin_instance_warpall_sub;
+	script->buildin_mobuseskill_sub = buildin_mobuseskill_sub;
+	script->cleanfloor_sub = script_cleanfloor_sub;
+	script->run_func = run_func;
+	script->getfuncname = script_getfuncname;
+	script->calc_hash_ci = calc_hash_ci;
+	
+	script->array_src = script_array_src;
+	script->array_update = script_array_update;
+	script->array_add_member = script_array_add_member;
+	script->array_remove_member = script_array_remove_member;
+	script->array_delete = script_array_delete;
+	script->array_size = script_array_size;
+	script->array_free_db = script_free_array_db;
+	script->array_highest_key = script_array_highest_key;
+	script->array_ensure_zero = script_array_ensure_zero;
+	/* */
+	script->reg_destroy_single = script_reg_destroy_single;
+	script->reg_destroy = script_reg_destroy;
+	/* */
+	script->generic_ui_array_expand = script_generic_ui_array_expand;
+	script->array_cpy_list = script_array_cpy_list;
+	/* */
+	script->hardcoded_constants = script_hardcoded_constants;
+	script->mapindexname2id = script_mapindexname2id;
+	script->string_dup = script_string_dup;
+	script->load_translations = script_load_translations;
+	script->load_translation = script_load_translation;
+	script->translation_db_destroyer = script_translation_db_destroyer;
+	script->clear_translations = script_clear_translations;
+	script->parse_cleanup_timer = script_parse_cleanup_timer;
+	script->add_language = script_add_language;
+	script->get_translation_file_name = script_get_translation_file_name;
+	script->parser_clean_leftovers = script_parser_clean_leftovers;
+
+	script->run_use_script = script_run_use_script;
+	script->run_item_equip_script = script_run_item_equip_script;
+	script->run_item_unequip_script = script_run_item_unequip_script;
+	
