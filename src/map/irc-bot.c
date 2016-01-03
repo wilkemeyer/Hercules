@@ -25,8 +25,21 @@
 
 //#define IRCBOT_DEBUG
 
-struct irc_bot_interface irc_bot_s;
-struct irc_bot_interface *ircbot;
+CIrcbot irc_bot_s;
+CIrcbot *ircbot = NULL;
+
+
+
+// Subsystem Globals:
+int CIrcbot::fd;
+bool CIrcbot::isIn, CIrcbot::isOn;
+int64 CIrcbot::last_try;
+unsigned char CIrcbot::fails;
+uint32 CIrcbot::ip;
+unsigned short CIrcbot::port;
+struct channel_data *CIrcbot::channel;
+struct CIrcbot::_FuncList CIrcbot::funcs;
+
 
 char send_string[IRC_MESSAGE_LENGTH];
 
@@ -34,7 +47,7 @@ char send_string[IRC_MESSAGE_LENGTH];
  * Timer callback to (re-)connect to an IRC server
  * @see timer->do_timer
  */
-int irc_connect_timer(int tid, int64 tick, int id, intptr_t data) {
+int CIrcbot::connect_timer(int tid, int64 tick, int id, intptr_t data) {
 	struct hSockOpt opt;
 	if( ircbot->isOn || ++ircbot->fails >= 3 )
 		return 0;
@@ -44,7 +57,7 @@ int irc_connect_timer(int tid, int64 tick, int id, intptr_t data) {
 
 	ircbot->last_try = timer->gettick();
 
-	if ((ircbot->fd = sockt->make_connection(ircbot->ip, channel->config->irc_server_port, &opt)) > 0) {
+	if ((ircbot->fd = sockt->make_connection(ircbot->ip, ::channel->config->irc_server_port, &opt)) > 0) {
 		sockt->session[ircbot->fd]->func_parse = ircbot->parse;
 		sockt->session[ircbot->fd]->flag.server = 1;
 		timer->add(timer->gettick() + 3000, ircbot->identify_timer, 0, 0);
@@ -57,13 +70,13 @@ int irc_connect_timer(int tid, int64 tick, int id, intptr_t data) {
  * Timer callback to send identification commands to an IRC server
  * @see timer->do_timer
  */
-int irc_identify_timer(int tid, int64 tick, int id, intptr_t data) {
+int CIrcbot::identify_timer(int tid, int64 tick, int id, intptr_t data) {
 	if( !ircbot->isOn )
 		return 0;
 
 	sprintf(send_string, "USER HerculesWS%d 8 * : Hercules IRC Bridge",rnd()%777);
 	ircbot->send(send_string);
-	sprintf(send_string, "NICK %s", channel->config->irc_nick);
+	sprintf(send_string, "NICK %s", ::channel->config->irc_nick);
 	ircbot->send(send_string);
 
 	timer->add(timer->gettick() + 3000, ircbot->join_timer, 0, 0);
@@ -75,19 +88,19 @@ int irc_identify_timer(int tid, int64 tick, int id, intptr_t data) {
  * Timer callback to join channels (and optionally send NickServ commands)
  * @see timer->do_timer
  */
-int irc_join_timer(int tid, int64 tick, int id, intptr_t data) {
+int CIrcbot::join_timer(int tid, int64 tick, int id, intptr_t data) {
 	if( !ircbot->isOn )
 		return 0;
 
-	if (channel->config->irc_nick_pw[0] != '\0') {
-		sprintf(send_string, "PRIVMSG NICKSERV : IDENTIFY %s", channel->config->irc_nick_pw);
+	if (::channel->config->irc_nick_pw[0] != '\0') {
+		sprintf(send_string, "PRIVMSG NICKSERV : IDENTIFY %s", ::channel->config->irc_nick_pw);
 		ircbot->send(send_string);
-		if (channel->config->irc_use_ghost) {
-			sprintf(send_string, "PRIVMSG NICKSERV : GHOST %s %s", channel->config->irc_nick, channel->config->irc_nick_pw);
+		if (::channel->config->irc_use_ghost) {
+			sprintf(send_string, "PRIVMSG NICKSERV : GHOST %s %s", ::channel->config->irc_nick, ::channel->config->irc_nick_pw);
 		}
 	}
 
-	sprintf(send_string, "JOIN %s", channel->config->irc_channel);
+	sprintf(send_string, "JOIN %s", ::channel->config->irc_channel);
 	ircbot->send(send_string);
 	ircbot->isIn = true;
 
@@ -100,7 +113,7 @@ int irc_join_timer(int tid, int64 tick, int id, intptr_t data) {
  * @return              Function pointer to the command handler, NULL in case
  *                      of unhandled commands
  */
-struct irc_func* irc_func_search(char* function_name) {
+struct irc_func* CIrcbot::func_search(char* function_name) {
 	int i;
 	nullpo_retr(NULL, function_name);
 	for(i = 0; i < ircbot->funcs.size; i++) {
@@ -115,7 +128,7 @@ struct irc_func* irc_func_search(char* function_name) {
  * Parser for the IRC server connection
  * @see do_sockets
  */
-int irc_parse(int fd) {
+int CIrcbot::parse(int fd) {
 	char *parse_string = NULL, *str_safe = NULL;
 
 	if (sockt->session[fd]->flag.eof) {
@@ -124,7 +137,7 @@ int irc_parse(int fd) {
 		ircbot->isOn = false;
 		ircbot->isIn = false;
 		ircbot->fails = 0;
-		ircbot->ip = sockt->host2ip(channel->config->irc_server);
+		ircbot->ip = sockt->host2ip(::channel->config->irc_server);
 		timer->add(timer->gettick() + 120000, ircbot->connect_timer, 0, 0);
 		return 0;
 	}
@@ -157,7 +170,7 @@ int irc_parse(int fd) {
  * @param host   Pointer to a string where to return the hostname (may not be
  *               NULL, needs to be able to fit an IRC_HOST_LENGTH long string)
  */
-void irc_parse_source(char *source, char *nick, char *ident, char *host) {
+void CIrcbot::parse_source(char *source, char *nick, char *ident, char *host) {
 	int i, pos = 0;
 	size_t len;
 	unsigned char stage = 0;
@@ -186,7 +199,7 @@ void irc_parse_source(char *source, char *nick, char *ident, char *host) {
  * @param fd  IRC server connection file descriptor
  * @param str Raw received message
  */
-void irc_parse_sub(int fd, char *str) {
+void CIrcbot::parse_sub(int fd, char *str) {
 	char source[180], command[60], buf1[IRC_MESSAGE_LENGTH], buf2[IRC_MESSAGE_LENGTH];
 	char *target = buf1, *message = buf2;
 	struct irc_func *func;
@@ -219,7 +232,7 @@ void irc_parse_sub(int fd, char *str) {
  * Send a raw command to the irc server
  * @param str Command to send
  */
-void irc_send(char *str) {
+void CIrcbot::send(char *str) {
 	size_t len;
 	nullpo_retv(str);
 	len = strlen(str) + 2;
@@ -234,7 +247,7 @@ void irc_send(char *str) {
  * Handler for the PING IRC command (send back a PONG)
  * @see irc_parse_sub
  */
-void irc_pong(int fd, char *cmd, char *source, char *target, char *msg) {
+void CIrcbot::pong(int fd, char *cmd, char *source, char *target, char *msg) {
 	nullpo_retv(cmd);
 	snprintf(send_string, IRC_MESSAGE_LENGTH, "PONG %s", cmd);
 	ircbot->send(send_string);
@@ -293,7 +306,7 @@ void irc_privmsg_ctcp(int fd, char *cmd, char *source, char *target, char *msg) 
  * Handler for the PRIVMSG IRC command (action depends on the message contents)
  * @see irc_parse_sub
  */
-void irc_privmsg(int fd, char *cmd, char *source, char *target, char *msg) {
+void CIrcbot::privmsg(int fd, char *cmd, char *source, char *target, char *msg) {
 	size_t len = msg ? strlen(msg) : 0;
 	nullpo_retv(source);
 	nullpo_retv(target);
@@ -308,7 +321,7 @@ void irc_privmsg(int fd, char *cmd, char *source, char *target, char *msg) {
 	} else if (strcmpi(target, channel->config->irc_nick) == 0) {
 		ShowDebug("irc_privmsg: Received message from %s: '%s'\n", source ? source : "(null)", msg);
 #endif // IRCBOT_DEBUG
-	} else if (msg && strcmpi(target, channel->config->irc_channel) == 0) {
+	} else if (msg && strcmpi(target, ::channel->config->irc_channel) == 0) {
 		char source_nick[IRC_NICK_LENGTH], source_ident[IRC_IDENT_LENGTH], source_host[IRC_HOST_LENGTH];
 
 		source_nick[0] = source_ident[0] = source_host[0] = '\0';
@@ -335,7 +348,7 @@ void irc_privmsg(int fd, char *cmd, char *source, char *target, char *msg) {
  * the IRC channel)
  * @see irc_parse_sub
  */
-void irc_userjoin(int fd, char *cmd, char *source, char *target, char *msg) {
+void CIrcbot::userjoin(int fd, char *cmd, char *source, char *target, char *msg) {
 	char source_nick[IRC_NICK_LENGTH], source_ident[IRC_IDENT_LENGTH], source_host[IRC_HOST_LENGTH];
 
 	nullpo_retv(source);
@@ -355,7 +368,7 @@ void irc_userjoin(int fd, char *cmd, char *source, char *target, char *msg) {
  * users leaving the IRC channel)
  * @see irc_parse_sub
  */
-void irc_userleave(int fd, char *cmd, char *source, char *target, char *msg) {
+void CIrcbot::userleave(int fd, char *cmd, char *source, char *target, char *msg) {
 	char source_nick[IRC_NICK_LENGTH], source_ident[IRC_IDENT_LENGTH], source_host[IRC_HOST_LENGTH];
 
 	nullpo_retv(source);
@@ -378,7 +391,7 @@ void irc_userleave(int fd, char *cmd, char *source, char *target, char *msg) {
  * changing their name while in the IRC channel)
  * @see irc_parse_sub
  */
-void irc_usernick(int fd, char *cmd, char *source, char *target, char *msg) {
+void CIrcbot::usernick(int fd, char *cmd, char *source, char *target, char *msg) {
 	char source_nick[IRC_NICK_LENGTH], source_ident[IRC_IDENT_LENGTH], source_host[IRC_HOST_LENGTH];
 
 	nullpo_retv(source);
@@ -398,16 +411,16 @@ void irc_usernick(int fd, char *cmd, char *source, char *target, char *msg) {
  * @param name Sender's name
  * @param msg  Message text
  */
-void irc_relay(const char *name, const char *msg)
+void CIrcbot::relay(const char *name, const char *msg)
 {
 	if (!ircbot->isIn)
 		return;
 
 	nullpo_retv(msg);
 	if (name)
-		sprintf(send_string,"PRIVMSG %s :[ %s ] : %s", channel->config->irc_channel, name, msg);
+		sprintf(send_string,"PRIVMSG %s :[ %s ] : %s", ::channel->config->irc_channel, name, msg);
 	else
-		sprintf(send_string,"PRIVMSG %s :%s", channel->config->irc_channel, msg);
+		sprintf(send_string,"PRIVMSG %s :%s", ::channel->config->irc_channel, msg);
 
 	ircbot->send(send_string);
 }
@@ -415,7 +428,7 @@ void irc_relay(const char *name, const char *msg)
 /**
  * IRC bot initializer
  */
-void irc_bot_init(bool minimal) {
+void CIrcbot::init(bool minimal) {
 	/// Command handlers
 	const struct irc_func irc_func_base[] = {
 		{ "PING" , ircbot->pong },
@@ -431,12 +444,12 @@ void irc_bot_init(bool minimal) {
 	if (minimal)
 		return;
 
-	if (!channel->config->irc)
+	if (!::channel->config->irc)
 		return;
 
-	if (!(ircbot->ip = sockt->host2ip(channel->config->irc_server))) {
-		ShowError("Unable to resolve '%s' (irc server), disabling irc channel...\n", channel->config->irc_server);
-		channel->config->irc = false;
+	if (!(ircbot->ip = sockt->host2ip(::channel->config->irc_server))) {
+		ShowError("Unable to resolve '%s' (irc server), disabling irc channel...\n", ::channel->config->irc_server);
+		::channel->config->irc = false;
 		return;
 	}
 
@@ -466,10 +479,10 @@ void irc_bot_init(bool minimal) {
 /**
  * IRC bot finalizer
  */
-void irc_bot_final(void) {
+void CIrcbot::final(void) {
 	int i;
 
-	if (!channel->config->irc)
+	if (!::channel->config->irc)
 		return;
 	if( ircbot->isOn ) {
 		ircbot->send("QUIT :Hercules is shutting down");
@@ -490,26 +503,4 @@ void ircbot_defaults(void) {
 
 	ircbot->channel = NULL;
 
-	ircbot->init = irc_bot_init;
-	ircbot->final = irc_bot_final;
-
-	ircbot->parse = irc_parse;
-	ircbot->parse_sub = irc_parse_sub;
-	ircbot->parse_source = irc_parse_source;
-
-	ircbot->func_search = irc_func_search;
-
-	ircbot->connect_timer = irc_connect_timer;
-	ircbot->identify_timer = irc_identify_timer;
-	ircbot->join_timer = irc_join_timer;
-
-	ircbot->send = irc_send;
-	ircbot->relay = irc_relay;
-
-	ircbot->pong = irc_pong;
-	ircbot->privmsg = irc_privmsg;
-
-	ircbot->userjoin = irc_userjoin;
-	ircbot->userleave = irc_userleave;
-	ircbot->usernick = irc_usernick;
 }

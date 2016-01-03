@@ -20,24 +20,28 @@
  */
 #include "stdafx.h"
 
-struct intif_interface intif_s;
-struct intif_interface *intif;
+CIntif intif_s;
+CIntif *intif= NULL;
 
 #define inter_fd (chrif->fd) // alias
+
+// Subsystem Globals:
+int CIntif::packet_len_table[INTIF_PACKET_LEN_TABLE_SIZE];
+
 
 //-----------------------------------------------------------------
 // Send to inter server
 
-int CheckForCharServer(void)
+int CIntif::CheckForCharServer(void)
 {
 	return ((chrif->fd <= 0) || sockt->session[chrif->fd] == NULL || sockt->session[chrif->fd]->wdata == NULL);
 }
 
 // pet
-int intif_create_pet(int account_id,int char_id,short pet_class,short pet_lv,short pet_egg_id,
+int CIntif::create_pet(int account_id,int char_id,short pet_class,short pet_lv,short pet_egg_id,
 	short pet_equip,short intimate,short hungry,char rename_flag,char incubate,char *pet_name)
 {
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 	nullpo_ret(pet_name);
 	WFIFOHEAD(inter_fd, 24 + NAME_LENGTH);
@@ -58,9 +62,9 @@ int intif_create_pet(int account_id,int char_id,short pet_class,short pet_lv,sho
 	return 0;
 }
 
-int intif_request_petdata(int account_id,int char_id,int pet_id)
+int CIntif::request_petdata(int account_id,int char_id,int pet_id)
 {
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 	WFIFOHEAD(inter_fd, 14);
 	WFIFOW(inter_fd,0) = 0x3081;
@@ -72,9 +76,9 @@ int intif_request_petdata(int account_id,int char_id,int pet_id)
 	return 0;
 }
 
-int intif_save_petdata(int account_id,struct s_pet *p)
+int CIntif::save_petdata(int account_id,struct s_pet *p)
 {
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 	nullpo_ret(p);
 	WFIFOHEAD(inter_fd, sizeof(struct s_pet) + 8);
@@ -87,9 +91,9 @@ int intif_save_petdata(int account_id,struct s_pet *p)
 	return 0;
 }
 
-int intif_delete_petdata(int pet_id)
+int CIntif::delete_petdata(int pet_id)
 {
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 	WFIFOHEAD(inter_fd,6);
 	WFIFOW(inter_fd,0) = 0x3083;
@@ -99,9 +103,9 @@ int intif_delete_petdata(int pet_id)
 	return 1;
 }
 
-int intif_rename(struct map_session_data *sd, int type, char *name)
+int CIntif::rename(struct map_session_data *sd, int type, char *name)
 {
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 1;
 
 	nullpo_ret(sd);
@@ -117,7 +121,7 @@ int intif_rename(struct map_session_data *sd, int type, char *name)
 }
 
 // GM Send a message
-int intif_broadcast(const char* mes, size_t len, int type)
+int CIntif::broadcast(const char* mes, size_t len, int type)
 {
 	int lp = (type&BC_COLOR_MASK) ? 4 : 0;
 
@@ -126,7 +130,7 @@ int intif_broadcast(const char* mes, size_t len, int type)
 	// Send to the local players
 	clif->broadcast(NULL, mes, len, type, ALL_CLIENT);
 
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 
 	if (chrif->other_mapserver_count < 1)
@@ -149,14 +153,14 @@ int intif_broadcast(const char* mes, size_t len, int type)
 	return 0;
 }
 
-int intif_broadcast2(const char* mes, size_t len, unsigned int fontColor, short fontType, short fontSize, short fontAlign, short fontY)
+int CIntif::broadcast2(const char* mes, size_t len, unsigned int fontColor, short fontType, short fontSize, short fontAlign, short fontY)
 {
 	nullpo_ret(mes);
 	Assert_ret(len < 32000);
 	// Send to the local players
 	clif->broadcast2(NULL, mes, len, fontColor, fontType, fontSize, fontAlign, fontY, ALL_CLIENT);
 
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 
 	if (chrif->other_mapserver_count < 1)
@@ -178,7 +182,7 @@ int intif_broadcast2(const char* mes, size_t len, unsigned int fontColor, short 
 /// send a message using the main chat system
 /// <sd>         the source of message
 /// <message>    the message that was sent
-int intif_main_message(struct map_session_data* sd, const char* message)
+int CIntif::main_message(struct map_session_data* sd, const char* message)
 {
 	char output[256];
 
@@ -198,9 +202,9 @@ int intif_main_message(struct map_session_data* sd, const char* message)
 }
 
 // The transmission of Wisp/Page to inter-server (player not found on this server)
-int intif_wis_message(struct map_session_data *sd, char *nick, char *mes, size_t mes_len)
+int CIntif::wis_message(struct map_session_data *sd, char *nick, char *mes, size_t mes_len)
 {
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 	nullpo_ret(sd);
 	nullpo_ret(nick);
@@ -229,7 +233,7 @@ int intif_wis_message(struct map_session_data *sd, char *nick, char *mes, size_t
 // The reply of Wisp/page
 int intif_wis_replay(int id, int flag)
 {
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 	WFIFOHEAD(inter_fd,7);
 	WFIFOW(inter_fd,0) = 0x3002;
@@ -244,10 +248,10 @@ int intif_wis_replay(int id, int flag)
 }
 
 // The transmission of GM only Wisp/Page from server to inter-server
-int intif_wis_message_to_gm(char *wisp_name, int permission, char *mes)
+int CIntif::wis_message_to_gm(char *wisp_name, int permission, char *mes)
 {
 	size_t mes_len;
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 	nullpo_ret(wisp_name);
 	nullpo_ret(mes);
@@ -267,7 +271,7 @@ int intif_wis_message_to_gm(char *wisp_name, int permission, char *mes)
 }
 
 //Request for saving registry values.
-int intif_saveregistry(struct map_session_data *sd) {
+int CIntif::saveregistry(struct map_session_data *sd) {
 	DBIterator *iter;
 	DBKey key;
 	DBData *data;
@@ -275,7 +279,7 @@ int intif_saveregistry(struct map_session_data *sd) {
 	size_t len;
 
 	nullpo_ret(sd);
-	if (intif->CheckForCharServer() || !sd->regs.vars)
+	if (intif->CIntif::CheckForCharServer() || !sd->regs.vars)
 		return -1;
 
 	WFIFOHEAD(inter_fd, 60000 + 300);
@@ -384,12 +388,12 @@ int intif_saveregistry(struct map_session_data *sd) {
 }
 
 //Request the registries for this player.
-int intif_request_registry(struct map_session_data *sd, int flag)
+int CIntif::request_registry(struct map_session_data *sd, int flag)
 {
 	nullpo_ret(sd);
 
 	/* if char server ain't online it doesn't load, shouldn't we kill the session then? */
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 
 	WFIFOHEAD(inter_fd,6);
@@ -404,9 +408,9 @@ int intif_request_registry(struct map_session_data *sd, int flag)
 	return 0;
 }
 
-int intif_request_guild_storage(int account_id,int guild_id)
+int CIntif::request_guild_storage(int account_id,int guild_id)
 {
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 	WFIFOHEAD(inter_fd,10);
 	WFIFOW(inter_fd,0) = 0x3018;
@@ -415,9 +419,9 @@ int intif_request_guild_storage(int account_id,int guild_id)
 	WFIFOSET(inter_fd,10);
 	return 0;
 }
-int intif_send_guild_storage(int account_id,struct guild_storage *gstor)
+int CIntif::send_guild_storage(int account_id,struct guild_storage *gstor)
 {
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 	nullpo_ret(gstor);
 	WFIFOHEAD(inter_fd,sizeof(struct guild_storage)+12);
@@ -431,9 +435,9 @@ int intif_send_guild_storage(int account_id,struct guild_storage *gstor)
 }
 
 // Party creation request
-int intif_create_party(struct party_member *member,char *name,int item,int item2)
+int CIntif::create_party(struct party_member *member,char *name,int item,int item2)
 {
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 	nullpo_ret(member);
 	nullpo_ret(name);
@@ -450,9 +454,9 @@ int intif_create_party(struct party_member *member,char *name,int item,int item2
 }
 
 // Party information request
-int intif_request_partyinfo(int party_id, int char_id)
+int CIntif::request_partyinfo(int party_id, int char_id)
 {
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 	WFIFOHEAD(inter_fd,10);
 	WFIFOW(inter_fd,0) = 0x3021;
@@ -463,9 +467,9 @@ int intif_request_partyinfo(int party_id, int char_id)
 }
 
 // Request to add a member to party
-int intif_party_addmember(int party_id,struct party_member *member)
+int CIntif::party_addmember(int party_id,struct party_member *member)
 {
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 	nullpo_ret(member);
 	WFIFOHEAD(inter_fd,42);
@@ -478,9 +482,9 @@ int intif_party_addmember(int party_id,struct party_member *member)
 }
 
 // Request to change party configuration (exp,item share)
-int intif_party_changeoption(int party_id,int account_id,int exp,int item)
+int CIntif::party_changeoption(int party_id,int account_id,int exp,int item)
 {
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 	WFIFOHEAD(inter_fd,14);
 	WFIFOW(inter_fd,0)=0x3023;
@@ -493,9 +497,9 @@ int intif_party_changeoption(int party_id,int account_id,int exp,int item)
 }
 
 // Request to leave party
-int intif_party_leave(int party_id,int account_id, int char_id)
+int CIntif::party_leave(int party_id,int account_id, int char_id)
 {
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 	WFIFOHEAD(inter_fd,14);
 	WFIFOW(inter_fd,0)=0x3024;
@@ -507,10 +511,10 @@ int intif_party_leave(int party_id,int account_id, int char_id)
 }
 
 // Request keeping party for new map ??
-int intif_party_changemap(struct map_session_data *sd,int online) {
+int CIntif::party_changemap(struct map_session_data *sd,int online) {
 	int16 m, map_index;
 
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 	if(!sd)
 		return 0;
@@ -533,9 +537,9 @@ int intif_party_changemap(struct map_session_data *sd,int online) {
 }
 
 // Request breaking party
-int intif_break_party(int party_id)
+int CIntif::break_party(int party_id)
 {
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 	WFIFOHEAD(inter_fd,6);
 	WFIFOW(inter_fd,0)=0x3026;
@@ -545,9 +549,9 @@ int intif_break_party(int party_id)
 }
 
 // Sending party chat
-int intif_party_message(int party_id,int account_id,const char *mes,int len)
+int CIntif::party_message(int party_id,int account_id,const char *mes,int len)
 {
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 
 	if (chrif->other_mapserver_count < 1)
@@ -566,9 +570,9 @@ int intif_party_message(int party_id,int account_id,const char *mes,int len)
 }
 
 // Request a new leader for party
-int intif_party_leaderchange(int party_id,int account_id,int char_id)
+int CIntif::party_leaderchange(int party_id,int account_id,int char_id)
 {
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 	WFIFOHEAD(inter_fd,14);
 	WFIFOW(inter_fd,0)=0x3029;
@@ -580,9 +584,9 @@ int intif_party_leaderchange(int party_id,int account_id,int char_id)
 }
 
 // Request a Guild creation
-int intif_guild_create(const char *name,const struct guild_member *master)
+int CIntif::guild_create(const char *name,const struct guild_member *master)
 {
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 	nullpo_ret(master);
 	nullpo_ret(name);
@@ -598,9 +602,9 @@ int intif_guild_create(const char *name,const struct guild_member *master)
 }
 
 // Request Guild information
-int intif_guild_request_info(int guild_id)
+int CIntif::guild_request_info(int guild_id)
 {
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 	WFIFOHEAD(inter_fd,6);
 	WFIFOW(inter_fd,0) = 0x3031;
@@ -610,9 +614,9 @@ int intif_guild_request_info(int guild_id)
 }
 
 // Request to add member to the guild
-int intif_guild_addmember(int guild_id,struct guild_member *m)
+int CIntif::guild_addmember(int guild_id,struct guild_member *m)
 {
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 	nullpo_ret(m);
 	WFIFOHEAD(inter_fd,sizeof(struct guild_member)+8);
@@ -625,9 +629,9 @@ int intif_guild_addmember(int guild_id,struct guild_member *m)
 }
 
 // Request a new leader for guild
-int intif_guild_change_gm(int guild_id, const char* name, size_t len)
+int CIntif::guild_change_gm(int guild_id, const char* name, size_t len)
 {
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 	nullpo_ret(name);
 	Assert_ret(len > 0 && len < 32000);
@@ -641,9 +645,9 @@ int intif_guild_change_gm(int guild_id, const char* name, size_t len)
 }
 
 // Request to leave guild
-int intif_guild_leave(int guild_id,int account_id,int char_id,int flag,const char *mes)
+int CIntif::guild_leave(int guild_id,int account_id,int char_id,int flag,const char *mes)
 {
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 	nullpo_ret(mes);
 	WFIFOHEAD(inter_fd, 55);
@@ -658,9 +662,9 @@ int intif_guild_leave(int guild_id,int account_id,int char_id,int flag,const cha
 }
 
 //Update request / Lv online status of the guild members
-int intif_guild_memberinfoshort(int guild_id,int account_id,int char_id,int online,int lv,int class_)
+int CIntif::guild_memberinfoshort(int guild_id,int account_id,int char_id,int online,int lv,int class_)
 {
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 	WFIFOHEAD(inter_fd, 19);
 	WFIFOW(inter_fd, 0) = 0x3035;
@@ -675,9 +679,9 @@ int intif_guild_memberinfoshort(int guild_id,int account_id,int char_id,int onli
 }
 
 //Guild disbanded notification
-int intif_guild_break(int guild_id)
+int CIntif::guild_break(int guild_id)
 {
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 	WFIFOHEAD(inter_fd, 6);
 	WFIFOW(inter_fd, 0) = 0x3036;
@@ -687,9 +691,9 @@ int intif_guild_break(int guild_id)
 }
 
 // Send a guild message
-int intif_guild_message(int guild_id,int account_id,const char *mes,int len)
+int CIntif::guild_message(int guild_id,int account_id,const char *mes,int len)
 {
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 
 	if (chrif->other_mapserver_count < 1)
@@ -712,9 +716,9 @@ int intif_guild_message(int guild_id,int account_id,const char *mes,int len)
  * Requests to change a basic guild information, it is parsed via mapif_parse_GuildBasicInfoChange
  * To see the information types that can be changed see mmo.h::guild_basic_info
  **/
-int intif_guild_change_basicinfo(int guild_id,int type,const void *data,int len)
+int CIntif::guild_change_basicinfo(int guild_id,int type,const void *data,int len)
 {
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 	nullpo_ret(data);
 	Assert_ret(len >= 0 && len < 32000);
@@ -729,10 +733,10 @@ int intif_guild_change_basicinfo(int guild_id,int type,const void *data,int len)
 }
 
 // Request a change of Guild member information
-int intif_guild_change_memberinfo(int guild_id,int account_id,int char_id,
+int CIntif::guild_change_memberinfo(int guild_id,int account_id,int char_id,
 	int type,const void *data,int len)
 {
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 	nullpo_ret(data);
 	Assert_ret(len >= 0 && len < 32000);
@@ -749,9 +753,9 @@ int intif_guild_change_memberinfo(int guild_id,int account_id,int char_id,
 }
 
 // Request a change of Guild title
-int intif_guild_position(int guild_id,int idx,struct guild_position *p)
+int CIntif::guild_position(int guild_id,int idx,struct guild_position *p)
 {
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 	nullpo_ret(p);
 	WFIFOHEAD(inter_fd, sizeof(struct guild_position)+12);
@@ -765,9 +769,9 @@ int intif_guild_position(int guild_id,int idx,struct guild_position *p)
 }
 
 // Request an update of Guildskill skill_id
-int intif_guild_skillup(int guild_id, uint16 skill_id, int account_id, int max)
+int CIntif::guild_skillup(int guild_id, uint16 skill_id, int account_id, int max)
 {
-	if( intif->CheckForCharServer() )
+	if( intif->CIntif::CheckForCharServer() )
 		return 0;
 	WFIFOHEAD(inter_fd, 18);
 	WFIFOW(inter_fd, 0)  = 0x303c;
@@ -780,9 +784,9 @@ int intif_guild_skillup(int guild_id, uint16 skill_id, int account_id, int max)
 }
 
 // Request a new guild relationship
-int intif_guild_alliance(int guild_id1,int guild_id2,int account_id1,int account_id2,int flag)
+int CIntif::guild_alliance(int guild_id1,int guild_id2,int account_id1,int account_id2,int flag)
 {
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 	WFIFOHEAD(inter_fd,19);
 	WFIFOW(inter_fd, 0)=0x303d;
@@ -796,9 +800,9 @@ int intif_guild_alliance(int guild_id1,int guild_id2,int account_id1,int account
 }
 
 // Request to change guild notice
-int intif_guild_notice(int guild_id,const char *mes1,const char *mes2)
+int CIntif::guild_notice(int guild_id,const char *mes1,const char *mes2)
 {
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 	nullpo_ret(mes1);
 	nullpo_ret(mes2);
@@ -812,9 +816,9 @@ int intif_guild_notice(int guild_id,const char *mes1,const char *mes2)
 }
 
 // Request to change guild emblem
-int intif_guild_emblem(int guild_id,int len,const char *data)
+int CIntif::guild_emblem(int guild_id,int len,const char *data)
 {
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 	if(guild_id<=0 || len<0 || len>2000)
 		return 0;
@@ -835,9 +839,9 @@ int intif_guild_emblem(int guild_id,int len,const char *data)
  * @param num Number of castles, size of castle_ids array.
  * @param castle_ids Pointer to array of castle IDs.
  */
-int intif_guild_castle_dataload(int num, int *castle_ids)
+int CIntif::guild_castle_dataload(int num, int *castle_ids)
 {
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 	nullpo_ret(castle_ids);
 	WFIFOHEAD(inter_fd, 4 + num * sizeof(int));
@@ -849,9 +853,9 @@ int intif_guild_castle_dataload(int num, int *castle_ids)
 }
 
 // Request change castle guild owner and save data
-int intif_guild_castle_datasave(int castle_id,int index, int value)
+int CIntif::guild_castle_datasave(int castle_id,int index, int value)
 {
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 	WFIFOHEAD(inter_fd,9);
 	WFIFOW(inter_fd,0)=0x3041;
@@ -866,9 +870,9 @@ int intif_guild_castle_datasave(int castle_id,int index, int value)
 // Homunculus Packets send to Inter server [albator]
 //-----------------------------------------------------------------
 
-int intif_homunculus_create(int account_id, struct s_homunculus *sh)
+int CIntif::homunculus_create(int account_id, struct s_homunculus *sh)
 {
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 	nullpo_ret(sh);
 	WFIFOHEAD(inter_fd, sizeof(struct s_homunculus)+8);
@@ -880,8 +884,8 @@ int intif_homunculus_create(int account_id, struct s_homunculus *sh)
 	return 0;
 }
 
-bool intif_homunculus_requestload(int account_id, int homun_id) {
-	if (intif->CheckForCharServer())
+bool CIntif::homunculus_requestload(int account_id, int homun_id) {
+	if (intif->CIntif::CheckForCharServer())
 		return false;
 	WFIFOHEAD(inter_fd, 10);
 	WFIFOW(inter_fd,0) = 0x3091;
@@ -891,9 +895,9 @@ bool intif_homunculus_requestload(int account_id, int homun_id) {
 	return true;
 }
 
-int intif_homunculus_requestsave(int account_id, struct s_homunculus* sh)
+int CIntif::homunculus_requestsave(int account_id, struct s_homunculus* sh)
 {
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 	nullpo_ret(sh);
 	WFIFOHEAD(inter_fd, sizeof(struct s_homunculus)+8);
@@ -906,9 +910,9 @@ int intif_homunculus_requestsave(int account_id, struct s_homunculus* sh)
 
 }
 
-int intif_homunculus_requestdelete(int homun_id)
+int CIntif::homunculus_requestdelete(int homun_id)
 {
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 	WFIFOHEAD(inter_fd, 6);
 	WFIFOW(inter_fd, 0) = 0x3093;
@@ -922,7 +926,7 @@ int intif_homunculus_requestdelete(int homun_id)
 // Packets receive from inter server
 
 // Wisp/Page reception // rewritten by [Yor]
-void intif_parse_WisMessage(int fd) {
+void CIntif::pWisMessage(int fd) {
 	struct map_session_data* sd;
 	char *wisp_source;
 	char name[NAME_LENGTH];
@@ -958,7 +962,7 @@ void intif_parse_WisMessage(int fd) {
 }
 
 // Wisp/page transmission result reception
-void intif_parse_WisEnd(int fd) {
+void CIntif::pWisEnd(int fd) {
 	struct map_session_data* sd;
 
 	if (battle_config.etc_log)
@@ -970,7 +974,7 @@ void intif_parse_WisEnd(int fd) {
 	return;
 }
 
-int mapif_parse_WisToGM_sub(struct map_session_data* sd,va_list va) {
+int CIntif::pWisToGM_sub(struct map_session_data* sd,va_list va) {
 	int permission = va_arg(va, int);
 	char *wisp_name;
 	char *message;
@@ -988,7 +992,7 @@ int mapif_parse_WisToGM_sub(struct map_session_data* sd,va_list va) {
 
 // Received wisp message from map-server via char-server for ALL gm
 // 0x3003/0x3803 <packet_len>.w <wispname>.24B <permission>.l <message>.?B
-void mapif_parse_WisToGM(int fd)
+void CIntif::pWisToGM(int fd)
 {
 	int permission, mes_len;
 	char Wisp_name[NAME_LENGTH];
@@ -1003,14 +1007,14 @@ void mapif_parse_WisToGM(int fd)
 	safestrncpy(Wisp_name, (char*)RFIFOP(fd,4), NAME_LENGTH);
 	safestrncpy(message, (char*)RFIFOP(fd,32), mes_len);
 	// information is sent to all online GM
-	map->foreachpc(mapif_parse_WisToGM_sub, permission, Wisp_name, message, mes_len);
+	map->foreachpc(CIntif::pWisToGM_sub, permission, Wisp_name, message, mes_len);
 
 	if (message != mbuf)
 		aFree(message);
 }
 
 // Request player registre
-void intif_parse_Registers(int fd)
+void CIntif::pRegisters(int fd)
 {
 	int flag;
 	struct map_session_data *sd;
@@ -1111,7 +1115,7 @@ void intif_parse_Registers(int fd)
 		pc->reg_received(sd); //Received all registry values, execute init scripts and what-not. [Skotlex]
 }
 
-void intif_parse_LoadGuildStorage(int fd)
+void CIntif::pLoadGuildStorage(int fd)
 {
 	struct guild_storage *gstor;
 	struct map_session_data *sd;
@@ -1153,13 +1157,13 @@ void intif_parse_LoadGuildStorage(int fd)
 }
 
 // ACK guild_storage saved
-void intif_parse_SaveGuildStorage(int fd)
+void CIntif::pSaveGuildStorage(int fd)
 {
 	gstorage->saved(/*RFIFOL(fd,2), */RFIFOL(fd,6));
 }
 
 // ACK party creation
-void intif_parse_PartyCreated(int fd)
+void CIntif::pPartyCreated(int fd)
 {
 	if(battle_config.etc_log)
 		ShowInfo("intif: party created by account %d\n\n", RFIFOL(fd,2));
@@ -1167,7 +1171,7 @@ void intif_parse_PartyCreated(int fd)
 }
 
 // Receive party info
-void intif_parse_PartyInfo(int fd) {
+void CIntif::pPartyInfo(int fd) {
 	if (RFIFOW(fd,2) == 12) {
 		ShowWarning("intif: party noinfo (char_id=%d party_id=%d)\n", RFIFOL(fd,4), RFIFOL(fd,8));
 		party->recv_noinfo(RFIFOL(fd,8), RFIFOL(fd,4));
@@ -1181,7 +1185,7 @@ void intif_parse_PartyInfo(int fd) {
 }
 
 // ACK adding party member
-void intif_parse_PartyMemberAdded(int fd)
+void CIntif::pPartyMemberAdded(int fd)
 {
 	if(battle_config.etc_log)
 		ShowInfo("intif: party member added Party (%d), Account(%d), Char(%d)\n",RFIFOL(fd,2),RFIFOL(fd,6),RFIFOL(fd,10));
@@ -1189,13 +1193,13 @@ void intif_parse_PartyMemberAdded(int fd)
 }
 
 // ACK changing party option
-void intif_parse_PartyOptionChanged(int fd)
+void CIntif::pPartyOptionChanged(int fd)
 {
 	party->optionchanged(RFIFOL(fd,2),RFIFOL(fd,6),RFIFOW(fd,10),RFIFOW(fd,12),RFIFOB(fd,14));
 }
 
 // ACK member leaving party
-void intif_parse_PartyMemberWithdraw(int fd)
+void CIntif::pPartyMemberWithdraw(int fd)
 {
 	if(battle_config.etc_log)
 		ShowInfo("intif: party member withdraw: Party(%d), Account(%d), Char(%d)\n",RFIFOL(fd,2),RFIFOL(fd,6),RFIFOL(fd,10));
@@ -1203,28 +1207,28 @@ void intif_parse_PartyMemberWithdraw(int fd)
 }
 
 // ACK party break
-void intif_parse_PartyBroken(int fd) {
+void CIntif::pPartyBroken(int fd) {
 	party->broken(RFIFOL(fd,2));
 }
 
 // ACK party on new map
-void intif_parse_PartyMove(int fd)
+void CIntif::pPartyMove(int fd)
 {
 	party->recv_movemap(RFIFOL(fd,2),RFIFOL(fd,6),RFIFOL(fd,10),RFIFOW(fd,14),RFIFOB(fd,16),RFIFOW(fd,17));
 }
 
 // ACK party messages
-void intif_parse_PartyMessage(int fd) {
+void CIntif::pPartyMessage(int fd) {
 	party->recv_message(RFIFOL(fd,4),RFIFOL(fd,8),(char *) RFIFOP(fd,12),RFIFOW(fd,2)-12);
 }
 
 // ACK guild creation
-void intif_parse_GuildCreated(int fd) {
+void CIntif::pGuildCreated(int fd) {
 	guild->created(RFIFOL(fd,2),RFIFOL(fd,6));
 }
 
 // ACK guild infos
-void intif_parse_GuildInfo(int fd) {
+void CIntif::pGuildInfo(int fd) {
 	if (RFIFOW(fd,2) == 8) {
 		ShowWarning("intif: guild noinfo %d\n",RFIFOL(fd,4));
 		guild->recv_noinfo(RFIFOL(fd,4));
@@ -1237,30 +1241,30 @@ void intif_parse_GuildInfo(int fd) {
 }
 
 // ACK adding guild member
-void intif_parse_GuildMemberAdded(int fd) {
+void CIntif::pGuildMemberAdded(int fd) {
 	if(battle_config.etc_log)
 		ShowInfo("intif: guild member added %d %d %d %d\n",RFIFOL(fd,2),RFIFOL(fd,6),RFIFOL(fd,10),RFIFOB(fd,14));
 	guild->member_added(RFIFOL(fd,2),RFIFOL(fd,6),RFIFOL(fd,10),RFIFOB(fd,14));
 }
 
 // ACK member leaving guild
-void intif_parse_GuildMemberWithdraw(int fd) {
+void CIntif::pGuildMemberWithdraw(int fd) {
 	guild->member_withdraw(RFIFOL(fd,2),RFIFOL(fd,6),RFIFOL(fd,10),RFIFOB(fd,14),(char *)RFIFOP(fd,55),(char *)RFIFOP(fd,15));
 }
 
 // ACK guild member basic info
-void intif_parse_GuildMemberInfoShort(int fd) {
+void CIntif::pGuildMemberInfoShort(int fd) {
 	guild->recv_memberinfoshort(RFIFOL(fd,2),RFIFOL(fd,6),RFIFOL(fd,10),RFIFOB(fd,14),RFIFOW(fd,15),RFIFOW(fd,17));
 }
 
 // ACK guild break
-void intif_parse_GuildBroken(int fd) {
+void CIntif::pGuildBroken(int fd) {
 	guild->broken(RFIFOL(fd,2),RFIFOB(fd,6));
 }
 
 // basic guild info change notice
 // 0x3839 <packet len>.w <guild id>.l <type>.w <data>.?b
-void intif_parse_GuildBasicInfoChanged(int fd) {
+void CIntif::pGuildBasicInfoChanged(int fd) {
 	//int len = RFIFOW(fd,2) - 10;
 	int guild_id = RFIFOL(fd,4);
 	int type = RFIFOW(fd,8);
@@ -1292,7 +1296,7 @@ void intif_parse_GuildBasicInfoChanged(int fd) {
 
 // guild member info change notice
 // 0x383a <packet len>.w <guild id>.l <account id>.l <char id>.l <type>.w <data>.?b
-void intif_parse_GuildMemberInfoChanged(int fd) {
+void CIntif::pGuildMemberInfoChanged(int fd) {
 	//int len = RFIFOW(fd,2) - 18;
 	int guild_id = RFIFOL(fd,4);
 	int account_id = RFIFOL(fd,8);
@@ -1323,7 +1327,7 @@ void intif_parse_GuildMemberInfoChanged(int fd) {
 }
 
 // ACK change of guild title
-void intif_parse_GuildPosition(int fd) {
+void CIntif::pGuildPosition(int fd) {
 	if (RFIFOW(fd,2)!=sizeof(struct guild_position)+12)
 		ShowError("intif: guild info: data size mismatch (%d) %d != %"PRIuS"\n",
 		          RFIFOL(fd,4),RFIFOW(fd,2),sizeof(struct guild_position)+12);
@@ -1331,47 +1335,47 @@ void intif_parse_GuildPosition(int fd) {
 }
 
 // ACK change of guild skill update
-void intif_parse_GuildSkillUp(int fd) {
+void CIntif::pGuildSkillUp(int fd) {
 	guild->skillupack(RFIFOL(fd,2),RFIFOL(fd,6),RFIFOL(fd,10));
 }
 
 // ACK change of guild relationship
-void intif_parse_GuildAlliance(int fd) {
+void CIntif::pGuildAlliance(int fd) {
 	guild->allianceack(RFIFOL(fd,2),RFIFOL(fd,6),RFIFOL(fd,10),RFIFOL(fd,14),RFIFOB(fd,18),(char *) RFIFOP(fd,19),(char *) RFIFOP(fd,43));
 }
 
 // ACK change of guild notice
-void intif_parse_GuildNotice(int fd) {
+void CIntif::pGuildNotice(int fd) {
 	guild->notice_changed(RFIFOL(fd,2),(char *) RFIFOP(fd,6),(char *) RFIFOP(fd,66));
 }
 
 // ACK change of guild emblem
-void intif_parse_GuildEmblem(int fd) {
+void CIntif::pGuildEmblem(int fd) {
 	guild->emblem_changed(RFIFOW(fd,2)-12,RFIFOL(fd,4),RFIFOL(fd,8), (char *)RFIFOP(fd,12));
 }
 
 // ACK guild message
-void intif_parse_GuildMessage(int fd) {
+void CIntif::pGuildMessage(int fd) {
 	guild->recv_message(RFIFOL(fd,4),RFIFOL(fd,8),(char *) RFIFOP(fd,12),RFIFOW(fd,2)-12);
 }
 
 // Reply guild castle data request
-void intif_parse_GuildCastleDataLoad(int fd) {
+void CIntif::pGuildCastleDataLoad(int fd) {
 	guild->castledataloadack(RFIFOW(fd,2), (struct guild_castle *)RFIFOP(fd,4));
 }
 
 // ACK change of guildmaster
-void intif_parse_GuildMasterChanged(int fd) {
+void CIntif::pGuildMasterChanged(int fd) {
 	guild->gm_changed(RFIFOL(fd,2),RFIFOL(fd,6),RFIFOL(fd,10));
 }
 
 // Request pet creation
-void intif_parse_CreatePet(int fd) {
+void CIntif::pCreatePet(int fd) {
 	pet->get_egg(RFIFOL(fd,2), RFIFOW(fd,6), RFIFOL(fd,8));
 }
 
 // ACK pet data
-void intif_parse_RecvPetData(int fd) {
+void CIntif::pRecvPetData(int fd) {
 	struct s_pet p;
 	int len;
 	len=RFIFOW(fd,2);
@@ -1385,19 +1389,19 @@ void intif_parse_RecvPetData(int fd) {
 }
 /* Really? Whats the point, shouldn't be sent when successful then [Ind] */
 // ACK pet save data
-void intif_parse_SavePetOk(int fd) {
+void CIntif::pSavePetOk(int fd) {
 	if(RFIFOB(fd,6) == 1)
 		ShowError("pet data save failure\n");
 }
 /* Really? Whats the point, shouldn't be sent when successful then [Ind] */
 // ACK deleting pet
-void intif_parse_DeletePetOk(int fd) {
+void CIntif::pDeletePetOk(int fd) {
 	if(RFIFOB(fd,2) == 1)
 		ShowError("pet data delete failure\n");
 }
 
 // ACK changing name request, players,pets,homun
-void intif_parse_ChangeNameOk(int fd)
+void CIntif::pChangeNameOk(int fd)
 {
 	struct map_session_data *sd = NULL;
 	if((sd=map->id2sd(RFIFOL(fd,2)))==NULL ||
@@ -1420,7 +1424,7 @@ void intif_parse_ChangeNameOk(int fd)
 //----------------------------------------------------------------
 // Homunculus recv packets [albator]
 
-void intif_parse_CreateHomunculus(int fd) {
+void CIntif::pCreateHomunculus(int fd) {
 	int len = RFIFOW(fd,2)-9;
 	if (sizeof(struct s_homunculus) != len) {
 		if (battle_config.etc_log)
@@ -1430,7 +1434,7 @@ void intif_parse_CreateHomunculus(int fd) {
 	homun->recv_data(RFIFOL(fd,4), (struct s_homunculus*)RFIFOP(fd,9), RFIFOB(fd,8)) ;
 }
 
-void intif_parse_RecvHomunculusData(int fd) {
+void CIntif::pRecvHomunculusData(int fd) {
 	int len = RFIFOW(fd,2)-9;
 
 	if (sizeof(struct s_homunculus) != len) {
@@ -1442,13 +1446,13 @@ void intif_parse_RecvHomunculusData(int fd) {
 }
 
 /* Really? Whats the point, shouldn't be sent when successful then [Ind] */
-void intif_parse_SaveHomunculusOk(int fd) {
+void CIntif::pSaveHomunculusOk(int fd) {
 	if(RFIFOB(fd,6) != 1)
 		ShowError("homunculus data save failure for account %d\n", RFIFOL(fd,2));
 }
 
 /* Really? Whats the point, shouldn't be sent when successful then [Ind] */
-void intif_parse_DeleteHomunculusOk(int fd) {
+void CIntif::pDeleteHomunculusOk(int fd) {
 	if(RFIFOB(fd,2) != 1)
 		ShowError("Homunculus data delete failure\n");
 }
@@ -1464,7 +1468,7 @@ QUESTLOG SYSTEM FUNCTIONS
  *
  * @param sd Character's data
  */
-void intif_request_questlog(TBL_PC *sd) {
+void CIntif::request_questlog(TBL_PC *sd) {
 	nullpo_retv(sd);
 	WFIFOHEAD(inter_fd,6);
 	WFIFOW(inter_fd,0) = 0x3060;
@@ -1479,7 +1483,7 @@ void intif_request_questlog(TBL_PC *sd) {
  *
  * @see intif_parse
  */
-void intif_parse_QuestLog(int fd) {
+void CIntif::pQuestLog(int fd) {
 	int char_id = RFIFOL(fd, 4), num_received = (RFIFOW(fd, 2)-8)/sizeof(struct quest);
 	TBL_PC *sd = map->charid2sd(char_id);
 
@@ -1534,7 +1538,7 @@ void intif_parse_QuestLog(int fd) {
  *
  * @see intif_parse
  */
-void intif_parse_QuestSave(int fd) {
+void CIntif::pQuestSave(int fd) {
 	int cid = RFIFOL(fd, 2);
 	TBL_PC *sd = map->id2sd(cid);
 
@@ -1550,10 +1554,10 @@ void intif_parse_QuestSave(int fd) {
  * @param sd Character's data
  * @return 0 in case of success, nonzero otherwise
  */
-int intif_quest_save(TBL_PC *sd) {
+int CIntif::quest_save(TBL_PC *sd) {
 	int len = sizeof(struct quest)*sd->num_quests + 8;
 
-	if(intif->CheckForCharServer())
+	if(intif->CIntif::CheckForCharServer())
 		return 1;
 
 	WFIFOHEAD(inter_fd, len);
@@ -1576,9 +1580,9 @@ int intif_quest_save(TBL_PC *sd) {
  * Inbox Request
  * flag: 0 Update Inbox | 1 OpenMail
  *------------------------------------------*/
-int intif_Mail_requestinbox(int char_id, unsigned char flag)
+int CIntif::Mail_requestinbox(int char_id, unsigned char flag)
 {
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 
 	WFIFOHEAD(inter_fd,7);
@@ -1590,7 +1594,7 @@ int intif_Mail_requestinbox(int char_id, unsigned char flag)
 	return 0;
 }
 
-void intif_parse_MailInboxReceived(int fd) {
+void CIntif::pMailInboxReceived(int fd) {
 	struct map_session_data *sd;
 	unsigned char flag = RFIFOB(fd,8);
 
@@ -1619,9 +1623,9 @@ void intif_parse_MailInboxReceived(int fd) {
 /*------------------------------------------
  * Mail Read
  *------------------------------------------*/
-int intif_Mail_read(int mail_id)
+int CIntif::Mail_read(int mail_id)
 {
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 
 	WFIFOHEAD(inter_fd,6);
@@ -1634,9 +1638,9 @@ int intif_Mail_read(int mail_id)
 /*------------------------------------------
  * Get Attachment
  *------------------------------------------*/
-int intif_Mail_getattach(int char_id, int mail_id)
+int CIntif::Mail_getattach(int char_id, int mail_id)
 {
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 
 	WFIFOHEAD(inter_fd,10);
@@ -1648,7 +1652,7 @@ int intif_Mail_getattach(int char_id, int mail_id)
 	return 0;
 }
 
-void intif_parse_MailGetAttach(int fd) {
+void CIntif::pMailGetAttach(int fd) {
 	struct map_session_data *sd;
 	struct item item;
 	int zeny = RFIFOL(fd,8);
@@ -1673,9 +1677,9 @@ void intif_parse_MailGetAttach(int fd) {
 /*------------------------------------------
  * Delete Message
  *------------------------------------------*/
-int intif_Mail_delete(int char_id, int mail_id)
+int CIntif::Mail_delete(int char_id, int mail_id)
 {
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 
 	WFIFOHEAD(inter_fd,10);
@@ -1687,7 +1691,7 @@ int intif_Mail_delete(int char_id, int mail_id)
 	return 0;
 }
 
-void intif_parse_MailDelete(int fd) {
+void CIntif::pMailDelete(int fd) {
 	struct map_session_data *sd;
 	int char_id = RFIFOL(fd,2);
 	int mail_id = RFIFOL(fd,6);
@@ -1715,9 +1719,9 @@ void intif_parse_MailDelete(int fd) {
 /*------------------------------------------
  * Return Message
  *------------------------------------------*/
-int intif_Mail_return(int char_id, int mail_id)
+int CIntif::Mail_return(int char_id, int mail_id)
 {
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 
 	WFIFOHEAD(inter_fd,10);
@@ -1729,7 +1733,7 @@ int intif_Mail_return(int char_id, int mail_id)
 	return 0;
 }
 
-void intif_parse_MailReturn(int fd) {
+void CIntif::pMailReturn(int fd) {
 	struct map_session_data *sd = map->charid2sd(RFIFOL(fd,2));
 	int mail_id = RFIFOL(fd,6);
 	short fail = RFIFOB(fd,10);
@@ -1756,11 +1760,11 @@ void intif_parse_MailReturn(int fd) {
 /*------------------------------------------
  * Send Mail
  *------------------------------------------*/
-int intif_Mail_send(int account_id, struct mail_message *msg)
+int CIntif::Mail_send(int account_id, struct mail_message *msg)
 {
 	int len = sizeof(struct mail_message) + 8;
 
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 
 	nullpo_ret(msg);
@@ -1774,7 +1778,7 @@ int intif_Mail_send(int account_id, struct mail_message *msg)
 	return 1;
 }
 
-void intif_parse_MailSend(int fd) {
+void CIntif::pMailSend(int fd) {
 	struct mail_message msg;
 	struct map_session_data *sd;
 	bool fail;
@@ -1800,7 +1804,7 @@ void intif_parse_MailSend(int fd) {
 	}
 }
 
-void intif_parse_MailNew(int fd) {
+void CIntif::pMailNew(int fd) {
 	struct map_session_data *sd = map->charid2sd(RFIFOL(fd,2));
 	int mail_id = RFIFOL(fd,6);
 	const char* sender_name = (char*)RFIFOP(fd,10);
@@ -1817,11 +1821,11 @@ void intif_parse_MailNew(int fd) {
  * AUCTION SYSTEM
  * By Zephyrus
  *==========================================*/
-int intif_Auction_requestlist(int char_id, short type, int price, const char* searchtext, short page)
+int CIntif::Auction_requestlist(int char_id, short type, int price, const char* searchtext, short page)
 {
 	int len = NAME_LENGTH + 16;
 
-	if( intif->CheckForCharServer() )
+	if( intif->CIntif::CheckForCharServer() )
 		return 0;
 
 	nullpo_ret(searchtext);
@@ -1838,7 +1842,7 @@ int intif_Auction_requestlist(int char_id, short type, int price, const char* se
 	return 0;
 }
 
-void intif_parse_AuctionResults(int fd) {
+void CIntif::pAuctionResults(int fd) {
 	struct map_session_data *sd = map->charid2sd(RFIFOL(fd,4));
 	short count = RFIFOW(fd,8);
 	short pages = RFIFOW(fd,10);
@@ -1850,11 +1854,11 @@ void intif_parse_AuctionResults(int fd) {
 	clif->auction_results(sd, count, pages, data);
 }
 
-int intif_Auction_register(struct auction_data *auction)
+int CIntif::Auction_register(struct auction_data *auction)
 {
 	int len = sizeof(struct auction_data) + 4;
 
-	if( intif->CheckForCharServer() )
+	if( intif->CIntif::CheckForCharServer() )
 		return 0;
 
 	nullpo_ret(auction);
@@ -1867,7 +1871,7 @@ int intif_Auction_register(struct auction_data *auction)
 	return 1;
 }
 
-void intif_parse_AuctionRegister(int fd) {
+void CIntif::pAuctionRegister(int fd) {
 	struct map_session_data *sd;
 	struct auction_data auction;
 
@@ -1894,9 +1898,9 @@ void intif_parse_AuctionRegister(int fd) {
 	}
 }
 
-int intif_Auction_cancel(int char_id, unsigned int auction_id)
+int CIntif::Auction_cancel(int char_id, unsigned int auction_id)
 {
-	if( intif->CheckForCharServer() )
+	if( intif->CIntif::CheckForCharServer() )
 		return 0;
 
 	WFIFOHEAD(inter_fd,10);
@@ -1908,7 +1912,7 @@ int intif_Auction_cancel(int char_id, unsigned int auction_id)
 	return 0;
 }
 
-void intif_parse_AuctionCancel(int fd) {
+void CIntif::pAuctionCancel(int fd) {
 	struct map_session_data *sd = map->charid2sd(RFIFOL(fd,2));
 	int result = RFIFOB(fd,6);
 
@@ -1923,9 +1927,9 @@ void intif_parse_AuctionCancel(int fd) {
 	}
 }
 
-int intif_Auction_close(int char_id, unsigned int auction_id)
+int CIntif::Auction_close(int char_id, unsigned int auction_id)
 {
-	if( intif->CheckForCharServer() )
+	if( intif->CIntif::CheckForCharServer() )
 		return 0;
 
 	WFIFOHEAD(inter_fd,10);
@@ -1937,7 +1941,7 @@ int intif_Auction_close(int char_id, unsigned int auction_id)
 	return 0;
 }
 
-void intif_parse_AuctionClose(int fd) {
+void CIntif::pAuctionClose(int fd) {
 	struct map_session_data *sd = map->charid2sd(RFIFOL(fd,2));
 	unsigned char result = RFIFOB(fd,6);
 
@@ -1952,11 +1956,11 @@ void intif_parse_AuctionClose(int fd) {
 	}
 }
 
-int intif_Auction_bid(int char_id, const char* name, unsigned int auction_id, int bid)
+int CIntif::Auction_bid(int char_id, const char* name, unsigned int auction_id, int bid)
 {
 	int len = 16 + NAME_LENGTH;
 
-	if( intif->CheckForCharServer() )
+	if( intif->CIntif::CheckForCharServer() )
 		return 0;
 
 	nullpo_ret(name);
@@ -1972,7 +1976,7 @@ int intif_Auction_bid(int char_id, const char* name, unsigned int auction_id, in
 	return 0;
 }
 
-void intif_parse_AuctionBid(int fd) {
+void CIntif::pAuctionBid(int fd) {
 	struct map_session_data *sd = map->charid2sd(RFIFOL(fd,2));
 	int bid = RFIFOL(fd,6);
 	unsigned char result = RFIFOB(fd,10);
@@ -1991,7 +1995,7 @@ void intif_parse_AuctionBid(int fd) {
 }
 
 // Used to send 'You have won the auction' and 'You failed to won the auction' messages
-void intif_parse_AuctionMessage(int fd) {
+void CIntif::pAuctionMessage(int fd) {
 	struct map_session_data *sd = map->charid2sd(RFIFOL(fd,2));
 	unsigned char result = RFIFOB(fd,6);
 
@@ -2004,11 +2008,11 @@ void intif_parse_AuctionMessage(int fd) {
 /*==========================================
  * Mercenary's System
  *------------------------------------------*/
-int intif_mercenary_create(struct s_mercenary *merc)
+int CIntif::mercenary_create(struct s_mercenary *merc)
 {
 	int size = sizeof(struct s_mercenary) + 4;
 
-	if( intif->CheckForCharServer() )
+	if( intif->CIntif::CheckForCharServer() )
 		return 0;
 
 	nullpo_ret(merc);
@@ -2020,7 +2024,7 @@ int intif_mercenary_create(struct s_mercenary *merc)
 	return 0;
 }
 
-void intif_parse_MercenaryReceived(int fd) {
+void CIntif::pMercenaryReceived(int fd) {
 	int len = RFIFOW(fd,2) - 5;
 
 	if (sizeof(struct s_mercenary) != len) {
@@ -2032,9 +2036,9 @@ void intif_parse_MercenaryReceived(int fd) {
 	mercenary->data_received((struct s_mercenary*)RFIFOP(fd,5), RFIFOB(fd,4));
 }
 
-int intif_mercenary_request(int merc_id, int char_id)
+int CIntif::mercenary_request(int merc_id, int char_id)
 {
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 
 	WFIFOHEAD(inter_fd,10);
@@ -2045,9 +2049,9 @@ int intif_mercenary_request(int merc_id, int char_id)
 	return 0;
 }
 
-int intif_mercenary_delete(int merc_id)
+int CIntif::mercenary_delete(int merc_id)
 {
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 
 	WFIFOHEAD(inter_fd,6);
@@ -2057,16 +2061,16 @@ int intif_mercenary_delete(int merc_id)
 	return 0;
 }
 /* Really? Whats the point, shouldn't be sent when successful then [Ind] */
-void intif_parse_MercenaryDeleted(int fd) {
+void CIntif::pMercenaryDeleted(int fd) {
 	if( RFIFOB(fd,2) != 1 )
 		ShowError("Mercenary data delete failure\n");
 }
 
-int intif_mercenary_save(struct s_mercenary *merc)
+int CIntif::mercenary_save(struct s_mercenary *merc)
 {
 	int size = sizeof(struct s_mercenary) + 4;
 
-	if( intif->CheckForCharServer() )
+	if( intif->CIntif::CheckForCharServer() )
 		return 0;
 
 	nullpo_ret(merc);
@@ -2078,7 +2082,7 @@ int intif_mercenary_save(struct s_mercenary *merc)
 	return 0;
 }
 /* Really? Whats the point, shouldn't be sent when successful then [Ind] */
-void intif_parse_MercenarySaved(int fd) {
+void CIntif::pMercenarySaved(int fd) {
 	if( RFIFOB(fd,2) != 1 )
 		ShowError("Mercenary data save failure\n");
 }
@@ -2086,11 +2090,11 @@ void intif_parse_MercenarySaved(int fd) {
 /*==========================================
  * Elemental's System
  *------------------------------------------*/
-int intif_elemental_create(struct s_elemental *ele)
+int CIntif::elemental_create(struct s_elemental *ele)
 {
 	int size = sizeof(struct s_elemental) + 4;
 
-	if( intif->CheckForCharServer() )
+	if( intif->CIntif::CheckForCharServer() )
 		return 0;
 
 	nullpo_ret(ele);
@@ -2102,7 +2106,7 @@ int intif_elemental_create(struct s_elemental *ele)
 	return 0;
 }
 
-void intif_parse_ElementalReceived(int fd) {
+void CIntif::pElementalReceived(int fd) {
 	int len = RFIFOW(fd,2) - 5;
 
 	if (sizeof(struct s_elemental) != len) {
@@ -2114,9 +2118,9 @@ void intif_parse_ElementalReceived(int fd) {
 	elemental->data_received((struct s_elemental*)RFIFOP(fd,5), RFIFOB(fd,4));
 }
 
-int intif_elemental_request(int ele_id, int char_id)
+int CIntif::elemental_request(int ele_id, int char_id)
 {
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 
 	WFIFOHEAD(inter_fd,10);
@@ -2127,9 +2131,9 @@ int intif_elemental_request(int ele_id, int char_id)
 	return 0;
 }
 
-int intif_elemental_delete(int ele_id)
+int CIntif::elemental_delete(int ele_id)
 {
-	if (intif->CheckForCharServer())
+	if (intif->CIntif::CheckForCharServer())
 		return 0;
 
 	WFIFOHEAD(inter_fd,6);
@@ -2139,16 +2143,16 @@ int intif_elemental_delete(int ele_id)
 	return 0;
 }
 /* Really? Whats the point, shouldn't be sent when successful then [Ind] */
-void intif_parse_ElementalDeleted(int fd) {
+void CIntif::pElementalDeleted(int fd) {
 	if( RFIFOB(fd,2) != 1 )
 		ShowError("Elemental data delete failure\n");
 }
 
-int intif_elemental_save(struct s_elemental *ele)
+int CIntif::elemental_save(struct s_elemental *ele)
 {
 	int size = sizeof(struct s_elemental) + 4;
 
-	if( intif->CheckForCharServer() )
+	if( intif->CIntif::CheckForCharServer() )
 		return 0;
 
 	nullpo_ret(ele);
@@ -2160,12 +2164,12 @@ int intif_elemental_save(struct s_elemental *ele)
 	return 0;
 }
 /* Really? Whats the point, shouldn't be sent when successful then [Ind] */
-void intif_parse_ElementalSaved(int fd) {
+void CIntif::pElementalSaved(int fd) {
 	if( RFIFOB(fd,2) != 1 )
 		ShowError("Elemental data save failure\n");
 }
 
-void intif_request_accinfo( int u_fd, int aid, int group_lv, char* query ) {
+void CIntif::request_accinfo( int u_fd, int aid, int group_lv, char* query ) {
 	nullpo_retv(query);
 
 	WFIFOHEAD(inter_fd,2 + 4 + 4 + 4 + NAME_LENGTH);
@@ -2180,7 +2184,7 @@ void intif_request_accinfo( int u_fd, int aid, int group_lv, char* query ) {
 	return;
 }
 
-void intif_parse_MessageToFD(int fd) {
+void CIntif::pMessageToFD(int fd) {
 	int u_fd = RFIFOL(fd,4);
 
 	Assert_retv(sockt->session_is_valid(u_fd));
@@ -2201,7 +2205,7 @@ void intif_parse_MessageToFD(int fd) {
 /*==========================================
  * Item Bound System [Xantara][Mhalicot]
  *------------------------------------------*/
-void intif_itembound_req(int char_id,int aid,int guild_id) {
+void CIntif::itembound_req(int char_id,int aid,int guild_id) {
 #ifdef GP_BOUND_ITEMS
 	struct guild_storage *gstor = (struct guild_storage*)idb_get(gstorage->db,guild_id);
 	WFIFOHEAD(inter_fd,12);
@@ -2216,7 +2220,7 @@ void intif_itembound_req(int char_id,int aid,int guild_id) {
 }
 
 //3856
-void intif_parse_Itembound_ack(int fd) {
+void CIntif::pItembound_ack(int fd) {
 #ifdef GP_BOUND_ITEMS
 	struct guild_storage *gstor;
 	int guild_id = RFIFOW(fd,6);
@@ -2230,7 +2234,7 @@ void intif_parse_Itembound_ack(int fd) {
 // Communication from the inter server
 // Return a 0 (false) if there were any errors.
 // 1, 2 if there are not enough to return the length of the packet if the packet processing
-int intif_parse(int fd)
+int CIntif::parse(int fd)
 {
 	int packet_len, cmd;
 	cmd = RFIFOW(fd,0);
@@ -2367,145 +2371,5 @@ void intif_defaults(void) {
 	/* */
 	memcpy(intif->packet_len_table,&packet_len_table,sizeof(intif->packet_len_table));
 
-	/* funcs */
-	intif->parse = intif_parse;
-	intif->create_pet = intif_create_pet;
-	intif->broadcast = intif_broadcast;
-	intif->broadcast2 = intif_broadcast2;
-	intif->main_message = intif_main_message;
-	intif->wis_message = intif_wis_message;
-	intif->wis_message_to_gm = intif_wis_message_to_gm;
-	intif->saveregistry = intif_saveregistry;
-	intif->request_registry = intif_request_registry;
-	intif->request_guild_storage = intif_request_guild_storage;
-	intif->send_guild_storage = intif_send_guild_storage;
-	intif->create_party = intif_create_party;
-	intif->request_partyinfo = intif_request_partyinfo;
-	intif->party_addmember = intif_party_addmember;
-	intif->party_changeoption = intif_party_changeoption;
-	intif->party_leave = intif_party_leave;
-	intif->party_changemap = intif_party_changemap;
-	intif->break_party = intif_break_party;
-	intif->party_message = intif_party_message;
-	intif->party_leaderchange = intif_party_leaderchange;
-	intif->guild_create = intif_guild_create;
-	intif->guild_request_info = intif_guild_request_info;
-	intif->guild_addmember = intif_guild_addmember;
-	intif->guild_leave = intif_guild_leave;
-	intif->guild_memberinfoshort = intif_guild_memberinfoshort;
-	intif->guild_break = intif_guild_break;
-	intif->guild_message = intif_guild_message;
-	intif->guild_change_gm = intif_guild_change_gm;
-	intif->guild_change_basicinfo = intif_guild_change_basicinfo;
-	intif->guild_change_memberinfo = intif_guild_change_memberinfo;
-	intif->guild_position = intif_guild_position;
-	intif->guild_skillup = intif_guild_skillup;
-	intif->guild_alliance = intif_guild_alliance;
-	intif->guild_notice = intif_guild_notice;
-	intif->guild_emblem = intif_guild_emblem;
-	intif->guild_castle_dataload = intif_guild_castle_dataload;
-	intif->guild_castle_datasave = intif_guild_castle_datasave;
-	intif->request_petdata = intif_request_petdata;
-	intif->save_petdata = intif_save_petdata;
-	intif->delete_petdata = intif_delete_petdata;
-	intif->rename = intif_rename;
-	intif->homunculus_create = intif_homunculus_create;
-	intif->homunculus_requestload = intif_homunculus_requestload;
-	intif->homunculus_requestsave = intif_homunculus_requestsave;
-	intif->homunculus_requestdelete = intif_homunculus_requestdelete;
-	/******QUEST SYTEM*******/
-	intif->request_questlog = intif_request_questlog;
-	intif->quest_save = intif_quest_save;
-	// MERCENARY SYSTEM
-	intif->mercenary_create = intif_mercenary_create;
-	intif->mercenary_request = intif_mercenary_request;
-	intif->mercenary_delete = intif_mercenary_delete;
-	intif->mercenary_save = intif_mercenary_save;
-	// MAIL SYSTEM
-	intif->Mail_requestinbox = intif_Mail_requestinbox;
-	intif->Mail_read = intif_Mail_read;
-	intif->Mail_getattach = intif_Mail_getattach;
-	intif->Mail_delete = intif_Mail_delete;
-	intif->Mail_return = intif_Mail_return;
-	intif->Mail_send = intif_Mail_send;
-	// AUCTION SYSTEM
-	intif->Auction_requestlist = intif_Auction_requestlist;
-	intif->Auction_register = intif_Auction_register;
-	intif->Auction_cancel = intif_Auction_cancel;
-	intif->Auction_close = intif_Auction_close;
-	intif->Auction_bid = intif_Auction_bid;
-	// ELEMENTAL SYSTEM
-	intif->elemental_create = intif_elemental_create;
-	intif->elemental_request = intif_elemental_request;
-	intif->elemental_delete = intif_elemental_delete;
-	intif->elemental_save = intif_elemental_save;
-	/* @accinfo */
-	intif->request_accinfo = intif_request_accinfo;
-	/* */
-	intif->CheckForCharServer = CheckForCharServer;
-	/* */
-	intif->itembound_req = intif_itembound_req;
-	/* parse functions */
-	intif->pWisMessage = intif_parse_WisMessage;
-	intif->pWisEnd = intif_parse_WisEnd;
-	intif->pWisToGM_sub = mapif_parse_WisToGM_sub;
-	intif->pWisToGM = mapif_parse_WisToGM;
-	intif->pRegisters = intif_parse_Registers;
-	intif->pChangeNameOk = intif_parse_ChangeNameOk;
-	intif->pMessageToFD = intif_parse_MessageToFD;
-	intif->pLoadGuildStorage = intif_parse_LoadGuildStorage;
-	intif->pSaveGuildStorage = intif_parse_SaveGuildStorage;
-	intif->pPartyCreated = intif_parse_PartyCreated;
-	intif->pPartyInfo = intif_parse_PartyInfo;
-	intif->pPartyMemberAdded = intif_parse_PartyMemberAdded;
-	intif->pPartyOptionChanged = intif_parse_PartyOptionChanged;
-	intif->pPartyMemberWithdraw = intif_parse_PartyMemberWithdraw;
-	intif->pPartyMove = intif_parse_PartyMove;
-	intif->pPartyBroken = intif_parse_PartyBroken;
-	intif->pPartyMessage = intif_parse_PartyMessage;
-	intif->pGuildCreated = intif_parse_GuildCreated;
-	intif->pGuildInfo = intif_parse_GuildInfo;
-	intif->pGuildMemberAdded = intif_parse_GuildMemberAdded;
-	intif->pGuildMemberWithdraw = intif_parse_GuildMemberWithdraw;
-	intif->pGuildMemberInfoShort = intif_parse_GuildMemberInfoShort;
-	intif->pGuildBroken = intif_parse_GuildBroken;
-	intif->pGuildMessage = intif_parse_GuildMessage;
-	intif->pGuildBasicInfoChanged = intif_parse_GuildBasicInfoChanged;
-	intif->pGuildMemberInfoChanged = intif_parse_GuildMemberInfoChanged;
-	intif->pGuildPosition = intif_parse_GuildPosition;
-	intif->pGuildSkillUp = intif_parse_GuildSkillUp;
-	intif->pGuildAlliance = intif_parse_GuildAlliance;
-	intif->pGuildNotice = intif_parse_GuildNotice;
-	intif->pGuildEmblem = intif_parse_GuildEmblem;
-	intif->pGuildCastleDataLoad = intif_parse_GuildCastleDataLoad;
-	intif->pGuildMasterChanged = intif_parse_GuildMasterChanged;
-	intif->pQuestLog = intif_parse_QuestLog;
-	intif->pQuestSave = intif_parse_QuestSave;
-	intif->pMailInboxReceived = intif_parse_MailInboxReceived;
-	intif->pMailNew = intif_parse_MailNew;
-	intif->pMailGetAttach = intif_parse_MailGetAttach;
-	intif->pMailDelete = intif_parse_MailDelete;
-	intif->pMailReturn = intif_parse_MailReturn;
-	intif->pMailSend = intif_parse_MailSend;
-	intif->pAuctionResults = intif_parse_AuctionResults;
-	intif->pAuctionRegister = intif_parse_AuctionRegister;
-	intif->pAuctionCancel = intif_parse_AuctionCancel;
-	intif->pAuctionClose = intif_parse_AuctionClose;
-	intif->pAuctionMessage = intif_parse_AuctionMessage;
-	intif->pAuctionBid = intif_parse_AuctionBid;
-	intif->pItembound_ack = intif_parse_Itembound_ack;
-	intif->pMercenaryReceived = intif_parse_MercenaryReceived;
-	intif->pMercenaryDeleted = intif_parse_MercenaryDeleted;
-	intif->pMercenarySaved = intif_parse_MercenarySaved;
-	intif->pElementalReceived = intif_parse_ElementalReceived;
-	intif->pElementalDeleted = intif_parse_ElementalDeleted;
-	intif->pElementalSaved = intif_parse_ElementalSaved;
-	intif->pCreatePet = intif_parse_CreatePet;
-	intif->pRecvPetData = intif_parse_RecvPetData;
-	intif->pSavePetOk = intif_parse_SavePetOk;
-	intif->pDeletePetOk = intif_parse_DeletePetOk;
-	intif->pCreateHomunculus = intif_parse_CreateHomunculus;
-	intif->pRecvHomunculusData = intif_parse_RecvHomunculusData;
-	intif->pSaveHomunculusOk = intif_parse_SaveHomunculusOk;
-	intif->pDeleteHomunculusOk = intif_parse_DeleteHomunculusOk;
+
 }

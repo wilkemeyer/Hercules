@@ -87,32 +87,32 @@ struct pc_groups_new_permission {
 	unsigned int *mask;/* pointer to the plugin val that will store the value of the mask */
 };
 
-struct pc_groups_interface {
+class CPcg {
+public:
 	/* */
-	DBMap* db; // id -> GroupSettings
-	DBMap* name_db; // name -> GroupSettings
+	static DBMap* db; // id -> GroupSettings
+	static DBMap* name_db; // name -> GroupSettings
 	/* */
-	struct pc_groups_permission_table *permissions;
-	unsigned char permission_count;
+	static struct pc_groups_permission_table *permissions;
+	static unsigned char permission_count;
 	/* */
-	void (*init) (void);
-	void (*final) (void);
-	void (*reload) (void);
+	static void init (void);
+	static void final (void);
+	static void reload (void);
 	/* */
-	GroupSettings* (*get_dummy_group) (void);
-	bool (*exists) (int group_id);
-	GroupSettings* (*id2group) (int group_id);
-	bool (*has_permission) (GroupSettings *group, unsigned int permission);
-	bool (*should_log_commands) (GroupSettings *group);
-	const char* (*get_name) (GroupSettings *group);
-	int (*get_level) (GroupSettings *group);
-	int (*get_idx) (GroupSettings *group);
+	static GroupSettings* get_dummy_group (void);
+	static bool exists (int group_id);
+	static GroupSettings* id2group (int group_id);
+	static bool has_permission (GroupSettings *group, unsigned int permission);
+	static bool should_log_commands (GroupSettings *group);
+	static const char* get_name (GroupSettings *group);
+	static int get_level (GroupSettings *group);
+	static int get_idx (GroupSettings *group);
 };
-
+extern CPcg *pcg;
 #ifdef HERCULES_CORE
 void pc_groups_defaults(void);
 #endif // HERCULES_CORE
 
-HPShared struct pc_groups_interface *pcg;
 
 #endif /* MAP_PC_GROUPS_H */

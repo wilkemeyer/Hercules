@@ -20,12 +20,18 @@
  */
 #include "stdafx.h"
 
-struct pet_interface pet_s;
-struct pet_interface *pet;
+CPet pet_s;
+CPet *pet=NULL;
+
+// Subsystem Globals:
+struct s_pet_db CPet::db[MAX_PET_DB];
+struct eri *CPet::item_drop_ers; //For loot drops delay structures.
+struct eri *CPet::item_drop_list_ers;
+
 
 #define MIN_PETTHINKTIME 100
 
-int pet_hungry_val(struct pet_data *pd)
+int CPet::hungry_val(struct pet_data *pd)
 {
 	nullpo_ret(pd);
 
@@ -41,7 +47,7 @@ int pet_hungry_val(struct pet_data *pd)
 		return 0;
 }
 
-void pet_set_intimate(struct pet_data *pd, int value)
+void CPet::set_intimate(struct pet_data *pd, int value)
 {
 	int intimate;
 	struct map_session_data *sd;
@@ -55,9 +61,9 @@ void pet_set_intimate(struct pet_data *pd, int value)
 		status_calc_pc(sd,SCO_NONE);
 }
 
-int pet_create_egg(struct map_session_data *sd, int item_id)
+int CPet::create_egg(struct map_session_data *sd, int item_id)
 {
-	int pet_id = pet->search_petDB_index(item_id, PET_EGG);
+	int pet_id = pet->CPet::search_petDB_index(item_id, PET_EGG);
 	if (pet_id < 0) return 0; //No pet egg here.
 	if (!pc->inventoryblank(sd)) return 0; // Inventory full
 	sd->catch_target_class = pet->db[pet_id].class_;
@@ -70,7 +76,7 @@ int pet_create_egg(struct map_session_data *sd, int item_id)
 	return 1;
 }
 
-int pet_unlocktarget(struct pet_data *pd)
+int CPet::unlocktarget(struct pet_data *pd)
 {
 	nullpo_ret(pd);
 
@@ -83,7 +89,7 @@ int pet_unlocktarget(struct pet_data *pd)
 /*==========================================
  * Pet Attack Skill [Skotlex]
  *------------------------------------------*/
-int pet_attackskill(struct pet_data *pd, int target_id) {
+int CPet::attackskill(struct pet_data *pd, int target_id) {
 	if (!battle_config.pet_status_support || !pd->a_skill ||
 		(battle_config.pet_equip_required && !pd->pet.equip))
 		return 0;
@@ -111,7 +117,7 @@ int pet_attackskill(struct pet_data *pd, int target_id) {
 	return 0;
 }
 
-int pet_target_check(struct map_session_data *sd,struct block_list *bl,int type) {
+int CPet::target_check(struct map_session_data *sd,struct block_list *bl,int type) {
 	struct pet_data *pd;
 	int rate;
 
@@ -154,7 +160,7 @@ int pet_target_check(struct map_session_data *sd,struct block_list *bl,int type)
 /*==========================================
  * Pet SC Check [Skotlex]
  *------------------------------------------*/
-int pet_sc_check(struct map_session_data *sd, int type)
+int CPet::sc_check(struct map_session_data *sd, int type)
 {
 	struct pet_data *pd;
 
@@ -173,7 +179,7 @@ int pet_sc_check(struct map_session_data *sd, int type)
 	return 0;
 }
 
-int pet_hungry(int tid, int64 tick, int id, intptr_t data) {
+int CPet::hungry(int tid, int64 tick, int id, intptr_t data) {
 	struct map_session_data *sd;
 	struct pet_data *pd;
 	int interval;
@@ -222,7 +228,7 @@ int pet_hungry(int tid, int64 tick, int id, intptr_t data) {
 	return 0;
 }
 
-int search_petDB_index(int key,int type)
+int CPet::search_petDB_index(int key,int type)
 {
 	int i;
 
@@ -243,7 +249,7 @@ int search_petDB_index(int key,int type)
 	return -1;
 }
 
-int pet_hungry_timer_delete(struct pet_data *pd)
+int CPet::hungry_timer_delete(struct pet_data *pd)
 {
 	nullpo_ret(pd);
 	if(pd->pet_hungry_timer != INVALID_TIMER) {
@@ -254,7 +260,7 @@ int pet_hungry_timer_delete(struct pet_data *pd)
 	return 1;
 }
 
-int pet_performance(struct map_session_data *sd, struct pet_data *pd)
+int CPet::performance(struct map_session_data *sd, struct pet_data *pd)
 {
 	int val;
 
@@ -271,7 +277,7 @@ int pet_performance(struct map_session_data *sd, struct pet_data *pd)
 	return 1;
 }
 
-int pet_return_egg(struct map_session_data *sd, struct pet_data *pd)
+int CPet::return_egg(struct map_session_data *sd, struct pet_data *pd)
 {
 	struct item tmp_item;
 	int flag;
@@ -297,7 +303,7 @@ int pet_return_egg(struct map_session_data *sd, struct pet_data *pd)
 	return 1;
 }
 
-int pet_data_init(struct map_session_data *sd, struct s_pet *petinfo)
+int CPet::data_init(struct map_session_data *sd, struct s_pet *petinfo)
 {
 	struct pet_data *pd;
 	int i=0,interval=0;
@@ -321,7 +327,7 @@ int pet_data_init(struct map_session_data *sd, struct s_pet *petinfo)
 		sd->status.pet_id = petinfo->pet_id;
 	}
 
-	i = pet->search_petDB_index(petinfo->class_,PET_CLASS);
+	i = pet->CPet::search_petDB_index(petinfo->class_,PET_CLASS);
 	if(i < 0) {
 		sd->status.pet_id = 0;
 		return 1;
@@ -370,7 +376,7 @@ int pet_data_init(struct map_session_data *sd, struct s_pet *petinfo)
 	return 0;
 }
 
-int pet_birth_process(struct map_session_data *sd, struct s_pet *petinfo)
+int CPet::birth_process(struct map_session_data *sd, struct s_pet *petinfo)
 {
 	nullpo_retr(1, sd);
 	Assert_retr(1, sd->status.pet_id == 0 || sd->pd == 0 || sd->pd->msd == sd);
@@ -406,7 +412,7 @@ int pet_birth_process(struct map_session_data *sd, struct s_pet *petinfo)
 	return 0;
 }
 
-int pet_recv_petdata(int account_id,struct s_pet *p,int flag) {
+int CPet::recv_petdata(int account_id,struct s_pet *p,int flag) {
 	struct map_session_data *sd;
 
 	sd = map->id2sd(account_id);
@@ -446,7 +452,7 @@ int pet_recv_petdata(int account_id,struct s_pet *p,int flag) {
 	return 0;
 }
 
-int pet_select_egg(struct map_session_data *sd,short egg_index)
+int CPet::select_egg(struct map_session_data *sd,short egg_index)
 {
 	nullpo_ret(sd);
 
@@ -461,7 +467,7 @@ int pet_select_egg(struct map_session_data *sd,short egg_index)
 	return 0;
 }
 
-int pet_catch_process1(struct map_session_data *sd,int target_class)
+int CPet::catch_process1(struct map_session_data *sd,int target_class)
 {
 	nullpo_ret(sd);
 
@@ -471,7 +477,7 @@ int pet_catch_process1(struct map_session_data *sd,int target_class)
 	return 0;
 }
 
-int pet_catch_process2(struct map_session_data* sd, int target_id) {
+int CPet::catch_process2(struct map_session_data* sd, int target_id) {
 	struct mob_data* md;
 	int i = 0, pet_catch_rate = 0;
 
@@ -488,7 +494,7 @@ int pet_catch_process2(struct map_session_data* sd, int target_id) {
 
 	//FIXME: delete taming item here, if this was an item-invoked capture and the item was flagged as delay-consume [ultramage]
 
-	i = pet->search_petDB_index(md->class_,PET_CLASS);
+	i = pet->CPet::search_petDB_index(md->class_,PET_CLASS);
 	//catch_target_class == 0 is used for universal lures (except bosses for now). [Skotlex]
 	if (sd->catch_target_class == 0 && !(md->status.mode&MD_BOSS))
 		sd->catch_target_class = md->class_;
@@ -531,7 +537,7 @@ int pet_catch_process2(struct map_session_data* sd, int target_id) {
  * pet_id - Should contain pet id otherwise means failure
  * returns true on success
  **/
-bool pet_get_egg(int account_id, short pet_class, int pet_id ) {
+bool CPet::get_egg(int account_id, short pet_class, int pet_id ) {
 	struct map_session_data *sd;
 	struct item tmp_item;
 	int i = 0, ret = 0;
@@ -543,12 +549,12 @@ bool pet_get_egg(int account_id, short pet_class, int pet_id ) {
 	if( sd == NULL )
 		return false;
 
-	// i = pet->search_petDB_index(sd->catch_target_class,PET_CLASS);
+	// i = pet->CPet::search_petDB_index(sd->catch_target_class,PET_CLASS);
 	// issue: 8150
 	// Before this change in cases where more than one pet egg were requested in a short
 	// period of time it wasn't possible to know which kind of egg was being requested after
 	// the first request. [Panikon]
-	i = pet->search_petDB_index(pet_class,PET_CLASS);
+	i = pet->CPet::search_petDB_index(pet_class,PET_CLASS);
 	sd->catch_target_class = -1;
 
 	if(i < 0) {
@@ -571,7 +577,7 @@ bool pet_get_egg(int account_id, short pet_class, int pet_id ) {
 	return true;
 }
 
-int pet_menu(struct map_session_data *sd,int menunum)
+int CPet::menu(struct map_session_data *sd,int menunum)
 {
 	struct item_data *egg_id;
 	nullpo_ret(sd);
@@ -610,7 +616,7 @@ int pet_menu(struct map_session_data *sd,int menunum)
 	return 0;
 }
 
-int pet_change_name(struct map_session_data *sd,char *name)
+int CPet::change_name(struct map_session_data *sd,char *name)
 {
 	int i;
 	struct pet_data *pd;
@@ -628,7 +634,7 @@ int pet_change_name(struct map_session_data *sd,char *name)
 	return intif_rename_pet(sd, name);
 }
 
-int pet_change_name_ack(struct map_session_data *sd, char* name, int flag)
+int CPet::change_name_ack(struct map_session_data *sd, char* name, int flag)
 {
 	struct pet_data *pd = sd->pd;
 	if (!pd) return 0;
@@ -648,7 +654,7 @@ int pet_change_name_ack(struct map_session_data *sd, char* name, int flag)
 	return 1;
 }
 
-int pet_equipitem(struct map_session_data *sd,int index) {
+int CPet::equipitem(struct map_session_data *sd,int index) {
 	struct pet_data *pd;
 	int nameid;
 
@@ -680,7 +686,7 @@ int pet_equipitem(struct map_session_data *sd,int index) {
 	return 0;
 }
 
-int pet_unequipitem(struct map_session_data *sd, struct pet_data *pd) {
+int CPet::unequipitem(struct map_session_data *sd, struct pet_data *pd) {
 	struct item tmp_item;
 	int nameid,flag;
 
@@ -719,7 +725,7 @@ int pet_unequipitem(struct map_session_data *sd, struct pet_data *pd) {
 	return 0;
 }
 
-int pet_food(struct map_session_data *sd, struct pet_data *pd) {
+int CPet::food(struct map_session_data *sd, struct pet_data *pd) {
 	int i, food_id;
 
 	food_id = pd->petDB->FoodID;
@@ -764,7 +770,7 @@ int pet_food(struct map_session_data *sd, struct pet_data *pd) {
 	return 0;
 }
 
-int pet_randomwalk(struct pet_data *pd, int64 tick)
+int CPet::randomwalk(struct pet_data *pd, int64 tick)
 {
 	nullpo_ret(pd);
 	Assert_ret(pd->msd == 0 || pd->msd->pd == pd);
@@ -805,7 +811,7 @@ int pet_randomwalk(struct pet_data *pd, int64 tick)
 	return 0;
 }
 
-int pet_ai_sub_hard(struct pet_data *pd, struct map_session_data *sd, int64 tick) {
+int CPet::ai_sub_hard(struct pet_data *pd, struct map_session_data *sd, int64 tick) {
 	struct block_list *target = NULL;
 
 	if(pd->bl.prev == NULL || sd == NULL || sd->bl.prev == NULL)
@@ -917,7 +923,7 @@ int pet_ai_sub_hard(struct pet_data *pd, struct map_session_data *sd, int64 tick
 	return 0;
 }
 
-int pet_ai_sub_foreachclient(struct map_session_data *sd,va_list ap) {
+int CPet::ai_sub_foreachclient(struct map_session_data *sd,va_list ap) {
 	int64 tick = va_arg(ap,int64);
 	if(sd->status.pet_id && sd->pd)
 		pet->ai_sub_hard(sd->pd,sd,tick);
@@ -925,13 +931,13 @@ int pet_ai_sub_foreachclient(struct map_session_data *sd,va_list ap) {
 	return 0;
 }
 
-int pet_ai_hard(int tid, int64 tick, int id, intptr_t data) {
+int CPet::ai_hard(int tid, int64 tick, int id, intptr_t data) {
 	map->foreachpc(pet->ai_sub_foreachclient,tick);
 
 	return 0;
 }
 
-int pet_ai_sub_hard_lootsearch(struct block_list *bl,va_list ap)
+int CPet::ai_sub_hard_lootsearch(struct block_list *bl,va_list ap)
 {
 	struct pet_data* pd;
 	struct flooritem_data *fitem = (struct flooritem_data *)bl;
@@ -958,7 +964,7 @@ int pet_ai_sub_hard_lootsearch(struct block_list *bl,va_list ap)
 	return 0;
 }
 
-int pet_delay_item_drop(int tid, int64 tick, int id, intptr_t data) {
+int CPet::delay_item_drop(int tid, int64 tick, int id, intptr_t data) {
 	struct item_drop_list *list;
 	struct item_drop *ditem;
 	list=(struct item_drop_list *)data;
@@ -976,7 +982,7 @@ int pet_delay_item_drop(int tid, int64 tick, int id, intptr_t data) {
 	return 0;
 }
 
-int pet_lootitem_drop(struct pet_data *pd,struct map_session_data *sd)
+int CPet::lootitem_drop(struct pet_data *pd,struct map_session_data *sd)
 {
 	int i,flag=0;
 	struct item_drop_list *dlist;
@@ -1025,7 +1031,7 @@ int pet_lootitem_drop(struct pet_data *pd,struct map_session_data *sd)
 /*==========================================
  * pet bonus giving skills [Valaris] / Rewritten by [Skotlex]
  *------------------------------------------*/
-int pet_skill_bonus_timer(int tid, int64 tick, int id, intptr_t data) {
+int CPet::skill_bonus_timer(int tid, int64 tick, int id, intptr_t data) {
 	struct map_session_data *sd=map->id2sd(id);
 	struct pet_data *pd;
 	int bonus;
@@ -1066,7 +1072,7 @@ int pet_skill_bonus_timer(int tid, int64 tick, int id, intptr_t data) {
 /*==========================================
  * pet recovery skills [Valaris] / Rewritten by [Skotlex]
  *------------------------------------------*/
-int pet_recovery_timer(int tid, int64 tick, int id, intptr_t data) {
+int CPet::recovery_timer(int tid, int64 tick, int id, intptr_t data) {
 	struct map_session_data *sd=map->id2sd(id);
 	struct pet_data *pd;
 
@@ -1096,7 +1102,7 @@ int pet_recovery_timer(int tid, int64 tick, int id, intptr_t data) {
 /*==========================================
  * pet support skills [Skotlex]
  *------------------------------------------*/
-int pet_skill_support_timer(int tid, int64 tick, int id, intptr_t data) {
+int CPet::skill_support_timer(int tid, int64 tick, int id, intptr_t data) {
 	struct map_session_data *sd=map->id2sd(id);
 	struct pet_data *pd;
 	struct status_data *st;
@@ -1141,7 +1147,7 @@ int pet_skill_support_timer(int tid, int64 tick, int id, intptr_t data) {
 /**
  * Loads (or reloads) the pet database.
  */
-int read_petdb()
+int CPet::read_db()
 {
 	const char *filename[] = {
 		DBPATH"pet_db.txt",
@@ -1282,7 +1288,7 @@ int read_petdb()
 /*==========================================
  * Initialization process relationship skills
  *------------------------------------------*/
-int do_init_pet(bool minimal) {
+int CPet::init(bool minimal) {
 	if (minimal)
 		return 0;
 
@@ -1302,7 +1308,7 @@ int do_init_pet(bool minimal) {
 	return 0;
 }
 
-int do_final_pet(void)
+int CPet::final(void)
 {
 	int i;
 	for( i = 0; i < MAX_PET_DB; i++ )
@@ -1329,43 +1335,5 @@ void pet_defaults(void) {
 	pet->item_drop_ers = NULL;
 	pet->item_drop_list_ers = NULL;
 
-	pet->init = do_init_pet;
-	pet->final = do_final_pet;
 
-	pet->hungry_val = pet_hungry_val;
-	pet->set_intimate = pet_set_intimate;
-	pet->create_egg = pet_create_egg;
-	pet->unlocktarget = pet_unlocktarget;
-	pet->attackskill = pet_attackskill;
-	pet->target_check = pet_target_check;
-	pet->sc_check = pet_sc_check;
-	pet->hungry = pet_hungry;
-	pet->search_petDB_index = search_petDB_index;
-	pet->hungry_timer_delete = pet_hungry_timer_delete;
-	pet->performance = pet_performance;
-	pet->return_egg = pet_return_egg;
-	pet->data_init = pet_data_init;
-	pet->birth_process = pet_birth_process;
-	pet->recv_petdata = pet_recv_petdata;
-	pet->select_egg = pet_select_egg;
-	pet->catch_process1 = pet_catch_process1;
-	pet->catch_process2 = pet_catch_process2;
-	pet->get_egg = pet_get_egg;
-	pet->unequipitem = pet_unequipitem;
-	pet->food = pet_food;
-	pet->ai_sub_hard_lootsearch = pet_ai_sub_hard_lootsearch;
-	pet->menu = pet_menu;
-	pet->change_name = pet_change_name;
-	pet->change_name_ack = pet_change_name_ack;
-	pet->equipitem = pet_equipitem;
-	pet->randomwalk = pet_randomwalk;
-	pet->ai_sub_hard = pet_ai_sub_hard;
-	pet->ai_sub_foreachclient = pet_ai_sub_foreachclient;
-	pet->ai_hard = pet_ai_hard;
-	pet->delay_item_drop = pet_delay_item_drop;
-	pet->lootitem_drop = pet_lootitem_drop;
-	pet->skill_bonus_timer = pet_skill_bonus_timer;
-	pet->recovery_timer = pet_recovery_timer;
-	pet->skill_support_timer = pet_skill_support_timer;
-	pet->read_db = read_petdb;
 }

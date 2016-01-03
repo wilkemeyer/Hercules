@@ -20,11 +20,15 @@
  */
 #include "stdafx.h"
 
+CQuest quest_s;
+CQuest *quest=NULL;
 
-struct quest_interface quest_s;
 struct quest_db *db_data[MAX_QUEST_DB]; ///< Quest database
 
-struct quest_interface *quest;
+// Subsystem Globals:
+struct quest_db **CQuest::db_data; ///< Quest database
+struct quest_db CQuest::dummy;                  ///< Dummy entry for invalid quest lookups
+
 
 /**
  * Searches a quest by ID.
@@ -32,7 +36,7 @@ struct quest_interface *quest;
  * @param quest_id ID to lookup
  * @return Quest entry (equals to &quest->dummy if the ID is invalid)
  */
-struct quest_db *quest_db(int quest_id) {
+struct quest_db *CQuest::db(int quest_id) {
 	if (quest_id < 0 || quest_id >= MAX_QUEST_DB || quest->db_data[quest_id] == NULL)
 		return &quest->dummy;
 	return quest->db_data[quest_id];
@@ -44,7 +48,7 @@ struct quest_db *quest_db(int quest_id) {
  * @param sd Player's data
  * @return 0 in case of success, nonzero otherwise (i.e. the player has no quests)
  */
-int quest_pc_login(TBL_PC *sd)
+int CQuest::pc_login(TBL_PC *sd)
 {
 #if PACKETVER < 20141022
 	int i;
@@ -75,7 +79,7 @@ int quest_pc_login(TBL_PC *sd)
  * @param quest_id ID of the quest to add.
  * @return 0 in case of success, nonzero otherwise
  */
-int quest_add(TBL_PC *sd, int quest_id) {
+int CQuest::add(TBL_PC *sd, int quest_id) {
 	int n;
 	struct quest_db *qi = quest->db(quest_id);
 
@@ -126,7 +130,7 @@ int quest_add(TBL_PC *sd, int quest_id) {
  * @param qid2 New quest to add
  * @return 0 in case of success, nonzero otherwise
  */
-int quest_change(TBL_PC *sd, int qid1, int qid2) {
+int CQuest::change(TBL_PC *sd, int qid1, int qid2) {
 	int i;
 	struct quest_db *qi = quest->db(qid2);
 
@@ -176,7 +180,7 @@ int quest_change(TBL_PC *sd, int qid1, int qid2) {
  * @param quest_id ID of the quest to remove
  * @return 0 in case of success, nonzero otherwise
  */
-int quest_delete(TBL_PC *sd, int quest_id) {
+int CQuest::_delete(TBL_PC *sd, int quest_id) {
 	int i;
 
 	//Search for quest
@@ -218,7 +222,7 @@ int quest_delete(TBL_PC *sd, int quest_id) {
  *           int Party ID
  *           int Mob ID
  */
-int quest_update_objective_sub(struct block_list *bl, va_list ap) {
+int CQuest::update_objective_sub(struct block_list *bl, va_list ap) {
 	struct map_session_data *sd;
 	int mob_id, party_id;
 
@@ -245,7 +249,7 @@ int quest_update_objective_sub(struct block_list *bl, va_list ap) {
  * @param sd     Character's data
  * @param mob_id Monster ID
  */
-void quest_update_objective(TBL_PC *sd, int mob_id)
+void CQuest::update_objective(TBL_PC *sd, int mob_id)
 {
 	int i,j;
 
@@ -300,7 +304,7 @@ void quest_update_objective(TBL_PC *sd, int mob_id)
  * @param qs       New quest state
  * @return 0 in case of success, nonzero otherwise
  */
-int quest_update_status(TBL_PC *sd, int quest_id, enum quest_state qs) {
+int CQuest::update_status(TBL_PC *sd, int quest_id, enum quest_state qs) {
 	int i;
 
 	ARR_FIND(0, sd->avail_quests, i, sd->quest_log[i].quest_id == quest_id);
@@ -349,7 +353,7 @@ int quest_update_status(TBL_PC *sd, int quest_id, enum quest_state qs) {
  *                    1 if the quest's timeout has expired
  *                    0 otherwise
  */
-int quest_check(TBL_PC *sd, int quest_id, enum quest_check_type type)
+int CQuest::check(TBL_PC *sd, int quest_id, enum quest_check_type type)
 {
 	int i;
 
@@ -390,7 +394,7 @@ int quest_check(TBL_PC *sd, int quest_id, enum quest_check_type type)
  * @return The parsed quest entry.
  * @retval NULL in case of errors.
  */
-struct quest_db *quest_read_db_sub(config_setting_t *cs, int n, const char *source)
+struct quest_db *CQuest::read_db_sub(config_setting_t *cs, int n, const char *source)
 {
 	struct quest_db *entry = NULL;
 	config_setting_t *t = NULL;
@@ -489,7 +493,7 @@ struct quest_db *quest_read_db_sub(config_setting_t *cs, int n, const char *sour
  *
  * @return Number of loaded quests, or -1 if the file couldn't be read.
  */
-int quest_read_db(void)
+int CQuest::read_db(void)
 {
 	char filepath[256];
 	config_t quest_db_conf;
@@ -562,7 +566,7 @@ int quest_reload_check_sub(struct map_session_data *sd, va_list ap) {
 /**
  * Clears the quest database for shutdown or reload.
  */
-void quest_clear_db(void) {
+void CQuest::clear(void) {
 	int i;
 
 	for (i = 0; i < MAX_QUEST_DB; i++) {
@@ -582,7 +586,7 @@ void quest_clear_db(void) {
  *
  * @param minimal Run in minimal mode (skips most of the loading)
  */
-void do_init_quest(bool minimal) {
+void CQuest::init(bool minimal) {
 	if (minimal)
 		return;
 
@@ -592,14 +596,14 @@ void do_init_quest(bool minimal) {
 /**
  * Finalizes the quest interface before shutdown.
  */
-void do_final_quest(void) {
+void CQuest::final(void) {
 	quest->clear();
 }
 
 /**
  * Reloads the quest database.
  */
-void do_reload_quest(void) {
+void CQuest::reload(void) {
 	quest->clear();
 
 	quest->read_db();
@@ -615,23 +619,8 @@ void quest_defaults(void) {
 	quest = &quest_s;
 	quest->db_data = db_data;
 
-	memset(&quest->db, 0, sizeof(quest->db));
+	//memset(&quest->db_data, 0, sizeof(quest->db_data));
 	memset(&quest->dummy, 0, sizeof(quest->dummy));
 	/* */
-	quest->init = do_init_quest;
-	quest->final = do_final_quest;
-	quest->reload = do_reload_quest;
-	/* */
-	quest->db = quest_db;
-	quest->pc_login = quest_pc_login;
-	quest->add = quest_add;
-	quest->change = quest_change;
-	quest->_delete = quest_delete;
-	quest->update_objective_sub = quest_update_objective_sub;
-	quest->update_objective = quest_update_objective;
-	quest->update_status = quest_update_status;
-	quest->check = quest_check;
-	quest->clear = quest_clear_db;
-	quest->read_db = quest_read_db;
-	quest->read_db_sub = quest_read_db_sub;
+
 }

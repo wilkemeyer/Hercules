@@ -38,7 +38,8 @@ struct mapreg_save {
 	bool save;         ///< Whether a save operation is pending
 };
 
-struct mapreg_interface {
+class CMapreg {
+public:
 	struct reg_db regs;
 	/* */
 	bool skip_insert;
@@ -49,25 +50,25 @@ struct mapreg_interface {
 	/* */
 	bool dirty; ///< Whether there are modified regs to be saved
 	/* */
-	void (*init) (void);
-	void (*final) (void);
+	static void init (void);
+	static void final (void);
 	/* */
-	int (*readreg) (int64 uid);
-	char* (*readregstr) (int64 uid);
-	bool (*setreg) (int64 uid, int val);
-	bool (*setregstr) (int64 uid, const char *str);
-	void (*load) (void);
-	void (*save) (void);
-	int (*save_timer) (int tid, int64 tick, int id, intptr_t data);
-	int (*destroyreg) (DBKey key, DBData *data, va_list ap);
-	void (*reload) (void);
-	bool (*config_read) (const char *w1, const char *w2);
+	static int readreg (int64 uid);
+	static char* readregstr (int64 uid);
+	static bool setreg (int64 uid, int val);
+	static bool setregstr (int64 uid, const char *str);
+	static void load (void);
+	static void save (void);
+	static int save_timer (int tid, int64 tick, int id, intptr_t data);
+	static int destroyreg (DBKey key, DBData *data, va_list ap);
+	static void reload (void);
+	static bool config_read (const char *w1, const char *w2);
 };
+extern CMapreg *mapreg;
 
 #ifdef HERCULES_CORE
 void mapreg_defaults(void);
 #endif // HERCULES_CORE
 
-HPShared struct mapreg_interface *mapreg;
 
 #endif /* MAP_MAPREG_H */

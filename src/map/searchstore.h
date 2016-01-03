@@ -97,23 +97,24 @@ typedef bool (*searchstore_searchall_t)(struct map_session_data* sd, const struc
 /**
  * Interface
  **/
-struct searchstore_interface {
-	bool (*open) (struct map_session_data* sd, unsigned int uses, unsigned short effect);
-	void (*query) (struct map_session_data* sd, unsigned char type, unsigned int min_price, unsigned int max_price, const unsigned short* itemlist, unsigned int item_count, const unsigned short* cardlist, unsigned int card_count);
-	bool (*querynext) (struct map_session_data* sd);
-	void (*next) (struct map_session_data* sd);
-	void (*clear) (struct map_session_data* sd);
-	void (*close) (struct map_session_data* sd);
-	void (*click) (struct map_session_data* sd, int account_id, int store_id, unsigned short nameid);
-	bool (*queryremote) (struct map_session_data* sd, int account_id);
-	void (*clearremote) (struct map_session_data* sd);
-	bool (*result) (struct map_session_data* sd, unsigned int store_id, int account_id, const char* store_name, unsigned short nameid, unsigned short amount, unsigned int price, const short* card, unsigned char refine);
+class CSearchstore {
+public:
+	static bool open (struct map_session_data* sd, unsigned int uses, unsigned short effect);
+	static void query (struct map_session_data* sd, unsigned char type, unsigned int min_price, unsigned int max_price, const unsigned short* itemlist, unsigned int item_count, const unsigned short* cardlist, unsigned int card_count);
+	static bool querynext (struct map_session_data* sd);
+	static void next (struct map_session_data* sd);
+	static void clear (struct map_session_data* sd);
+	static void close (struct map_session_data* sd);
+	static void click (struct map_session_data* sd, int account_id, int store_id, unsigned short nameid);
+	static bool queryremote (struct map_session_data* sd, int account_id);
+	static void clearremote (struct map_session_data* sd);
+	static bool result (struct map_session_data* sd, unsigned int store_id, int account_id, const char* store_name, unsigned short nameid, unsigned short amount, unsigned int price, const short* card, unsigned char refine);
 };
+extern CSearchstore *searchstore;
 
 #ifdef HERCULES_CORE
 void searchstore_defaults(void);
 #endif // HERCULES_CORE
 
-HPShared struct searchstore_interface *searchstore;
 
 #endif /* MAP_SEARCHSTORE_H */

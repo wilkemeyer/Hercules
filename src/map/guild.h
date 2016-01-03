@@ -65,124 +65,128 @@ struct s_guild_skill_tree {
 };
 
 
-struct guild_interface {
-	void (*init) (bool minimal);
-	void (*final) (void);
+class CGuild {
+public:
 	/* */
-	DBMap* db; // int guild_id -> struct guild*
-	DBMap* castle_db; // int castle_id -> struct guild_castle*
-	DBMap* expcache_db; // int char_id -> struct guild_expcache*
-	DBMap* infoevent_db; // int guild_id -> struct eventlist*
-	/* */
-	struct eri *expcache_ers; //For handling of guild exp payment.
-	/* */
-	struct s_guild_skill_tree skill_tree[MAX_GUILDSKILL];
+	static DBMap* db; // int guild_id -> struct guild*
+	static DBMap* castle_db; // int castle_id -> struct guild_castle*
+	static DBMap* expcache_db; // int char_id -> struct guild_expcache*
+	static DBMap* infoevent_db; // int guild_id -> struct eventlist*
+						 /* */
+	static struct eri *expcache_ers; //For handling of guild exp payment.
+							  /* */
+	static struct s_guild_skill_tree skill_tree[MAX_GUILDSKILL];
 	/* guild flags cache */
-	struct npc_data **flags;
-	unsigned short flags_count;
+	static struct npc_data **flags;
+	static unsigned short flags_count;
+
 	/* */
-	int (*skill_get_max) (int id);
+	static void init (bool minimal);
+	static void final (void);
 	/* */
-	int (*checkskill) (struct guild *g,int id);
-	int (*check_skill_require) (struct guild *g,int id); // [Komurka]
-	int (*checkcastles) (struct guild *g); // [MouseJstr]
-	bool (*isallied) (int guild_id, int guild_id2); //Checks alliance based on guild Ids. [Skotlex]
+	static int skill_get_max (int id);
 	/* */
-	struct guild *(*search) (int guild_id);
-	struct guild *(*searchname) (char *str);
-	struct guild_castle *(*castle_search) (int gcid);
+	static int checkskill (struct guild *g,int id);
+	static int check_skill_require (struct guild *g,int id); // [Komurka]
+	static int checkcastles (struct guild *g); // [MouseJstr]
+	static bool isallied (int guild_id, int guild_id2); //Checks alliance based on guild Ids. [Skotlex]
 	/* */
-	struct guild_castle *(*mapname2gc) (const char* mapname);
-	struct guild_castle *(*mapindex2gc) (short map_index);
+	static struct guild *search (int guild_id);
+	static struct guild *searchname (char *str);
+	static struct guild_castle *castle_search (int gcid);
 	/* */
-	struct map_session_data *(*getavailablesd) (struct guild *g);
-	int (*getindex) (struct guild *g,int account_id,int char_id);
-	int (*getposition) (struct guild *g, struct map_session_data *sd);
-	unsigned int (*payexp) (struct map_session_data *sd,unsigned int exp);
-	int (*getexp) (struct map_session_data *sd,int exp); // [Celest]
+	static struct guild_castle *mapname2gc (const char* mapname);
+	static struct guild_castle *mapindex2gc (short map_index);
 	/* */
-	int (*create) (struct map_session_data *sd, const char *name);
-	int (*created) (int account_id,int guild_id);
-	int (*request_info) (int guild_id);
-	int (*recv_noinfo) (int guild_id);
-	int (*recv_info) (struct guild *sg);
-	int (*npc_request_info) (int guild_id,const char *ev);
-	int (*invite) (struct map_session_data *sd,struct map_session_data *tsd);
-	int (*reply_invite) (struct map_session_data *sd,int guild_id,int flag);
-	void (*member_joined) (struct map_session_data *sd);
-	int (*member_added) (int guild_id,int account_id,int char_id,int flag);
-	int (*leave) (struct map_session_data *sd,int guild_id,int account_id,int char_id,const char *mes);
-	int (*member_withdraw) (int guild_id,int account_id,int char_id,int flag,const char *name,const char *mes);
-	int (*expulsion) (struct map_session_data *sd,int guild_id,int account_id,int char_id,const char *mes);
-	int (*skillup) (struct map_session_data* sd, uint16 skill_id);
-	void (*block_skill) (struct map_session_data *sd, int time);
-	int (*reqalliance) (struct map_session_data *sd,struct map_session_data *tsd);
-	int (*reply_reqalliance) (struct map_session_data *sd,int account_id,int flag);
-	int (*allianceack) (int guild_id1,int guild_id2,int account_id1,int account_id2,int flag,const char *name1,const char *name2);
-	int (*delalliance) (struct map_session_data *sd,int guild_id,int flag);
-	int (*opposition) (struct map_session_data *sd,struct map_session_data *tsd);
-	int (*check_alliance) (int guild_id1, int guild_id2, int flag);
+	static struct map_session_data *getavailablesd (struct guild *g);
+	static int getindex (struct guild *g,int account_id,int char_id);
+	static int getposition (struct guild *g, struct map_session_data *sd);
+	static unsigned int payexp (struct map_session_data *sd,unsigned int exp);
+	static int getexp (struct map_session_data *sd,int exp); // [Celest]
 	/* */
-	int (*send_memberinfoshort) (struct map_session_data *sd,int online);
-	int (*recv_memberinfoshort) (int guild_id,int account_id,int char_id,int online,int lv,int class_);
-	int (*change_memberposition) (int guild_id,int account_id,int char_id,short idx);
-	int (*memberposition_changed) (struct guild *g,int idx,int pos);
-	int (*change_position) (int guild_id,int idx,int mode,int exp_mode,const char *name);
-	int (*position_changed) (int guild_id,int idx,struct guild_position *p);
-	int (*change_notice) (struct map_session_data *sd,int guild_id,const char *mes1,const char *mes2);
-	int (*notice_changed) (int guild_id,const char *mes1,const char *mes2);
-	int (*change_emblem) (struct map_session_data *sd,int len,const char *data);
-	int (*emblem_changed) (int len,int guild_id,int emblem_id,const char *data);
-	int (*send_message) (struct map_session_data *sd,const char *mes,int len);
-	int (*recv_message) (int guild_id,int account_id,const char *mes,int len);
-	int (*send_dot_remove) (struct map_session_data *sd);
-	int (*skillupack) (int guild_id,uint16 skill_id,int account_id);
-	int (*dobreak) (struct map_session_data *sd,char *name);
-	int (*broken) (int guild_id,int flag);
-	int (*gm_change) (int guild_id, struct map_session_data *sd);
-	int (*gm_changed) (int guild_id, int account_id, int char_id);
+	static int create (struct map_session_data *sd, const char *name);
+	static int created (int account_id,int guild_id);
+	static int request_info (int guild_id);
+	static int recv_noinfo (int guild_id);
+	static int recv_info (struct guild *sg);
+	static int npc_request_info (int guild_id,const char *ev);
+	static int invite (struct map_session_data *sd,struct map_session_data *tsd);
+	static int reply_invite (struct map_session_data *sd,int guild_id,int flag);
+	static void member_joined (struct map_session_data *sd);
+	static int member_added (int guild_id,int account_id,int char_id,int flag);
+	static int leave (struct map_session_data *sd,int guild_id,int account_id,int char_id,const char *mes);
+	static int member_withdraw (int guild_id,int account_id,int char_id,int flag,const char *name,const char *mes);
+	static int expulsion (struct map_session_data *sd,int guild_id,int account_id,int char_id,const char *mes);
+	static int skillup (struct map_session_data* sd, uint16 skill_id);
+	static void block_skill (struct map_session_data *sd, int time);
+	static int reqalliance (struct map_session_data *sd,struct map_session_data *tsd);
+	static int reply_reqalliance (struct map_session_data *sd,int account_id,int flag);
+	static int allianceack (int guild_id1,int guild_id2,int account_id1,int account_id2,int flag,const char *name1,const char *name2);
+	static int delalliance (struct map_session_data *sd,int guild_id,int flag);
+	static int opposition (struct map_session_data *sd,struct map_session_data *tsd);
+	static int check_alliance (int guild_id1, int guild_id2, int flag);
 	/* */
-	void (*castle_map_init) (void);
-	int (*castledatasave) (int castle_id,int index,int value);
-	int (*castledataloadack) (int len, struct guild_castle *gc);
-	void (*castle_reconnect) (int castle_id, int index, int value);
+	static int send_memberinfoshort (struct map_session_data *sd,int online);
+	static int recv_memberinfoshort (int guild_id,int account_id,int char_id,int online,int lv,int class_);
+	static int change_memberposition (int guild_id,int account_id,int char_id,short idx);
+	static int memberposition_changed (struct guild *g,int idx,int pos);
+	static int change_position (int guild_id,int idx,int mode,int exp_mode,const char *name);
+	static int position_changed (int guild_id,int idx,struct guild_position *p);
+	static int change_notice (struct map_session_data *sd,int guild_id,const char *mes1,const char *mes2);
+	static int notice_changed (int guild_id,const char *mes1,const char *mes2);
+	static int change_emblem (struct map_session_data *sd,int len,const char *data);
+	static int emblem_changed (int len,int guild_id,int emblem_id,const char *data);
+	static int send_message (struct map_session_data *sd,const char *mes,int len);
+	static int recv_message (int guild_id,int account_id,const char *mes,int len);
+	static int send_dot_remove (struct map_session_data *sd);
+	static int skillupack (int guild_id,uint16 skill_id,int account_id);
+	static int dobreak (struct map_session_data *sd,char *name);
+	static int broken (int guild_id,int flag);
+	static int gm_change (int guild_id, struct map_session_data *sd);
+	static int gm_changed (int guild_id, int account_id, int char_id);
 	/* */
-	void (*agit_start) (void);
-	void (*agit_end) (void);
-	void (*agit2_start) (void);
-	void (*agit2_end) (void);
+	static void castle_map_init (void);
+	static int castledatasave (int castle_id,int index,int value);
+	static int castledataloadack (int len, struct guild_castle *gc);
+	static void castle_reconnect (int castle_id, int index, int value);
+	/* */
+	static void agit_start (void);
+	static void agit_end (void);
+	static void agit2_start (void);
+	static void agit2_end (void);
 	/* guild flag cachin */
-	void (*flag_add) (struct npc_data *nd);
-	void (*flag_remove) (struct npc_data *nd);
-	void (*flags_clear) (void);
+	static void flag_add (struct npc_data *nd);
+	static void flag_remove (struct npc_data *nd);
+	static void flags_clear (void);
 	/* guild aura */
-	void (*aura_refresh) (struct map_session_data *sd, uint16 skill_id, uint16 skill_lv);
+	static void aura_refresh (struct map_session_data *sd, uint16 skill_id, uint16 skill_lv);
 	/* item bound [Mhalicot]*/
-	void (*retrieveitembound) (int char_id,int aid,int guild_id);
+	static void retrieveitembound (int char_id,int aid,int guild_id);
 	/* */
-	int (*payexp_timer) (int tid, int64 tick, int id, intptr_t data);
-	TBL_PC* (*sd_check) (int guild_id, int account_id, int char_id);
-	bool (*read_guildskill_tree_db) (char* split[], int columns, int current);
-	bool (*read_castledb) (char* str[], int columns, int current);
-	int (*payexp_timer_sub) (DBKey key, DBData *data, va_list ap);
-	int (*send_xy_timer_sub) (DBKey key, DBData *data, va_list ap);
-	int (*send_xy_timer) (int tid, int64 tick, int id, intptr_t data);
-	DBData (*create_expcache) (DBKey key, va_list args);
-	int (*eventlist_db_final) (DBKey key, DBData *data, va_list ap);
-	int (*expcache_db_final) (DBKey key, DBData *data, va_list ap);
-	int (*castle_db_final) (DBKey key, DBData *data, va_list ap);
-	int (*broken_sub) (DBKey key, DBData *data, va_list ap);
-	int (*castle_broken_sub) (DBKey key, DBData *data, va_list ap);
-	void (*makemember) (struct guild_member *m,struct map_session_data *sd);
-	int (*check_member) (struct guild *g);
-	int (*get_alliance_count) (struct guild *g,int flag);
-	void (*castle_reconnect_sub) (void *key, void *data, va_list ap);
+	static int payexp_timer (int tid, int64 tick, int id, intptr_t data);
+	static TBL_PC* sd_check (int guild_id, int account_id, int char_id);
+	static bool read_guildskill_tree_db (char* split[], int columns, int current);
+	static bool read_castledb (char* str[], int columns, int current);
+	static int payexp_timer_sub (DBKey key, DBData *data, va_list ap);
+	static int send_xy_timer_sub (DBKey key, DBData *data, va_list ap);
+	static int send_xy_timer (int tid, int64 tick, int id, intptr_t data);
+	static DBData create_expcache (DBKey key, va_list args);
+	static int eventlist_db_final (DBKey key, DBData *data, va_list ap);
+	static int expcache_db_final (DBKey key, DBData *data, va_list ap);
+	static int castle_db_final (DBKey key, DBData *data, va_list ap);
+	static int broken_sub (DBKey key, DBData *data, va_list ap);
+	static int castle_broken_sub (DBKey key, DBData *data, va_list ap);
+	static void makemember (struct guild_member *m,struct map_session_data *sd);
+	static int check_member (struct guild *g);
+	static int get_alliance_count (struct guild *g,int flag);
+	static void castle_reconnect_sub (void *key, void *data, va_list ap);
 };
+
+extern CGuild *guild;
 
 #ifdef HERCULES_CORE
 void guild_defaults(void);
 #endif // HERCULES_CORE
 
-HPShared struct guild_interface *guild;
 
 #endif /* MAP_GUILD_H */

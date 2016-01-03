@@ -19,10 +19,15 @@
  */
 #include "stdafx.h"
 
-struct channel_interface channel_s;
-struct channel_interface *channel;
+CChannel channel_s;
+CChannel *channel = NULL;
 
 static struct Channel_Config channel_config;
+
+// Subsystem Globals:
+DBMap *CChannel::db;
+struct Channel_Config *CChannel::config;
+
 
 /**
  * Returns the named channel.
@@ -31,7 +36,7 @@ static struct Channel_Config channel_config;
  * @param sd   The issuer character, for character-specific channels (i.e. map, ally)
  * @return a pointer to the channel, or NULL.
  */
-struct channel_data *channel_search(const char *name, struct map_session_data *sd)
+struct channel_data *CChannel::search(const char *name, struct map_session_data *sd)
 {
 	const char *realname = name;
 	if (!realname || !*realname)
@@ -70,7 +75,7 @@ struct channel_data *channel_search(const char *name, struct map_session_data *s
  * @param color The channel chat color.
  * @return A pointer to the created channel.
  */
-struct channel_data *channel_create(enum channel_types type, const char *name, unsigned char color)
+struct channel_data *CChannel::create(enum channel_types type, const char *name, unsigned char color)
 {
 	struct channel_data *chan;
 
@@ -98,7 +103,7 @@ struct channel_data *channel_create(enum channel_types type, const char *name, u
  *
  * @param chan The channel to delete
  */
-void channel_delete(struct channel_data *chan)
+void CChannel::_delete(struct channel_data *chan)
 {
 	nullpo_retv(chan);
 
@@ -132,7 +137,7 @@ void channel_delete(struct channel_data *chan)
  * @param chan The channel to edit.
  * @param pass The password to set. Pass NULL to remove existing passwords.
  */
-void channel_set_password(struct channel_data *chan, const char *password)
+void CChannel::set_password(struct channel_data *chan, const char *password)
 {
 	nullpo_retv(chan);
 	if (password)
@@ -152,7 +157,7 @@ void channel_set_password(struct channel_data *chan, const char *password)
  * @retval HCS_STATUS_NOPERM if the source character doesn't have enough permissions.
  * @retval HCS_STATUS_FAIL in case of generic failure.
  */
-enum channel_operation_status channel_ban(struct channel_data *chan, const struct map_session_data *ssd, struct map_session_data *tsd)
+enum channel_operation_status CChannel::ban(struct channel_data *chan, const struct map_session_data *ssd, struct map_session_data *tsd)
 {
 	struct channel_ban_entry *entry = NULL;
 
@@ -191,7 +196,7 @@ enum channel_operation_status channel_ban(struct channel_data *chan, const struc
  * @retval HCS_STATUS_NOPERM if the source character doesn't have enough permissions.
  * @retval HCS_STATUS_FAIL in case of generic failure.
  */
-enum channel_operation_status channel_unban(struct channel_data *chan, const struct map_session_data *ssd, struct map_session_data *tsd)
+enum channel_operation_status CChannel::unban(struct channel_data *chan, const struct map_session_data *ssd, struct map_session_data *tsd)
 {
 	nullpo_retr(HCS_STATUS_FAIL, chan);
 
@@ -227,7 +232,7 @@ enum channel_operation_status channel_unban(struct channel_data *chan, const str
  * @param chan The channel.
  * @param options The new options set to apply.
  */
-void channel_set_options(struct channel_data *chan, unsigned int options)
+void CChannel::set_options(struct channel_data *chan, unsigned int options)
 {
 	nullpo_retv(chan);
 
@@ -243,7 +248,7 @@ void channel_set_options(struct channel_data *chan, unsigned int options)
  *
  * If no source character is specified, it'll send an anonymous message.
  */
-void channel_send(struct channel_data *chan, struct map_session_data *sd, const char *msg)
+void CChannel::send(struct channel_data *chan, struct map_session_data *sd, const char *msg)
 {
 	char message[150];
 	nullpo_retv(chan);
@@ -276,7 +281,7 @@ void channel_send(struct channel_data *chan, struct map_session_data *sd, const 
  * @param sd      The character
  * @param stealth If true, hide join announcements.
  */
-void channel_join_sub(struct channel_data *chan, struct map_session_data *sd, bool stealth)
+void CChannel::join_sub(struct channel_data *chan, struct map_session_data *sd, bool stealth)
 {
 	nullpo_retv(chan);
 	nullpo_retv(sd);
@@ -316,7 +321,7 @@ void channel_join_sub(struct channel_data *chan, struct map_session_data *sd, bo
  * @retval HCS_STATUS_BANNED  if the character is in the channel's ban list
  * @retval HCS_STATUS_FAIL    in case of generic error
  */
-enum channel_operation_status channel_join(struct channel_data *chan, struct map_session_data *sd, const char *password, bool silent)
+enum channel_operation_status CChannel::join(struct channel_data *chan, struct map_session_data *sd, const char *password, bool silent)
 {
 	bool stealth = false;
 
@@ -374,7 +379,7 @@ enum channel_operation_status channel_join(struct channel_data *chan, struct map
  * @param chan The channel to leave
  * @param sd   The character
  */
-void channel_leave_sub(struct channel_data *chan, struct map_session_data *sd)
+void CChannel::leave_sub(struct channel_data *chan, struct map_session_data *sd)
 {
 	unsigned char i;
 
@@ -408,7 +413,7 @@ void channel_leave_sub(struct channel_data *chan, struct map_session_data *sd)
  * @param chan The channel to leave
  * @param sd   The character
  */
-void channel_leave(struct channel_data *chan, struct map_session_data *sd)
+void CChannel::leave(struct channel_data *chan, struct map_session_data *sd)
 {
 	nullpo_retv(chan);
 	nullpo_retv(sd);
@@ -437,7 +442,7 @@ void channel_leave(struct channel_data *chan, struct map_session_data *sd)
  *
  * @param sd The target character
  */
-void channel_quit(struct map_session_data *sd)
+void CChannel::quit(struct map_session_data *sd)
 {
 	nullpo_retv(sd);
 	while (sd->channel_count > 0) {
@@ -458,7 +463,7 @@ void channel_quit(struct map_session_data *sd)
  *
  * @param sd The target character (sd must be non null)
  */
-void channel_map_join(struct map_session_data *sd)
+void CChannel::map_join(struct map_session_data *sd)
 {
 	nullpo_retv(sd);
 	if (sd->state.autotrade || sd->state.standalone)
@@ -474,7 +479,7 @@ void channel_map_join(struct map_session_data *sd)
 	channel->join(map->list[sd->bl.m].channel, sd, "", false);
 }
 
-void channel_irc_join(struct map_session_data *sd)
+void CChannel::irc_join(struct map_session_data *sd)
 {
 	struct channel_data *chan = ircbot->channel;
 
@@ -496,7 +501,7 @@ void channel_irc_join(struct map_session_data *sd)
  * @param g_source Source guild
  * @param g_ally   Allied guild
  */
-void channel_guild_join_alliance(const struct guild *g_source, const struct guild *g_ally)
+void CChannel::guild_join_alliance(const struct guild *g_source, const struct guild *g_ally)
 {
 	struct channel_data *chan;
 
@@ -524,7 +529,7 @@ void channel_guild_join_alliance(const struct guild *g_source, const struct guil
  * @param g_source Source guild
  * @param g_ally   Former allied guild
  */
-void channel_guild_leave_alliance(const struct guild *g_source, const struct guild *g_ally)
+void CChannel::guild_leave_alliance(const struct guild *g_source, const struct guild *g_ally)
 {
 	struct channel_data *chan;
 
@@ -548,7 +553,7 @@ void channel_guild_leave_alliance(const struct guild *g_source, const struct gui
  *
  * @param sd The character (must be non null)
  */
-void channel_quit_guild(struct map_session_data *sd)
+void CChannel::quit_guild(struct map_session_data *sd)
 {
 	unsigned char i;
 
@@ -563,7 +568,7 @@ void channel_quit_guild(struct map_session_data *sd)
 	}
 }
 
-void read_channels_config(void)
+void CChannel::config_read(void)
 {
 	config_t channels_conf;
 	config_setting_t *chsys = NULL;
@@ -768,7 +773,7 @@ void read_channels_config(void)
 			}
 		}
 
-		ShowStatus("Done reading '"CL_WHITE"%d"CL_RESET"' channels in '"CL_WHITE"%s"CL_RESET"'.\n", db_size(channel->db), config_filename);
+		ShowStatus("Done reading '" CL_WHITE "%d" CL_RESET "' channels in '" CL_WHITE "%s" CL_RESET "'.\n", db_size(channel->db), config_filename);
 	}
 	libconfig->destroy(&channels_conf);
 }
@@ -776,7 +781,7 @@ void read_channels_config(void)
 /*==========================================
  *
  *------------------------------------------*/
-int do_init_channel(bool minimal)
+int CChannel::init(bool minimal)
 {
 	if (minimal)
 		return 0;
@@ -788,7 +793,7 @@ int do_init_channel(bool minimal)
 	return 0;
 }
 
-void do_final_channel(void)
+void CChannel::final(void)
 {
 	DBIterator *iter = db_iterator(channel->db);
 	struct channel_data *chan;
@@ -819,30 +824,5 @@ void channel_defaults(void)
 	channel->db = NULL;
 	channel->config = &channel_config;
 
-	channel->init = do_init_channel;
-	channel->final = do_final_channel;
 
-	channel->search = channel_search;
-	channel->create = channel_create;
-	channel->_delete = channel_delete;
-
-	channel->set_password = channel_set_password;
-	channel->ban = channel_ban;
-	channel->unban = channel_unban;
-	channel->set_options = channel_set_options;
-
-	channel->send = channel_send;
-	channel->join_sub = channel_join_sub;
-	channel->join = channel_join;
-	channel->leave = channel_leave;
-	channel->leave_sub = channel_leave_sub;
-	channel->quit = channel_quit;
-
-	channel->map_join = channel_map_join;
-	channel->guild_join_alliance = channel_guild_join_alliance;
-	channel->guild_leave_alliance = channel_guild_leave_alliance;
-	channel->quit_guild = channel_quit_guild;
-	channel->irc_join = channel_irc_join;
-
-	channel->config_read = read_channels_config;
 }

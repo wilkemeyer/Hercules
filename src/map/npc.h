@@ -168,143 +168,146 @@ struct npc_path_data {
 };
 
 /* npc.c interface */
-struct npc_interface {
+class CNpc {
+public:
 	/* */
-	struct npc_data *motd;
-	DBMap *ev_db; // const char* event_name -> struct event_data*
-	DBMap *ev_label_db; // const char* label_name (without leading "::") -> struct linkdb_node**   (key: struct npc_data*; data: struct event_data*)
-	DBMap *name_db; // const char* npc_name -> struct npc_data*
-	DBMap *path_db;
-	struct eri *timer_event_ers; //For the npc timer data. [Skotlex]
-	struct npc_data *fake_nd;
-	struct npc_src_list *src_files;
-	struct unit_data base_ud;
+	static struct npc_data *motd;
+	static DBMap *ev_db; // const char* event_name -> struct event_data*
+	static DBMap *ev_label_db; // const char* label_name (without leading "::") -> struct linkdb_node**   (key: struct npc_data*; data: struct event_data*)
+	static DBMap *name_db; // const char* npc_name -> struct npc_data*
+	static DBMap *path_db;
+	static struct eri *timer_event_ers; //For the npc timer data. [Skotlex]
+	static struct npc_data *fake_nd;
+	static struct npc_src_list *src_files;
+	static struct unit_data base_ud;
 	/* npc trader global data, for ease of transition between the script, cleared on every usage */
-	bool trader_ok;
-	int trader_funds[2];
+	static bool trader_ok;
+	static int trader_funds[2];
+
 	/* */
-	int (*init) (bool minimal);
-	int (*final) (void);
+	static int init (bool minimal);
+	static int final (void);
 	/* */
-	int (*get_new_npc_id) (void);
-	struct view_data* (*get_viewdata) (int class_);
-	int (*isnear_sub) (struct block_list *bl, va_list args);
-	bool (*isnear) (struct block_list *bl);
-	int (*ontouch_event) (struct map_session_data *sd, struct npc_data *nd);
-	int (*ontouch2_event) (struct map_session_data *sd, struct npc_data *nd);
-	int (*onuntouch_event) (struct map_session_data *sd, struct npc_data *nd);
-	int (*enable_sub) (struct block_list *bl, va_list ap);
-	int (*enable) (const char *name, int flag);
-	struct npc_data* (*name2id) (const char *name);
-	int (*event_dequeue) (struct map_session_data *sd);
-	DBData (*event_export_create) (DBKey key, va_list args);
-	int (*event_export) (struct npc_data *nd, int i);
-	int (*event_sub) (struct map_session_data *sd, struct event_data *ev, const char *eventname);
-	void (*event_doall_sub) (void *key, void *data, va_list ap);
-	int (*event_do) (const char *name);
-	int (*event_doall_id) (const char *name, int rid);
-	int (*event_doall) (const char *name);
-	int (*event_do_clock) (int tid, int64 tick, int id, intptr_t data);
-	void (*event_do_oninit) ( bool reload );
-	int (*timerevent_export) (struct npc_data *nd, int i);
-	int (*timerevent) (int tid, int64 tick, int id, intptr_t data);
-	int (*timerevent_start) (struct npc_data *nd, int rid);
-	int (*timerevent_stop) (struct npc_data *nd);
-	void (*timerevent_quit) (struct map_session_data *sd);
-	int64 (*gettimerevent_tick) (struct npc_data *nd);
-	int (*settimerevent_tick) (struct npc_data *nd, int newtimer);
-	int (*event) (struct map_session_data *sd, const char *eventname, int ontouch);
-	int (*touch_areanpc_sub) (struct block_list *bl, va_list ap);
-	int (*touchnext_areanpc) (struct map_session_data *sd, bool leavemap);
-	int (*touch_areanpc) (struct map_session_data *sd, int16 m, int16 x, int16 y);
-	int (*untouch_areanpc) (struct map_session_data *sd, int16 m, int16 x, int16 y);
-	int (*touch_areanpc2) (struct mob_data *md);
-	int (*check_areanpc) (int flag, int16 m, int16 x, int16 y, int16 range);
-	struct npc_data* (*checknear) (struct map_session_data *sd, struct block_list *bl);
-	int (*globalmessage) (const char *name, const char *mes);
-	void (*run_tomb) (struct map_session_data *sd, struct npc_data *nd);
-	int (*click) (struct map_session_data *sd, struct npc_data *nd);
-	int (*scriptcont) (struct map_session_data *sd, int id, bool closing);
-	int (*buysellsel) (struct map_session_data *sd, int id, int type);
-	int (*cashshop_buylist) (struct map_session_data *sd, int points, int count, unsigned short *item_list);
-	int (*buylist_sub) (struct map_session_data *sd, int n, unsigned short *item_list, struct npc_data *nd);
-	int (*cashshop_buy) (struct map_session_data *sd, int nameid, int amount, int points);
-	int (*buylist) (struct map_session_data *sd, int n, unsigned short *item_list);
-	int (*selllist_sub) (struct map_session_data *sd, int n, unsigned short *item_list, struct npc_data *nd);
-	int (*selllist) (struct map_session_data *sd, int n, unsigned short *item_list);
-	int (*remove_map) (struct npc_data *nd);
-	int (*unload_ev) (DBKey key, DBData *data, va_list ap);
-	int (*unload_ev_label) (DBKey key, DBData *data, va_list ap);
-	int (*unload_dup_sub) (struct npc_data *nd, va_list args);
-	void (*unload_duplicates) (struct npc_data *nd);
-	int (*unload) (struct npc_data *nd, bool single);
-	void (*clearsrcfile) (void);
-	void (*addsrcfile) (const char *name);
-	void (*delsrcfile) (const char *name);
-	const char *(*retainpathreference) (const char *filepath);
-	void (*releasepathreference) (const char *filepath);
-	void (*parsename) (struct npc_data *nd, const char *name, const char *start, const char *buffer, const char *filepath);
-	int (*parseview) (const char *w4, const char *start, const char *buffer, const char *filepath);
-	bool (*viewisid) (const char *viewid);
-	struct npc_data *(*create_npc) (enum npc_subtype subtype, int m, int x, int y, uint8 dir, int16 class_);
-	struct npc_data* (*add_warp) (char *name, short from_mapid, short from_x, short from_y, short xs, short ys, unsigned short to_mapindex, short to_x, short to_y);
-	const char *(*parse_warp) (const char *w1, const char *w2, const char *w3, const char *w4, const char *start, const char *buffer, const char *filepath, int *retval);
-	const char *(*parse_shop) (const char *w1, const char *w2, const char *w3, const char *w4, const char *start, const char *buffer, const char *filepath, int *retval);
-	const char *(*parse_unknown_object) (const char *w1, const char *w2, const char *w3, const char *w4, const char *start, const char *buffer, const char *filepath, int *retval);
-	void (*convertlabel_db) (struct npc_label_list *label_list, const char *filepath);
-	const char* (*skip_script) (const char *start, const char *buffer, const char *filepath, int *retval);
-	const char *(*parse_script) (const char *w1, const char *w2, const char *w3, const char *w4, const char *start, const char *buffer, const char *filepath, int options, int *retval);
-	void (*add_to_location) (struct npc_data *nd);
-	bool (*duplicate_script_sub) (struct npc_data *nd, const struct npc_data *snd, int xs, int ys, int options);
-	bool (*duplicate_shop_sub) (struct npc_data *nd, const struct npc_data *snd, int xs, int ys, int options);
-	bool (*duplicate_warp_sub) (struct npc_data *nd, const struct npc_data *snd, int xs, int ys, int options);
-	bool (*duplicate_sub) (struct npc_data *nd, const struct npc_data *snd, int xs, int ys, int options);
-	const char *(*parse_duplicate) (const char *w1, const char *w2, const char *w3, const char *w4, const char *start, const char *buffer, const char *filepath, int options, int *retval);
-	int (*duplicate4instance) (struct npc_data *snd, int16 m);
-	void (*setcells) (struct npc_data *nd);
-	int (*unsetcells_sub) (struct block_list *bl, va_list ap);
-	void (*unsetcells) (struct npc_data *nd);
-	void (*movenpc) (struct npc_data *nd, int16 x, int16 y);
-	void (*setdisplayname) (struct npc_data *nd, const char *newname);
-	void (*setclass) (struct npc_data *nd, short class_);
-	int (*do_atcmd_event) (struct map_session_data *sd, const char *command, const char *message, const char *eventname);
-	const char *(*parse_function) (const char *w1, const char *w2, const char *w3, const char *w4, const char *start, const char *buffer, const char *filepath, int *retval);
-	void (*parse_mob2) (struct spawn_data *mobspawn);
-	const char *(*parse_mob) (const char *w1, const char *w2, const char *w3, const char *w4, const char *start, const char *buffer, const char *filepath, int *retval);
-	const char *(*parse_mapflag) (const char *w1, const char *w2, const char *w3, const char *w4, const char *start, const char *buffer, const char *filepath, int *retval);
-	void (*parse_unknown_mapflag) (const char *name, const char *w3, const char *w4, const char *start, const char *buffer, const char *filepath, int *retval);
-	int (*parsesrcfile) (const char *filepath, bool runOnInit);
-	int (*script_event) (struct map_session_data *sd, enum npce_event type);
-	void (*read_event_script) (void);
-	int (*path_db_clear_sub) (DBKey key, DBData *data, va_list args);
-	int (*ev_label_db_clear_sub) (DBKey key, DBData *data, va_list args);
-	int (*reload) (void);
-	bool (*unloadfile) (const char *filepath);
-	void (*do_clear_npc) (void);
-	void (*debug_warps_sub) (struct npc_data *nd);
-	void (*debug_warps) (void);
+	static int get_new_npc_id (void);
+	static struct view_data* get_viewdata (int class_);
+	static int isnear_sub (struct block_list *bl, va_list args);
+	static bool isnear (struct block_list *bl);
+	static int ontouch_event (struct map_session_data *sd, struct npc_data *nd);
+	static int ontouch2_event (struct map_session_data *sd, struct npc_data *nd);
+	static int onuntouch_event (struct map_session_data *sd, struct npc_data *nd);
+	static int enable_sub (struct block_list *bl, va_list ap);
+	static int enable (const char *name, int flag);
+	static struct npc_data* name2id (const char *name);
+	static int event_dequeue (struct map_session_data *sd);
+	static DBData event_export_create (DBKey key, va_list args);
+	static int event_export (struct npc_data *nd, int i);
+	static int event_sub (struct map_session_data *sd, struct event_data *ev, const char *eventname);
+	static void event_doall_sub (void *key, void *data, va_list ap);
+	static int event_do (const char *name);
+	static int event_doall_id (const char *name, int rid);
+	static int event_doall (const char *name);
+	static int event_do_clock (int tid, int64 tick, int id, intptr_t data);
+	static void event_do_oninit ( bool reload );
+	static int timerevent_export (struct npc_data *nd, int i);
+	static int timerevent (int tid, int64 tick, int id, intptr_t data);
+	static int timerevent_start (struct npc_data *nd, int rid);
+	static int timerevent_stop (struct npc_data *nd);
+	static void timerevent_quit (struct map_session_data *sd);
+	static int64 gettimerevent_tick (struct npc_data *nd);
+	static int settimerevent_tick (struct npc_data *nd, int newtimer);
+	static int event (struct map_session_data *sd, const char *eventname, int ontouch);
+	static int touch_areanpc_sub (struct block_list *bl, va_list ap);
+	static int touchnext_areanpc (struct map_session_data *sd, bool leavemap);
+	static int touch_areanpc (struct map_session_data *sd, int16 m, int16 x, int16 y);
+	static int untouch_areanpc (struct map_session_data *sd, int16 m, int16 x, int16 y);
+	static int touch_areanpc2 (struct mob_data *md);
+	static int check_areanpc (int flag, int16 m, int16 x, int16 y, int16 range);
+	static struct npc_data* checknear (struct map_session_data *sd, struct block_list *bl);
+	static int globalmessage (const char *name, const char *mes);
+	static void run_tomb (struct map_session_data *sd, struct npc_data *nd);
+	static int click (struct map_session_data *sd, struct npc_data *nd);
+	static int scriptcont (struct map_session_data *sd, int id, bool closing);
+	static int buysellsel (struct map_session_data *sd, int id, int type);
+	static int cashshop_buylist (struct map_session_data *sd, int points, int count, unsigned short *item_list);
+	static int buylist_sub (struct map_session_data *sd, int n, unsigned short *item_list, struct npc_data *nd);
+	static int cashshop_buy (struct map_session_data *sd, int nameid, int amount, int points);
+	static int buylist (struct map_session_data *sd, int n, unsigned short *item_list);
+	static int selllist_sub (struct map_session_data *sd, int n, unsigned short *item_list, struct npc_data *nd);
+	static int selllist (struct map_session_data *sd, int n, unsigned short *item_list);
+	static int remove_map (struct npc_data *nd);
+	static int unload_ev (DBKey key, DBData *data, va_list ap);
+	static int unload_ev_label (DBKey key, DBData *data, va_list ap);
+	static int unload_dup_sub (struct npc_data *nd, va_list args);
+	static void unload_duplicates (struct npc_data *nd);
+	static int unload (struct npc_data *nd, bool single);
+	static void clearsrcfile (void);
+	static void addsrcfile (const char *name);
+	static void delsrcfile (const char *name);
+	static const char *retainpathreference (const char *filepath);
+	static void releasepathreference (const char *filepath);
+	static void parsename (struct npc_data *nd, const char *name, const char *start, const char *buffer, const char *filepath);
+	static int parseview (const char *w4, const char *start, const char *buffer, const char *filepath);
+	static bool viewisid (const char *viewid);
+	static struct npc_data *create_npc (enum npc_subtype subtype, int m, int x, int y, uint8 dir, int16 class_);
+	static struct npc_data* add_warp (char *name, short from_mapid, short from_x, short from_y, short xs, short ys, unsigned short to_mapindex, short to_x, short to_y);
+	static const char *parse_warp (const char *w1, const char *w2, const char *w3, const char *w4, const char *start, const char *buffer, const char *filepath, int *retval);
+	static const char *parse_shop (const char *w1, const char *w2, const char *w3, const char *w4, const char *start, const char *buffer, const char *filepath, int *retval);
+	static const char *parse_unknown_object (const char *w1, const char *w2, const char *w3, const char *w4, const char *start, const char *buffer, const char *filepath, int *retval);
+	static void convertlabel_db (struct npc_label_list *label_list, const char *filepath);
+	static const char* skip_script (const char *start, const char *buffer, const char *filepath, int *retval);
+	static const char *parse_script (const char *w1, const char *w2, const char *w3, const char *w4, const char *start, const char *buffer, const char *filepath, int options, int *retval);
+	static void add_to_location (struct npc_data *nd);
+	static bool duplicate_script_sub (struct npc_data *nd, const struct npc_data *snd, int xs, int ys, int options);
+	static bool duplicate_shop_sub (struct npc_data *nd, const struct npc_data *snd, int xs, int ys, int options);
+	static bool duplicate_warp_sub (struct npc_data *nd, const struct npc_data *snd, int xs, int ys, int options);
+	static bool duplicate_sub (struct npc_data *nd, const struct npc_data *snd, int xs, int ys, int options);
+	static const char *parse_duplicate (const char *w1, const char *w2, const char *w3, const char *w4, const char *start, const char *buffer, const char *filepath, int options, int *retval);
+	static int duplicate4instance (struct npc_data *snd, int16 m);
+	static void setcells (struct npc_data *nd);
+	static int unsetcells_sub (struct block_list *bl, va_list ap);
+	static void unsetcells (struct npc_data *nd);
+	static void movenpc (struct npc_data *nd, int16 x, int16 y);
+	static void setdisplayname (struct npc_data *nd, const char *newname);
+	static void setclass (struct npc_data *nd, short class_);
+	static int do_atcmd_event (struct map_session_data *sd, const char *command, const char *message, const char *eventname);
+	static const char *parse_function (const char *w1, const char *w2, const char *w3, const char *w4, const char *start, const char *buffer, const char *filepath, int *retval);
+	static void parse_mob2 (struct spawn_data *mobspawn);
+	static const char *parse_mob (const char *w1, const char *w2, const char *w3, const char *w4, const char *start, const char *buffer, const char *filepath, int *retval);
+	static const char *parse_mapflag (const char *w1, const char *w2, const char *w3, const char *w4, const char *start, const char *buffer, const char *filepath, int *retval);
+	static void parse_unknown_mapflag (const char *name, const char *w3, const char *w4, const char *start, const char *buffer, const char *filepath, int *retval);
+	static int parsesrcfile (const char *filepath, bool runOnInit);
+	static int script_event (struct map_session_data *sd, enum npce_event type);
+	static void read_event_script (void);
+	static int path_db_clear_sub (DBKey key, DBData *data, va_list args);
+	static int ev_label_db_clear_sub (DBKey key, DBData *data, va_list args);
+	static int reload (void);
+	static bool unloadfile (const char *filepath);
+	static void do_clear_npc (void);
+	static void debug_warps_sub (struct npc_data *nd);
+	static void debug_warps (void);
 	/* */
-	void (*trader_count_funds) (struct npc_data *nd, struct map_session_data *sd);
-	bool (*trader_pay) (struct npc_data *nd, struct map_session_data *sd, int price, int points);
-	void (*trader_update) (int master);
-	int (*market_buylist) (struct map_session_data* sd, unsigned short list_size, struct packet_npc_market_purchase *p);
-	bool (*trader_open) (struct map_session_data *sd, struct npc_data *nd);
-	void (*market_fromsql) (void);
-	void (*market_tosql) (struct npc_data *nd, unsigned short index);
-	void (*market_delfromsql) (struct npc_data *nd, unsigned short index);
-	void (*market_delfromsql_sub) (const char *npcname, unsigned short index);
-	bool (*db_checkid) (const int id);
+	static void trader_count_funds (struct npc_data *nd, struct map_session_data *sd);
+	static bool trader_pay (struct npc_data *nd, struct map_session_data *sd, int price, int points);
+	static void trader_update (int master);
+	static int market_buylist (struct map_session_data* sd, unsigned short list_size, struct packet_npc_market_purchase *p);
+	static bool trader_open (struct map_session_data *sd, struct npc_data *nd);
+	static void market_fromsql (void);
+	static void market_tosql (struct npc_data *nd, unsigned short index);
+	static void market_delfromsql (struct npc_data *nd, unsigned short index);
+	static void market_delfromsql_sub (const char *npcname, unsigned short index);
+	static bool db_checkid (const int id);
 	/**
 	 * For the Secure NPC Timeout option (check config/Secure.h) [RR]
 	 **/
-	int (*secure_timeout_timer) (int tid, int64 tick, int id, intptr_t data);
+	static int secure_timeout_timer (int tid, int64 tick, int id, intptr_t data);
 };
+
+extern CNpc *npc;
 
 #ifdef HERCULES_CORE
 void npc_defaults(void);
 #endif // HERCULES_CORE
 
-HPShared struct npc_interface *npc;
 
 /* comes from npc_chat.c */
 #ifdef PCRE_SUPPORT

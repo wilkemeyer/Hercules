@@ -69,37 +69,39 @@ struct instance_data {
 	struct point respawn; ///< reload spawn
 };
 
-struct instance_interface {
-	void (*init) (bool minimal);
-	void (*final) (void);
-	void (*reload) (void);
+class CInstance {
+public:
 	/* start point */
-	unsigned short start_id;
-	unsigned short instances;/* count */
+	static unsigned short start_id;
+	static unsigned short instances;/* count */
 	/* */
-	struct instance_data *list;/* pointer to a chunk of consecutive memory, access via instance->list[0]..etc */
+	static struct instance_data *list;/* pointer to a chunk of consecutive memory, access via instance->list[0]..etc */
 	/* */
-	int (*create) (int party_id, const char *name, enum instance_owner_type type);
-	int (*add_map) (const char *name, int instance_id, bool usebasename, const char *map_name);
-	void (*del_map) (int16 m);
-	int (*map2imap) (int16 m, int instance_id);
-	int (*mapid2imapid) (int16 m, int instance_id);
-	int (*mapname2imap) (const char *map_name, int instance_id);
-	int (*map_npcsub) (struct block_list* bl, va_list args);
-	int (*init_npc) (struct block_list* bl, va_list args);
-	void (*destroy) (int instance_id);
-	void (*start) (int instance_id);
-	void (*check_idle) (int instance_id);
-	void (*check_kick) (struct map_session_data *sd);
-	void (*set_timeout) (int instance_id, unsigned int progress_timeout, unsigned int idle_timeout);
-	bool (*valid) (int instance_id);
-	int (*destroy_timer) (int tid, int64 tick, int id, intptr_t data);
+
+	static void init (bool minimal);
+	static void final (void);
+	static void reload (void);
+	static int create (int party_id, const char *name, enum instance_owner_type type);
+	static int add_map (const char *name, int instance_id, bool usebasename, const char *map_name);
+	static void del_map (int16 m);
+	static int map2imap (int16 m, int instance_id);
+	static int mapid2imapid (int16 m, int instance_id);
+	static int mapname2imap (const char *map_name, int instance_id);
+	static int map_npcsub (struct block_list* bl, va_list args);
+	static int init_npc (struct block_list* bl, va_list args);
+	static void destroy (int instance_id);
+	static void start (int instance_id);
+	static void check_idle (int instance_id);
+	static void check_kick (struct map_session_data *sd);
+	static void set_timeout (int instance_id, unsigned int progress_timeout, unsigned int idle_timeout);
+	static bool valid (int instance_id);
+	static int destroy_timer (int tid, int64 tick, int id, intptr_t data);
 };
+extern CInstance *instance;
 
 #ifdef HERCULES_CORE
 void instance_defaults(void);
 #endif // HERCULES_CORE
 
-HPShared struct instance_interface *instance;
 
 #endif /* MAP_INSTANCE_H */

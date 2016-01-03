@@ -549,92 +549,96 @@ struct item_data {
 #define itemdb_canmail(item, gmlv)                (itemdb->isrestricted((item), (gmlv), 0, itemdb->canmail_sub))
 #define itemdb_canauction(item, gmlv)             (itemdb->isrestricted((item), (gmlv), 0, itemdb->canauction_sub))
 
-struct itemdb_interface {
-	void (*init) (bool minimal);
-	void (*final) (void);
-	void (*reload) (void);
-	void (*name_constants) (void);
+class CItemdb {
+public:
+
 	/* */
-	struct item_group *groups;
-	unsigned short group_count;
+	static struct item_group *groups;
+	static unsigned short group_count;
 	/* */
-	struct item_chain *chains;
-	unsigned short chain_count;
-	unsigned short chain_cache[ECC_MAX];
+	static struct item_chain *chains;
+	static unsigned short chain_count;
+	static unsigned short chain_cache[ECC_MAX];
 	/* */
-	struct item_package *packages;
-	unsigned short package_count;
+	static struct item_package *packages;
+	static unsigned short package_count;
 	/* list of item combos loaded */
-	struct item_combo **combos;
-	unsigned short combo_count;
+	static struct item_combo **combos;
+	static unsigned short combo_count;
 	/* */
-	DBMap *names;
+	static DBMap *names;
 	/* */
-	struct item_data *array[MAX_ITEMDB];
-	DBMap *other;// int nameid -> struct item_data*
-	struct item_data dummy; //This is the default dummy item used for non-existant items. [Skotlex]
+	static struct item_data *array[MAX_ITEMDB];
+	static DBMap *other;// int nameid -> struct item_data*
+	static struct item_data dummy; //This is the default dummy item used for non-existant items. [Skotlex]
 	/* */
-	void (*read_groups) (void);
-	void (*read_chains) (void);
-	void (*read_packages) (void);
+
+	static void init (bool minimal);
+	static void final (void);
+	static void reload (void);
+	static void name_constants (void);
 	/* */
-	void (*write_cached_packages) (const char *config_filename);
-	bool (*read_cached_packages) (const char *config_filename);
+	static void read_groups (void);
+	static void read_chains (void);
+	static void read_packages (void);
 	/* */
-	struct item_data* (*name2id) (const char *str);
-	struct item_data* (*search_name) (const char *name);
-	int (*search_name_array) (struct item_data** data, int size, const char *str, int flag);
-	struct item_data* (*load)(int nameid);
-	struct item_data* (*search)(int nameid);
-	struct item_data* (*exists) (int nameid);
-	bool (*in_group) (struct item_group *group, int nameid);
-	int (*group_item) (struct item_group *group);
-	int (*chain_item) (unsigned short chain_id, int *rate);
-	void (*package_item) (struct map_session_data *sd, struct item_package *package);
-	int (*searchname_sub) (DBKey key, DBData *data, va_list ap);
-	int (*searchname_array_sub) (DBKey key, DBData data, va_list ap);
-	int (*searchrandomid) (struct item_group *group);
-	const char* (*_typename) (int type);
-	void (*jobid2mapid) (unsigned int *bclass, unsigned int jobmask);
-	void (*create_dummy_data) (void);
-	struct item_data* (*create_item_data) (int nameid);
-	int (*isequip) (int nameid);
-	int (*isequip2) (struct item_data *data);
-	int (*isstackable) (int nameid);
-	int (*isstackable2) (struct item_data *data);
-	int (*isdropable_sub) (struct item_data *item, int gmlv, int unused);
-	int (*cantrade_sub) (struct item_data *item, int gmlv, int gmlv2);
-	int (*canpartnertrade_sub) (struct item_data *item, int gmlv, int gmlv2);
-	int (*cansell_sub) (struct item_data *item, int gmlv, int unused);
-	int (*cancartstore_sub) (struct item_data *item, int gmlv, int unused);
-	int (*canstore_sub) (struct item_data *item, int gmlv, int unused);
-	int (*canguildstore_sub) (struct item_data *item, int gmlv, int unused);
-	int (*canmail_sub) (struct item_data *item, int gmlv, int unused);
-	int (*canauction_sub) (struct item_data *item, int gmlv, int unused);
-	int (*isrestricted) (struct item *item, int gmlv, int gmlv2, int(*func)(struct item_data *, int, int));
-	int (*isidentified) (int nameid);
-	int (*isidentified2) (struct item_data *data);
-	int (*combo_split_atoi) (char *str, int *val);
-	void (*read_combos) ();
-	int (*gendercheck) (struct item_data *id);
-	int (*validate_entry) (struct item_data *entry, int n, const char *source);
-	void (*readdb_additional_fields) (int itemid, config_setting_t *it, int n, const char *source);
-	int (*readdb_libconfig_sub) (config_setting_t *it, int n, const char *source);
-	int (*readdb_libconfig) (const char *filename);
-	uint64 (*unique_id) (struct map_session_data *sd);
-	void (*read) (bool minimal);
-	void (*destroy_item_data) (struct item_data *self, int free_self);
-	int (*final_sub) (DBKey key, DBData *data, va_list ap);
-	void (*clear) (bool total);
-	struct item_combo * (*id2combo) (unsigned short id);
-	bool (*is_item_usable) (struct item_data *item);
-	bool (*lookup_const) (const config_setting_t *it, const char *name, int *value);
+	static void write_cached_packages (const char *config_filename);
+	static bool read_cached_packages (const char *config_filename);
+	/* */
+	static struct item_data* name2id (const char *str);
+	static struct item_data* search_name (const char *name);
+	static int search_name_array (struct item_data** data, int size, const char *str, int flag);
+	static struct item_data* load(int nameid);
+	static struct item_data* search(int nameid);
+	static struct item_data* exists (int nameid);
+	static bool in_group (struct item_group *group, int nameid);
+	static int group_item (struct item_group *group);
+	static int chain_item (unsigned short chain_id, int *rate);
+	static void package_item (struct map_session_data *sd, struct item_package *package);
+	static int searchname_sub (DBKey key, DBData *data, va_list ap);
+	static int searchname_array_sub (DBKey key, DBData data, va_list ap);
+	static int searchrandomid (struct item_group *group);
+	static const char* _typename (int type);
+	static void jobid2mapid (unsigned int *bclass, unsigned int jobmask);
+	static void create_dummy_data (void);
+	static struct item_data* create_item_data (int nameid);
+	static int isequip (int nameid);
+	static int isequip2 (struct item_data *data);
+	static int isstackable (int nameid);
+	static int isstackable2 (struct item_data *data);
+	static int isdropable_sub (struct item_data *item, int gmlv, int unused);
+	static int cantrade_sub (struct item_data *item, int gmlv, int gmlv2);
+	static int canpartnertrade_sub (struct item_data *item, int gmlv, int gmlv2);
+	static int cansell_sub (struct item_data *item, int gmlv, int unused);
+	static int cancartstore_sub (struct item_data *item, int gmlv, int unused);
+	static int canstore_sub (struct item_data *item, int gmlv, int unused);
+	static int canguildstore_sub (struct item_data *item, int gmlv, int unused);
+	static int canmail_sub (struct item_data *item, int gmlv, int unused);
+	static int canauction_sub (struct item_data *item, int gmlv, int unused);
+	static int isrestricted (struct item *item, int gmlv, int gmlv2, int(*func)(struct item_data *, int, int));
+	static int isidentified (int nameid);
+	static int isidentified2 (struct item_data *data);
+	static int combo_split_atoi (char *str, int *val);
+	static void read_combos ();
+	static int gendercheck (struct item_data *id);
+	static int validate_entry (struct item_data *entry, int n, const char *source);
+	static void readdb_additional_fields (int itemid, config_setting_t *it, int n, const char *source);
+	static int readdb_libconfig_sub (config_setting_t *it, int n, const char *source);
+	static int readdb_libconfig (const char *filename);
+	static uint64 unique_id (struct map_session_data *sd);
+	static void read (bool minimal);
+	static void destroy_item_data (struct item_data *self, int free_self);
+	static int final_sub (DBKey key, DBData *data, va_list ap);
+	static void clear (bool total);
+	static struct item_combo * id2combo (unsigned short id);
+	static bool is_item_usable (struct item_data *item);
+	static bool lookup_const (const config_setting_t *it, const char *name, int *value);
 };
+extern CItemdb *itemdb;
 
 #ifdef HERCULES_CORE
 void itemdb_defaults(void);
 #endif // HERCULES_CORE
 
-HPShared struct itemdb_interface *itemdb;
 
 #endif /* MAP_ITEMDB_H */

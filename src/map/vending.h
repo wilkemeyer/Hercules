@@ -33,25 +33,26 @@ struct s_vending {
 	unsigned int value; //at which price
 };
 
-struct vending_interface {
-	unsigned int next_id;/* next vender id */
-	DBMap *db;
+class CVending {
+public:
+	static unsigned int next_id;/* next vender id */
+	static DBMap *db;
 	/* */
-	void (*init) (bool minimal);
-	void (*final) (void);
+	static void init (bool minimal);
+	static void final (void);
 	/* */
-	void (*close) (struct map_session_data* sd);
-	void (*open) (struct map_session_data* sd, const char* message, const uint8* data, int count);
-	void (*list) (struct map_session_data* sd, unsigned int id);
-	void (*purchase) (struct map_session_data* sd, int aid, unsigned int uid, const uint8* data, int count);
-	bool (*search) (struct map_session_data* sd, unsigned short nameid);
-	bool (*searchall) (struct map_session_data* sd, const struct s_search_store_search* s);
+	static void close (struct map_session_data* sd);
+	static void open (struct map_session_data* sd, const char* message, const uint8* data, int count);
+	static void list (struct map_session_data* sd, unsigned int id);
+	static void purchase (struct map_session_data* sd, int aid, unsigned int uid, const uint8* data, int count);
+	static bool search (struct map_session_data* sd, unsigned short nameid);
+	static bool searchall (struct map_session_data* sd, const struct s_search_store_search* s);
 };
+extern CVending *vending;
 
 #ifdef HERCULES_CORE
 void vending_defaults(void);
 #endif // HERCULES_CORE
 
-HPShared struct vending_interface *vending;
 
 #endif /* MAP_VENDING_H */

@@ -20,8 +20,8 @@
  */
 #include "stdafx.h"
 
-struct mapreg_interface mapreg_s;
-struct mapreg_interface *mapreg;
+CMapreg mapreg_s;
+CMapreg *mapreg;
 
 #define MAPREG_AUTOSAVE_INTERVAL (300*1000)
 
@@ -31,7 +31,7 @@ struct mapreg_interface *mapreg;
  * @param uid variable's unique identifier.
  * @return variable's integer value
  */
-int mapreg_readreg(int64 uid) {
+int CMapreg::readreg(int64 uid) {
 	struct mapreg_save *m = (struct mapreg_save *) i64db_get(mapreg->regs.vars, uid);
 	return m?m->u.i:0;
 }
@@ -42,7 +42,7 @@ int mapreg_readreg(int64 uid) {
  * @param uid variable's unique identifier
  * @return variable's string value
  */
-char* mapreg_readregstr(int64 uid) {
+char* CMapreg::readregstr(int64 uid) {
 	struct mapreg_save *m = (struct mapreg_save *) i64db_get(mapreg->regs.vars, uid);
 	return m?m->u.str:NULL;
 }
@@ -54,7 +54,7 @@ char* mapreg_readregstr(int64 uid) {
  * @param val new value
  * @retval true value was successfully set
  */
-bool mapreg_setreg(int64 uid, int val) {
+bool CMapreg::setreg(int64 uid, int val) {
 	struct mapreg_save *m;
 	int num = script_getvarid(uid);
 	unsigned int i = script_getvaridx(uid);
@@ -110,7 +110,7 @@ bool mapreg_setreg(int64 uid, int val) {
  * @param str new value
  * @retval true value was successfully set
  */
-bool mapreg_setregstr(int64 uid, const char* str) {
+bool CMapreg::setregstr(int64 uid, const char* str) {
 	struct mapreg_save *m;
 	int num = script_getvarid(uid);
 	unsigned int i   = script_getvaridx(uid);
@@ -167,7 +167,7 @@ bool mapreg_setregstr(int64 uid, const char* str) {
 /**
  * Loads permanent variables from database.
  */
-void script_load_mapreg(void) {
+void CMapreg::load(void) {
 	/*
 	        0        1       2
 	   +-------------------------+
@@ -220,7 +220,7 @@ void script_load_mapreg(void) {
 /**
  * Saves permanent variables to database.
  */
-void script_save_mapreg(void) {
+void CMapreg::save(void) {
 	if (mapreg->dirty) {
 		DBIterator *iter = db_iterator(mapreg->regs.vars);
 		struct mapreg_save *m;
@@ -251,7 +251,7 @@ void script_save_mapreg(void) {
  *
  * @see timer->do_timer
  */
-int script_autosave_mapreg(int tid, int64 tick, int id, intptr_t data) {
+int CMapreg::save_timer(int tid, int64 tick, int id, intptr_t data) {
 	mapreg->save();
 	return 0;
 }
@@ -261,7 +261,7 @@ int script_autosave_mapreg(int tid, int64 tick, int id, intptr_t data) {
  *
  * @see DBApply
  */
-int mapreg_destroyreg(DBKey key, DBData *data, va_list ap) {
+int CMapreg::destroyreg(DBKey key, DBData *data, va_list ap) {
 	struct mapreg_save *m = NULL;
 
 	if (data->type != DB_DATA_PTR) // Sanity check
@@ -284,7 +284,7 @@ int mapreg_destroyreg(DBKey key, DBData *data, va_list ap) {
  * This has the effect of clearing the temporary variables, and
  * reloading the permanent ones.
  */
-void mapreg_reload(void) {
+void CMapreg::reload(void) {
 	mapreg->save();
 
 	mapreg->regs.vars->clear(mapreg->regs.vars, mapreg->destroyreg);
@@ -300,7 +300,7 @@ void mapreg_reload(void) {
 /**
  * Finalizer.
  */
-void mapreg_final(void) {
+void CMapreg::final(void) {
 	mapreg->save();
 
 	mapreg->regs.vars->destroy(mapreg->regs.vars, mapreg->destroyreg);
@@ -314,7 +314,7 @@ void mapreg_final(void) {
 /**
  * Initializer.
  */
-void mapreg_init(void) {
+void CMapreg::init(void) {
 	mapreg->regs.vars = i64db_alloc(DB_OPT_BASE);
 	mapreg->ers = ers_new(sizeof(struct mapreg_save), "mapreg_sql.c::mapreg_ers", ERS_OPT_CLEAN);
 
@@ -327,7 +327,7 @@ void mapreg_init(void) {
 /**
  * Loads the mapreg configuration file.
  */
-bool mapreg_config_read(const char* w1, const char* w2) {
+bool CMapreg::config_read(const char* w1, const char* w2) {
 	if(!strcmpi(w1, "mapreg_db"))
 		safestrncpy(mapreg->table, w2, sizeof(mapreg->table));
 	else
@@ -353,20 +353,6 @@ void mapreg_defaults(void) {
 	/* */
 	mapreg->regs.arrays = NULL;
 
-	/* */
-	mapreg->init = mapreg_init;
-	mapreg->final = mapreg_final;
 
-	/* */
-	mapreg->readreg = mapreg_readreg;
-	mapreg->readregstr = mapreg_readregstr;
-	mapreg->setreg = mapreg_setreg;
-	mapreg->setregstr = mapreg_setregstr;
-	mapreg->load = script_load_mapreg;
-	mapreg->save = script_save_mapreg;
-	mapreg->save_timer = script_autosave_mapreg;
-	mapreg->destroyreg = mapreg_destroyreg;
-	mapreg->reload = mapreg_reload;
-	mapreg->config_read = mapreg_config_read;
 
 }

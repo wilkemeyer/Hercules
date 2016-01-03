@@ -20,10 +20,10 @@
  */
 #include "stdafx.h"
 
-struct mail_interface mail_s;
-struct mail_interface *mail;
+CMail mail_s;
+CMail *mail=NULL;
 
-void mail_clear(struct map_session_data *sd)
+void CMail::clear(struct map_session_data *sd)
 {
 	nullpo_retv(sd);
 	sd->mail.nameid = 0;
@@ -34,7 +34,7 @@ void mail_clear(struct map_session_data *sd)
 	return;
 }
 
-int mail_removeitem(struct map_session_data *sd, short flag)
+int CMail::removeitem(struct map_session_data *sd, short flag)
 {
 	nullpo_ret(sd);
 
@@ -52,7 +52,7 @@ int mail_removeitem(struct map_session_data *sd, short flag)
 	return 1;
 }
 
-int mail_removezeny(struct map_session_data *sd, short flag)
+int CMail::removezeny(struct map_session_data *sd, short flag)
 {
 	nullpo_ret(sd);
 
@@ -65,7 +65,7 @@ int mail_removezeny(struct map_session_data *sd, short flag)
 	return 1;
 }
 
-unsigned char mail_setitem(struct map_session_data *sd, int idx, int amount) {
+unsigned char CMail::setitem(struct map_session_data *sd, int idx, int amount) {
 
 	nullpo_retr(1, sd);
 	if( pc_istrading(sd) )
@@ -102,7 +102,7 @@ unsigned char mail_setitem(struct map_session_data *sd, int idx, int amount) {
 	}
 }
 
-bool mail_setattachment(struct map_session_data *sd, struct mail_message *msg)
+bool CMail::setattachment(struct map_session_data *sd, struct mail_message *msg)
 {
 	int n;
 
@@ -142,7 +142,7 @@ bool mail_setattachment(struct map_session_data *sd, struct mail_message *msg)
 	return true;
 }
 
-void mail_getattachment(struct map_session_data* sd, int zeny, struct item* item)
+void CMail::getattachment(struct map_session_data* sd, int zeny, struct item* item)
 {
 	nullpo_retv(sd);
 	nullpo_retv(item);
@@ -158,7 +158,7 @@ void mail_getattachment(struct map_session_data* sd, int zeny, struct item* item
 	}
 }
 
-int mail_openmail(struct map_session_data *sd)
+int CMail::openmail(struct map_session_data *sd)
 {
 	nullpo_ret(sd);
 
@@ -170,7 +170,7 @@ int mail_openmail(struct map_session_data *sd)
 	return 1;
 }
 
-void mail_deliveryfail(struct map_session_data *sd, struct mail_message *msg)
+void CMail::deliveryfail(struct map_session_data *sd, struct mail_message *msg)
 {
 	nullpo_retv(sd);
 	nullpo_retv(msg);
@@ -190,7 +190,7 @@ void mail_deliveryfail(struct map_session_data *sd, struct mail_message *msg)
 }
 
 // This function only check if the mail operations are valid
-bool mail_invalid_operation(struct map_session_data *sd) {
+bool CMail::invalid_operation(struct map_session_data *sd) {
 	nullpo_retr(false, sd);
 	if( !map->list[sd->bl.m].flag.town && !pc->can_use_command(sd, "@mail") ) {
 		ShowWarning("clif->parse_Mail: char '%s' trying to do invalid mail operations.\n", sd->status.name);
@@ -204,13 +204,5 @@ void mail_defaults(void)
 {
 	mail = &mail_s;
 
-	mail->clear = mail_clear;
-	mail->removeitem = mail_removeitem;
-	mail->removezeny = mail_removezeny;
-	mail->setitem = mail_setitem;
-	mail->setattachment = mail_setattachment;
-	mail->getattachment = mail_getattachment;
-	mail->openmail = mail_openmail;
-	mail->deliveryfail = mail_deliveryfail;
-	mail->invalid_operation = mail_invalid_operation;
+
 }

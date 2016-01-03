@@ -20,24 +20,28 @@
  */
 #include "stdafx.h"
 
-struct mercenary_interface mercenary_s;
+CMercenary mercenary_s;
+CMercenary *mercenary=NULL;
+
 struct s_mercenary_db mercdb[MAX_MERCENARY_CLASS];
 
-struct mercenary_interface *mercenary;
+// Subsystem Globals:
+struct s_mercenary_db *CMercenary::db;
 
-int merc_search_index(int class_)
+
+int CMercenary::search_index(int class_)
 {
 	int i;
 	ARR_FIND(0, MAX_MERCENARY_CLASS, i, mercenary->db[i].class_ == class_);
 	return (i == MAX_MERCENARY_CLASS)?-1:i;
 }
 
-bool merc_class(int class_)
+bool CMercenary::_class(int class_)
 {
 	return (bool)(mercenary->search_index(class_) > -1);
 }
 
-struct view_data * merc_get_viewdata(int class_)
+struct view_data * CMercenary::get_viewdata(int class_)
 {
 	int i = mercenary->search_index(class_);
 	if( i < 0 )
@@ -46,7 +50,7 @@ struct view_data * merc_get_viewdata(int class_)
 	return &mercenary->db[i].vd;
 }
 
-int merc_create(struct map_session_data *sd, int class_, unsigned int lifetime)
+int CMercenary::create(struct map_session_data *sd, int class_, unsigned int lifetime)
 {
 	struct s_mercenary merc;
 	struct s_mercenary_db *db;
@@ -71,7 +75,7 @@ int merc_create(struct map_session_data *sd, int class_, unsigned int lifetime)
 	return 1;
 }
 
-int mercenary_get_lifetime(struct mercenary_data *md)
+int CMercenary::get_lifetime(struct mercenary_data *md)
 {
 	const struct TimerData * td;
 	if( md == NULL || md->contract_timer == INVALID_TIMER )
@@ -81,7 +85,7 @@ int mercenary_get_lifetime(struct mercenary_data *md)
 	return (td != NULL) ? DIFF_TICK32(td->tick, timer->gettick()) : 0;
 }
 
-int mercenary_get_guild(struct mercenary_data *md)
+int CMercenary::get_guild(struct mercenary_data *md)
 {
 	int class_;
 
@@ -100,7 +104,7 @@ int mercenary_get_guild(struct mercenary_data *md)
 	return -1;
 }
 
-int mercenary_get_faith(struct mercenary_data *md)
+int CMercenary::get_faith(struct mercenary_data *md)
 {
 	struct map_session_data *sd;
 	int class_;
@@ -120,7 +124,7 @@ int mercenary_get_faith(struct mercenary_data *md)
 	return 0;
 }
 
-int mercenary_set_faith(struct mercenary_data *md, int value)
+int CMercenary::set_faith(struct mercenary_data *md, int value)
 {
 	struct map_session_data *sd;
 	int class_, *faith;
@@ -146,7 +150,7 @@ int mercenary_set_faith(struct mercenary_data *md, int value)
 	return 0;
 }
 
-int mercenary_get_calls(struct mercenary_data *md)
+int CMercenary::get_calls(struct mercenary_data *md)
 {
 	struct map_session_data *sd;
 	int class_;
@@ -166,7 +170,7 @@ int mercenary_get_calls(struct mercenary_data *md)
 	return 0;
 }
 
-int mercenary_set_calls(struct mercenary_data *md, int value)
+int CMercenary::set_calls(struct mercenary_data *md, int value)
 {
 	struct map_session_data *sd;
 	int class_, *calls;
@@ -191,7 +195,7 @@ int mercenary_set_calls(struct mercenary_data *md, int value)
 	return 0;
 }
 
-int mercenary_save(struct mercenary_data *md)
+int CMercenary::save(struct mercenary_data *md)
 {
 	md->mercenary.hp = md->battle_status.hp;
 	md->mercenary.sp = md->battle_status.sp;
@@ -201,7 +205,7 @@ int mercenary_save(struct mercenary_data *md)
 	return 1;
 }
 
-int merc_contract_end_timer(int tid, int64 tick, int id, intptr_t data) {
+int CMercenary::contract_end_timer(int tid, int64 tick, int id, intptr_t data) {
 	struct map_session_data *sd;
 	struct mercenary_data *md;
 
@@ -222,7 +226,7 @@ int merc_contract_end_timer(int tid, int64 tick, int id, intptr_t data) {
 	return 0;
 }
 
-int merc_delete(struct mercenary_data *md, int reply)
+int CMercenary::_delete(struct mercenary_data *md, int reply)
 {
 	struct map_session_data *sd = md->master;
 	md->mercenary.life_time = 0;
@@ -248,7 +252,7 @@ int merc_delete(struct mercenary_data *md, int reply)
 	return unit->remove_map(&md->bl, CLR_OUTSIGHT, ALC_MARK);
 }
 
-void merc_contract_stop(struct mercenary_data *md)
+void CMercenary::contract_stop(struct mercenary_data *md)
 {
 	nullpo_retv(md);
 	if( md->contract_timer != INVALID_TIMER )
@@ -264,7 +268,7 @@ void merc_contract_init(struct mercenary_data *md)
 	md->regen.state.block = 0;
 }
 
-int merc_data_received(struct s_mercenary *merc, bool flag) {
+int CMercenary::data_received(struct s_mercenary *merc, bool flag) {
 	struct map_session_data *sd;
 	struct mercenary_data *md;
 	struct s_mercenary_db *db;
@@ -325,7 +329,7 @@ int merc_data_received(struct s_mercenary *merc, bool flag) {
 	return 1;
 }
 
-void mercenary_heal(struct mercenary_data *md, int hp, int sp)
+void CMercenary::heal(struct mercenary_data *md, int hp, int sp)
 {
 	if( hp )
 		clif->mercenary_updatestatus(md->master, SP_HP);
@@ -333,13 +337,13 @@ void mercenary_heal(struct mercenary_data *md, int hp, int sp)
 		clif->mercenary_updatestatus(md->master, SP_SP);
 }
 
-int mercenary_dead(struct mercenary_data *md)
+int CMercenary::dead(struct mercenary_data *md)
 {
 	mercenary->_delete(md, 1);
 	return 0;
 }
 
-int mercenary_killbonus(struct mercenary_data *md)
+int CMercenary::killbonus(struct mercenary_data *md)
 {
 	const enum sc_type scs[] = { SC_MER_FLEE, SC_MER_ATK, SC_MER_HP, SC_MER_SP, SC_MER_HIT };
 	int index = rnd() % ARRAYLENGTH(scs);
@@ -348,7 +352,7 @@ int mercenary_killbonus(struct mercenary_data *md)
 	return 0;
 }
 
-int mercenary_kills(struct mercenary_data *md)
+int CMercenary::kills(struct mercenary_data *md)
 {
 	md->mercenary.kill_count++;
 	md->mercenary.kill_count = cap_value(md->mercenary.kill_count, 0, INT_MAX);
@@ -365,7 +369,7 @@ int mercenary_kills(struct mercenary_data *md)
 	return 0;
 }
 
-int mercenary_checkskill(struct mercenary_data *md, uint16 skill_id)
+int CMercenary::checkskill(struct mercenary_data *md, uint16 skill_id)
 {
 	int i = skill_id - MC_SKILLBASE;
 
@@ -377,7 +381,7 @@ int mercenary_checkskill(struct mercenary_data *md, uint16 skill_id)
 	return 0;
 }
 
-bool read_mercenarydb_sub(char* str[], int columns, int current) {
+bool CMercenary::read_db_sub(char* str[], int columns, int current) {
 	int ele;
 	struct s_mercenary_db *db;
 	struct status_data *mstatus;
@@ -430,14 +434,14 @@ bool read_mercenarydb_sub(char* str[], int columns, int current) {
 	return true;
 }
 
-int read_mercenarydb(void) {
+int CMercenary::read_db(void) {
 	memset(mercenary->db, 0, sizeof(struct s_mercenary_db) * MAX_MERCENARY_CLASS);
 	sv->readdb(map->db_path, "mercenary_db.txt", ',', 26, 26, MAX_MERCENARY_CLASS, mercenary->read_db_sub);
 
 	return 0;
 }
 
-bool read_mercenary_skilldb_sub(char* str[], int columns, int current)
+bool CMercenary::read_skill_db_sub(char* str[], int columns, int current)
 {// <merc id>,<skill id>,<skill level>
 	struct s_mercenary_db *db;
 	int i, class_;
@@ -468,13 +472,13 @@ bool read_mercenary_skilldb_sub(char* str[], int columns, int current)
 	return true;
 }
 
-int read_mercenary_skilldb(void) {
+int CMercenary::read_skilldb(void) {
 	sv->readdb(map->db_path, "mercenary_skill_db.txt", ',', 3, 3, -1, mercenary->read_skill_db_sub);
 
 	return 0;
 }
 
-void do_init_mercenary(bool minimal) {
+void CMercenary::init(bool minimal) {
 	if (minimal)
 		return;
 
@@ -496,38 +500,4 @@ void mercenary_defaults(void) {
 	mercenary->db = mercdb;
 	memset(mercenary->db, 0, sizeof(struct s_mercenary_db) * MAX_MERCENARY_CLASS);
 
-	/* funcs */
-	mercenary->init = do_init_mercenary;
-
-	mercenary->_class = merc_class;
-	mercenary->get_viewdata = merc_get_viewdata;
-
-	mercenary->create = merc_create;
-	mercenary->data_received = merc_data_received;
-	mercenary->save = mercenary_save;
-
-	mercenary->heal = mercenary_heal;
-	mercenary->dead = mercenary_dead;
-
-	mercenary->_delete = merc_delete;
-	mercenary->contract_stop = merc_contract_stop;
-
-	mercenary->get_lifetime = mercenary_get_lifetime;
-	mercenary->get_guild = mercenary_get_guild;
-	mercenary->get_faith = mercenary_get_faith;
-	mercenary->set_faith = mercenary_set_faith;
-	mercenary->get_calls = mercenary_get_calls;
-	mercenary->set_calls = mercenary_set_calls;
-	mercenary->kills = mercenary_kills;
-
-	mercenary->checkskill = mercenary_checkskill;
-	mercenary->read_db = read_mercenarydb;
-	mercenary->read_skilldb = read_mercenary_skilldb;
-
-	mercenary->killbonus = mercenary_killbonus;
-	mercenary->search_index = merc_search_index;
-
-	mercenary->contract_end_timer = merc_contract_end_timer;
-	mercenary->read_db_sub = read_mercenarydb_sub;
-	mercenary->read_skill_db_sub = read_mercenary_skilldb_sub;
 }

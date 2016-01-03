@@ -27,22 +27,23 @@ struct item;
 struct mail_message;
 struct map_session_data;
 
-struct mail_interface {
-	void (*clear) (struct map_session_data *sd);
-	int (*removeitem) (struct map_session_data *sd, short flag);
-	int (*removezeny) (struct map_session_data *sd, short flag);
-	unsigned char (*setitem) (struct map_session_data *sd, int idx, int amount);
-	bool (*setattachment) (struct map_session_data *sd, struct mail_message *msg);
-	void (*getattachment) (struct map_session_data* sd, int zeny, struct item* item);
-	int (*openmail) (struct map_session_data *sd);
-	void (*deliveryfail) (struct map_session_data *sd, struct mail_message *msg);
-	bool (*invalid_operation) (struct map_session_data *sd);
+class CMail {
+public:
+	static void clear (struct map_session_data *sd);
+	static int removeitem (struct map_session_data *sd, short flag);
+	static int removezeny (struct map_session_data *sd, short flag);
+	static unsigned char setitem (struct map_session_data *sd, int idx, int amount);
+	static bool setattachment (struct map_session_data *sd, struct mail_message *msg);
+	static void getattachment (struct map_session_data* sd, int zeny, struct item* item);
+	static int openmail (struct map_session_data *sd);
+	static void deliveryfail (struct map_session_data *sd, struct mail_message *msg);
+	static bool invalid_operation (struct map_session_data *sd);
 };
+extern CMail *mail;
 
 #ifdef HERCULES_CORE
 void mail_defaults(void);
 #endif // HERCULES_CORE
 
-HPShared struct mail_interface *mail;
 
 #endif /* MAP_MAIL_H */

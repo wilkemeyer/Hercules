@@ -20,9 +20,13 @@
  */
 #include "stdafx.h"
 
+CDuel duel_s;
+CDuel *duel = NULL;
 
-struct duel_interface duel_s;
-struct duel_interface *duel;
+// Subsytem Globals:
+struct duel CDuel::list[MAX_DUEL];
+int CDuel::count;
+
 
 /*==========================================
  * Duel organizing functions [LuzZza]
@@ -37,7 +41,7 @@ void duel_savetime(struct map_session_data* sd) {
 	pc_setglobalreg(sd, script->add_str("PC_LAST_DUEL_TIME"), t->tm_mday*24*60 + t->tm_hour*60 + t->tm_min);
 }
 
-int duel_checktime(struct map_session_data* sd) {
+int CDuel::checktime(struct map_session_data* sd) {
 	int diff;
 	time_t clock;
 	struct tm *t;
@@ -65,7 +69,7 @@ static int duel_showinfo_sub(struct map_session_data* sd, va_list va)
 	return 1;
 }
 
-void duel_showinfo(const unsigned int did, struct map_session_data* sd) {
+void CDuel::showinfo(const unsigned int did, struct map_session_data* sd) {
 	int p=0;
 	char output[256];
 
@@ -85,7 +89,7 @@ void duel_showinfo(const unsigned int did, struct map_session_data* sd) {
 	map->foreachpc(duel_showinfo_sub, sd, &p);
 }
 
-int duel_create(struct map_session_data* sd, const unsigned int maxpl) {
+int CDuel::create(struct map_session_data* sd, const unsigned int maxpl) {
 	int i=1;
 	char output[256];
 
@@ -108,7 +112,7 @@ int duel_create(struct map_session_data* sd, const unsigned int maxpl) {
 	return i;
 }
 
-void duel_invite(const unsigned int did, struct map_session_data* sd, struct map_session_data* target_sd) {
+void CDuel::invite(const unsigned int did, struct map_session_data* sd, struct map_session_data* target_sd) {
 	char output[256];
 
 	nullpo_retv(sd);
@@ -134,7 +138,7 @@ static int duel_leave_sub(struct map_session_data* sd, va_list va)
 	return 0;
 }
 
-void duel_leave(const unsigned int did, struct map_session_data* sd) {
+void CDuel::leave(const unsigned int did, struct map_session_data* sd) {
 	char output[256];
 
 	nullpo_retv(sd);
@@ -154,7 +158,7 @@ void duel_leave(const unsigned int did, struct map_session_data* sd) {
 	clif->maptypeproperty2(&sd->bl,SELF);
 }
 
-void duel_accept(const unsigned int did, struct map_session_data* sd) {
+void CDuel::accept(const unsigned int did, struct map_session_data* sd) {
 	char output[256];
 
 	nullpo_retv(sd);
@@ -171,7 +175,7 @@ void duel_accept(const unsigned int did, struct map_session_data* sd) {
 	clif->maptypeproperty2(&sd->bl,SELF);
 }
 
-void duel_reject(const unsigned int did, struct map_session_data* sd) {
+void CDuel::reject(const unsigned int did, struct map_session_data* sd) {
 	char output[256];
 
 	nullpo_retv(sd);
@@ -183,10 +187,10 @@ void duel_reject(const unsigned int did, struct map_session_data* sd) {
 	sd->duel_invite = 0;
 }
 
-void do_final_duel(void) {
+void CDuel::final(void) {
 }
 
-void do_init_duel(bool minimal) {
+void CDuel::init(bool minimal) {
 	if (minimal)
 		return;
 
@@ -202,16 +206,5 @@ void duel_defaults(void) {
 	duel = &duel_s;
 	/* vars */
 	duel->count = 0;
-	/* funcs */
-	//Duel functions // [LuzZza]
-	duel->create = duel_create;
-	duel->invite = duel_invite;
-	duel->accept = duel_accept;
-	duel->reject = duel_reject;
-	duel->leave = duel_leave;
-	duel->showinfo = duel_showinfo;
-	duel->checktime = duel_checktime;
 
-	duel->init = do_init_duel;
-	duel->final = do_final_duel;
 }

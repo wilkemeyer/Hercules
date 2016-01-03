@@ -73,24 +73,25 @@ struct s_buyingstore {
 /**
  * Interface
  **/
-struct buyingstore_interface {
-	unsigned int nextid;
-	short blankslots[MAX_SLOTS];  // used when checking whether or not an item's card slots are blank
+class CBuyingstore {
+public:
+	static unsigned int nextid;
+	static short blankslots[MAX_SLOTS];  // used when checking whether or not an item's card slots are blank
 	/* */
-	bool (*setup) (struct map_session_data* sd, unsigned char slots);
-	void (*create) (struct map_session_data* sd, int zenylimit, unsigned char result, const char* storename, const uint8* itemlist, unsigned int count);
-	void (*close) (struct map_session_data* sd);
-	void (*open) (struct map_session_data* sd, int account_id);
-	void (*trade) (struct map_session_data* sd, int account_id, unsigned int buyer_id, const uint8* itemlist, unsigned int count);
-	bool (*search) (struct map_session_data* sd, unsigned short nameid);
-	bool (*searchall) (struct map_session_data* sd, const struct s_search_store_search* s);
-	unsigned int (*getuid) (void);
+	static bool setup (struct map_session_data* sd, unsigned char slots);
+	static void create (struct map_session_data* sd, int zenylimit, unsigned char result, const char* storename, const uint8* itemlist, unsigned int count);
+	static void close (struct map_session_data* sd);
+	static void open (struct map_session_data* sd, int account_id);
+	static void trade (struct map_session_data* sd, int account_id, unsigned int buyer_id, const uint8* itemlist, unsigned int count);
+	static bool search (struct map_session_data* sd, unsigned short nameid);
+	static bool searchall (struct map_session_data* sd, const struct s_search_store_search* s);
+	static unsigned int getuid (void);
 };
+extern CBuyingstore *buyingstore;
 
 #ifdef HERCULES_CORE
 void buyingstore_defaults (void);
 #endif // HERCULES_CORE
 
-HPShared struct buyingstore_interface *buyingstore;
 
 #endif  // MAP_BUYINGSTORE_H

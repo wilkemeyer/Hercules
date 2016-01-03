@@ -56,23 +56,23 @@ struct shootpath_data {
 #define distance_client_blxy(bl, x1, y1) (path->distance_client((bl)->x-(x1), (bl)->y-(y1)))
 #define distance_client_xy(x0, y0, x1, y1) (path->distance_client((x0)-(x1), (y0)-(y1)))
 
-struct path_interface {
+class CPath {
+public:
 	// calculates destination cell for knockback
-	int (*blownpos) (struct block_list *bl, int16 m, int16 x0, int16 y0, int16 dx, int16 dy, int count);
+	static int blownpos (struct block_list *bl, int16 m, int16 x0, int16 y0, int16 dx, int16 dy, int count);
 	// tries to find a walkable path
-	bool (*search) (struct walkpath_data *wpd, struct block_list *bl, int16 m, int16 x0, int16 y0, int16 x1, int16 y1, int flag, cell_chk cell);
+	static bool search (struct walkpath_data *wpd, struct block_list *bl, int16 m, int16 x0, int16 y0, int16 x1, int16 y1, int flag, cell_chk cell);
 	// tries to find a shootable path
-	bool (*search_long) (struct shootpath_data *spd, struct block_list *bl, int16 m, int16 x0, int16 y0, int16 x1, int16 y1, cell_chk cell);
-	bool (*check_distance) (int dx, int dy, int distance);
-	unsigned int (*distance) (int dx, int dy);
-	bool (*check_distance_client) (int dx, int dy, int distance);
-	int (*distance_client) (int dx, int dy);
+	static bool search_long (struct shootpath_data *spd, struct block_list *bl, int16 m, int16 x0, int16 y0, int16 x1, int16 y1, cell_chk cell);
+	static bool check_distance (int dx, int dy, int distance);
+	static unsigned int distance (int dx, int dy);
+	static bool check_distance_client (int dx, int dy, int distance);
+	static int distance_client (int dx, int dy);
 };
-
+extern CPath *path;
 #ifdef HERCULES_CORE
 void path_defaults(void);
 #endif // HERCULES_CORE
 
-HPShared struct path_interface *path;
 
 #endif /* MAP_PATH_H */

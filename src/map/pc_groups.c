@@ -22,15 +22,22 @@
 
 static GroupSettings dummy_group; ///< dummy group used in dummy map sessions @see pc_get_dummy_sd()
 
-struct pc_groups_interface pcg_s;
-struct pc_groups_interface *pcg;
+CPcg pcg_s;
+CPcg *pcg=NULL;
+
+// Subsystem Globals:
+DBMap* CPcg::db; // id -> GroupSettings
+DBMap* CPcg::name_db; // name -> GroupSettings
+struct pc_groups_permission_table *CPcg::permissions;
+unsigned char CPcg::permission_count;
+
 
 /**
  * Returns dummy group.
  * Used in dummy map sessions.
  * @see pc_get_dummy_sd()
  */
-GroupSettings* pc_group_get_dummy_group(void)
+GroupSettings* CPcg::get_dummy_group(void)
 {
 	return &dummy_group;
 }
@@ -294,7 +301,7 @@ static void read_config(void) {
  * @param group group
  * @param permission permission to check
  */
-bool pc_group_has_permission(GroupSettings *group, unsigned int permission)
+bool CPcg::has_permission(GroupSettings *group, unsigned int permission)
 {
 	return ((group->e_permissions&permission) != 0);
 }
@@ -303,7 +310,7 @@ bool pc_group_has_permission(GroupSettings *group, unsigned int permission)
  * Checks if commands used by player group should be logged
  * @param group group
  */
-bool pc_group_should_log_commands(GroupSettings *group)
+bool CPcg::should_log_commands(GroupSettings *group)
 {
 	return group->log_commands;
 }
@@ -313,7 +320,7 @@ bool pc_group_should_log_commands(GroupSettings *group)
  * @param group_id group id
  * @returns true if group exists, false otherwise
  */
-bool pc_group_exists(int group_id)
+bool CPcg::exists(int group_id)
 {
 	return idb_exists(pcg->db, group_id);
 }
@@ -321,7 +328,7 @@ bool pc_group_exists(int group_id)
 /**
  * @retval NULL if not found
  */
-GroupSettings* pc_group_id2group(int group_id)
+GroupSettings* CPcg::id2group(int group_id)
 {
 	return (GroupSettings*)idb_get(pcg->db, group_id);
 }
@@ -332,7 +339,7 @@ GroupSettings* pc_group_id2group(int group_id)
  * @return group name
  * @public
  */
-const char* pc_group_get_name(GroupSettings *group)
+const char* CPcg::get_name(GroupSettings *group)
 {
 	return group->name;
 }
@@ -343,7 +350,7 @@ const char* pc_group_get_name(GroupSettings *group)
  * @return group level
  * @public
  */
-int pc_group_get_level(GroupSettings *group)
+int CPcg::get_level(GroupSettings *group)
 {
 	return group->level;
 }
@@ -354,7 +361,7 @@ int pc_group_get_level(GroupSettings *group)
  * @return group index
  * @public
  */
-int pc_group_get_idx(GroupSettings *group)
+int CPcg::get_idx(GroupSettings *group)
 {
 	return group->index;
 }
@@ -394,7 +401,7 @@ unsigned int pc_groups_add_permission(const char *name) {
  * Initialize PC Groups: allocate DBMaps and read config.
  * @public
  */
-void do_init_pc_groups(void) {
+void CPcg::init(void) {
 	const struct {
 		const char *name;
 		unsigned int permission;
@@ -456,7 +463,7 @@ static int group_db_clear_sub(DBKey key, DBData *data, va_list args)
  * Finalize PC Groups: free DBMaps and config.
  * @public
  */
-void do_final_pc_groups(void)
+void CPcg::final(void)
 {
 	if (pcg->db != NULL)
 		pcg->db->destroy(pcg->db, group_db_clear_sub);
@@ -478,7 +485,7 @@ void do_final_pc_groups(void)
  * Used in @reloadatcommand
  * @public
  */
-void pc_groups_reload(void) {
+void CPcg::reload(void) {
 	struct map_session_data *sd = NULL;
 	struct s_mapiterator *iter;
 
@@ -509,16 +516,5 @@ void pc_groups_defaults(void) {
 	pcg->permissions = NULL;
 	pcg->permission_count = 0;
 	/* */
-	pcg->init = do_init_pc_groups;
-	pcg->final = do_final_pc_groups;
-	pcg->reload = pc_groups_reload;
-	/* */
-	pcg->get_dummy_group = pc_group_get_dummy_group;
-	pcg->exists = pc_group_exists;
-	pcg->id2group = pc_group_id2group;
-	pcg->has_permission = pc_group_has_permission;
-	pcg->should_log_commands = pc_group_should_log_commands;
-	pcg->get_name = pc_group_get_name;
-	pcg->get_level = pc_group_get_level;
-	pcg->get_idx = pc_group_get_idx;
+
 }

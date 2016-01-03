@@ -29,22 +29,22 @@
 
 struct map_session_data;
 
-struct trade_interface {
-	void (*request) (struct map_session_data *sd, struct map_session_data *target_sd);
-	void (*ack) (struct map_session_data *sd,int type);
-	int (*check_impossible) (struct map_session_data *sd);
-	int (*check) (struct map_session_data *sd, struct map_session_data *tsd);
-	void (*additem) (struct map_session_data *sd,short index,short amount);
-	void (*addzeny) (struct map_session_data *sd,int amount);
-	void (*ok) (struct map_session_data *sd);
-	void (*cancel) (struct map_session_data *sd);
-	void (*commit) (struct map_session_data *sd);
+class CTrade {
+public:
+	static void request (struct map_session_data *sd, struct map_session_data *target_sd);
+	static void ack (struct map_session_data *sd,int type);
+	static int check_impossible (struct map_session_data *sd);
+	static int check (struct map_session_data *sd, struct map_session_data *tsd);
+	static void additem (struct map_session_data *sd,short index,short amount);
+	static void addzeny (struct map_session_data *sd,int amount);
+	static void ok (struct map_session_data *sd);
+	static void cancel (struct map_session_data *sd);
+	static void commit (struct map_session_data *sd);
 };
-
+extern CTrade *trade;
 #ifdef HERCULES_CORE
 void trade_defaults(void);
 #endif // HERCULES_CORE
 
-HPShared struct trade_interface *trade;
 
 #endif /* MAP_TRADE_H */

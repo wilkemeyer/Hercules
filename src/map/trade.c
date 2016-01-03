@@ -21,13 +21,13 @@
 #include "stdafx.h"
 
 
-struct trade_interface trade_s;
-struct trade_interface *trade;
+CTrade trade_s;
+CTrade *trade = NULL;
 
 /*==========================================
  * Initiates a trade request.
  *------------------------------------------*/
-void trade_traderequest(struct map_session_data *sd, struct map_session_data *target_sd)
+void CTrade::request(struct map_session_data *sd, struct map_session_data *target_sd)
 {
 	nullpo_retv(sd);
 
@@ -99,7 +99,7 @@ void trade_traderequest(struct map_session_data *sd, struct map_session_data *ta
  * Weird enough, the client should only send 3/4
  * and the server is the one that can reply 0~2
  *------------------------------------------*/
-void trade_tradeack(struct map_session_data *sd, int type) {
+void CTrade::ack(struct map_session_data *sd, int type) {
 	struct map_session_data *tsd;
 	nullpo_retv(sd);
 
@@ -172,7 +172,7 @@ void trade_tradeack(struct map_session_data *sd, int type) {
  * @retval 0 The trade can continue
  * @retval 1 Hack attempt
  **/
-int impossible_trade_check(struct map_session_data *sd)
+int CTrade::check_impossible(struct map_session_data *sd)
 {
 	struct item inventory[MAX_INVENTORY];
 	char message_to_gm[200];
@@ -231,7 +231,7 @@ int impossible_trade_check(struct map_session_data *sd)
 /*==========================================
  * Checks if trade is possible (against zeny limits, inventory limits, etc)
  *------------------------------------------*/
-int trade_check(struct map_session_data *sd, struct map_session_data *tsd)
+int CTrade::check(struct map_session_data *sd, struct map_session_data *tsd)
 {
 	struct item inventory[MAX_INVENTORY];
 	struct item inventory2[MAX_INVENTORY];
@@ -317,7 +317,7 @@ int trade_check(struct map_session_data *sd, struct map_session_data *tsd)
 /*==========================================
  * Adds an item/qty to the trade window
  *------------------------------------------*/
-void trade_tradeadditem(struct map_session_data *sd, short index, short amount) {
+void CTrade::additem(struct map_session_data *sd, short index, short amount) {
 	struct map_session_data *target_sd;
 	struct item *item;
 	int trade_i, trade_weight;
@@ -411,7 +411,7 @@ void trade_tradeadditem(struct map_session_data *sd, short index, short amount) 
 /*==========================================
  * Adds the specified amount of zeny to the trade window
  *------------------------------------------*/
-void trade_tradeaddzeny(struct map_session_data* sd, int amount)
+void CTrade::addzeny(struct map_session_data* sd, int amount)
 {
 	struct map_session_data* target_sd;
 	nullpo_retv(sd);
@@ -437,7 +437,7 @@ void trade_tradeaddzeny(struct map_session_data* sd, int amount)
 /*==========================================
  * 'Ok' button on the trade window is pressed.
  *------------------------------------------*/
-void trade_tradeok(struct map_session_data *sd) {
+void CTrade::ok(struct map_session_data *sd) {
 	struct map_session_data *target_sd;
 
 	if(sd->state.deal_locked || !sd->state.trading)
@@ -456,7 +456,7 @@ void trade_tradeok(struct map_session_data *sd) {
 /*==========================================
  * 'Cancel' is pressed. (or trade was force-canceled by the code)
  *------------------------------------------*/
-void trade_tradecancel(struct map_session_data *sd) {
+void CTrade::cancel(struct map_session_data *sd) {
 	struct map_session_data *target_sd;
 	int trade_i;
 
@@ -514,7 +514,7 @@ void trade_tradecancel(struct map_session_data *sd) {
 /*==========================================
  * lock sd and tsd trade data, execute the trade, clear, then save players
  *------------------------------------------*/
-void trade_tradecommit(struct map_session_data *sd) {
+void CTrade::commit(struct map_session_data *sd) {
 	struct map_session_data *tsd;
 	int trade_i;
 	int flag;
@@ -613,13 +613,5 @@ void trade_defaults(void)
 {
 	trade = &trade_s;
 
-	trade->request = trade_traderequest;
-	trade->ack = trade_tradeack;
-	trade->check_impossible = impossible_trade_check;
-	trade->check = trade_check;
-	trade->additem = trade_tradeadditem;
-	trade->addzeny = trade_tradeaddzeny;
-	trade->ok = trade_tradeok;
-	trade->cancel = trade_tradecancel;
-	trade->commit = trade_tradecommit;
+
 }

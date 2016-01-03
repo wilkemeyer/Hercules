@@ -154,63 +154,65 @@ struct homun_dbs {
 };
 
 /* homunculus.c interface */
-struct homunculus_interface {
-	struct homun_dbs *dbs;
+class CHomun {
+public:
+	static struct homun_dbs *dbs;
 	/* */
-	void (*init) (bool minimal);
-	void (*final) (void);
-	void (*reload) (void);
-	void (*reload_skill) (void);
+	static void init (bool minimal);
+	static void final (void);
+	static void reload (void);
+	static void reload_skill (void);
 	/* */
-	struct view_data* (*get_viewdata) (int class_);
-	enum homun_type (*class2type) (int class_);
-	void (*damaged) (struct homun_data *hd);
-	int (*dead) (struct homun_data *hd);
-	int (*vaporize) (struct map_session_data *sd, enum homun_state flag);
-	int (*_delete) (struct homun_data *hd, int emote);
-	int (*checkskill) (struct homun_data *hd, uint16 skill_id);
-	int (*calc_skilltree) (struct homun_data *hd, int flag_evolve);
-	int (*skill_tree_get_max) (int id, int b_class);
-	void (*skillup) (struct homun_data *hd, uint16 skill_id);
-	bool (*levelup) (struct homun_data *hd);
-	int (*change_class) (struct homun_data *hd, short class_);
-	bool (*evolve) (struct homun_data *hd);
-	bool (*mutate) (struct homun_data *hd, int homun_id);
-	int (*gainexp) (struct homun_data *hd, unsigned int exp);
-	unsigned int (*add_intimacy) (struct homun_data * hd, unsigned int value);
-	unsigned int (*consume_intimacy) (struct homun_data *hd, unsigned int value);
-	void (*healed) (struct homun_data *hd);
-	void (*save) (struct homun_data *hd);
-	unsigned char (*menu) (struct map_session_data *sd,unsigned char menu_num);
-	bool (*feed) (struct map_session_data *sd, struct homun_data *hd);
-	int (*hunger_timer) (int tid, int64 tick, int id, intptr_t data);
-	void (*hunger_timer_delete) (struct homun_data *hd);
-	int (*change_name) (struct map_session_data *sd,char *name);
-	bool (*change_name_ack) (struct map_session_data *sd, char* name, int flag);
-	int (*db_search) (int key,int type);
-	bool (*create) (struct map_session_data *sd, struct s_homunculus *hom);
-	void (*init_timers) (struct homun_data * hd);
-	bool (*call) (struct map_session_data *sd);
-	bool (*recv_data) (int account_id, struct s_homunculus *sh, int flag);
-	bool (*creation_request) (struct map_session_data *sd, int class_);
-	bool (*ressurect) (struct map_session_data* sd, unsigned char per, short x, short y);
-	void (*revive) (struct homun_data *hd, unsigned int hp, unsigned int sp);
-	void (*stat_reset) (struct homun_data *hd);
-	bool (*shuffle) (struct homun_data *hd);
-	bool (*read_db_sub) (char* str[], int columns, int current);
-	void (*read_db) (void);
-	bool (*read_skill_db_sub) (char* split[], int columns, int current);
-	void (*skill_db_read) (void);
-	void (*exp_db_read) (void);
-	void (*addspiritball) (struct homun_data *hd, int max);
-	void (*delspiritball) (struct homun_data *hd, int count, int type);
-	int8 (*get_intimacy_grade) (struct homun_data *hd);
+	static struct view_data* get_viewdata (int class_);
+	static enum homun_type class2type (int class_);
+	static void damaged (struct homun_data *hd);
+	static int dead (struct homun_data *hd);
+	static int vaporize (struct map_session_data *sd, enum homun_state flag);
+	static int _delete (struct homun_data *hd, int emote);
+	static int checkskill (struct homun_data *hd, uint16 skill_id);
+	static int calc_skilltree (struct homun_data *hd, int flag_evolve);
+	static int skill_tree_get_max (int id, int b_class);
+	static void skillup (struct homun_data *hd, uint16 skill_id);
+	static bool levelup (struct homun_data *hd);
+	static int change_class (struct homun_data *hd, short class_);
+	static bool evolve (struct homun_data *hd);
+	static bool mutate (struct homun_data *hd, int homun_id);
+	static int gainexp (struct homun_data *hd, unsigned int exp);
+	static unsigned int add_intimacy (struct homun_data * hd, unsigned int value);
+	static unsigned int consume_intimacy (struct homun_data *hd, unsigned int value);
+	static void healed (struct homun_data *hd);
+	static void save (struct homun_data *hd);
+	static unsigned char menu (struct map_session_data *sd,unsigned char menu_num);
+	static bool feed (struct map_session_data *sd, struct homun_data *hd);
+	static int hunger_timer (int tid, int64 tick, int id, intptr_t data);
+	static void hunger_timer_delete (struct homun_data *hd);
+	static int change_name (struct map_session_data *sd,char *name);
+	static bool change_name_ack (struct map_session_data *sd, char* name, int flag);
+	static int db_search (int key,int type);
+	static bool create (struct map_session_data *sd, struct s_homunculus *hom);
+	static void init_timers (struct homun_data * hd);
+	static bool call (struct map_session_data *sd);
+	static bool recv_data (int account_id, struct s_homunculus *sh, int flag);
+	static bool creation_request (struct map_session_data *sd, int class_);
+	static bool ressurect (struct map_session_data* sd, unsigned char per, short x, short y);
+	static void revive (struct homun_data *hd, unsigned int hp, unsigned int sp);
+	static void stat_reset (struct homun_data *hd);
+	static bool shuffle (struct homun_data *hd);
+	static bool read_db_sub (char* str[], int columns, int current);
+	static void read_db (void);
+	static bool read_skill_db_sub (char* split[], int columns, int current);
+	static void skill_db_read (void);
+	static void exp_db_read (void);
+	static void addspiritball (struct homun_data *hd, int max);
+	static void delspiritball (struct homun_data *hd, int count, int type);
+	static int8 get_intimacy_grade (struct homun_data *hd);
 };
+
+extern CHomun *homun;
 
 #ifdef HERCULES_CORE
 void homunculus_defaults(void);
 #endif // HERCULES_CORE
 
-HPShared struct homunculus_interface *homun;
 
 #endif /* MAP_HOMUNCULUS_H */

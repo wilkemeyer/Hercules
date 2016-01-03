@@ -20,15 +20,31 @@
  */
 #include "stdafx.h"
 
-struct itemdb_interface itemdb_s;
-struct itemdb_interface *itemdb;
+CItemdb itemdb_s;
+CItemdb *itemdb = NULL;
+
+// Subsystem Globals:
+struct item_group *CItemdb::groups;
+unsigned short CItemdb::group_count;
+struct item_chain *CItemdb::chains;
+unsigned short CItemdb::chain_count;
+unsigned short CItemdb::chain_cache[ECC_MAX];
+struct item_package *CItemdb::packages;
+unsigned short CItemdb::package_count;
+struct item_combo **CItemdb::combos;
+unsigned short CItemdb::combo_count;
+DBMap *CItemdb::names;
+struct item_data *CItemdb::array[MAX_ITEMDB];
+DBMap *CItemdb::other;// int nameid -> struct item_data*
+struct item_data CItemdb::dummy; //This is the default dummy item used for non-existant items. [Skotlex]
+
 
 /**
  * Search for item name
  * name = item alias, so we should find items aliases first. if not found then look for "jname" (full name)
  * @see DBApply
  */
-int itemdb_searchname_sub(DBKey key, DBData *data, va_list ap)
+int CItemdb::searchname_sub(DBKey key, DBData *data, va_list ap)
 {
 	struct item_data *item = (struct item_data *)DB->data2ptr(data), **dst, **dst2;
 	char *str;
@@ -57,7 +73,7 @@ int itemdb_searchname_sub(DBKey key, DBData *data, va_list ap)
 /*==========================================
  * Return item data from item name. (lookup)
  *------------------------------------------*/
-struct item_data* itemdb_searchname(const char *str) {
+struct item_data* CItemdb::search_name(const char *str) {
 	struct item_data* item;
 	struct item_data* item2=NULL;
 	int i;
@@ -84,14 +100,14 @@ struct item_data* itemdb_searchname(const char *str) {
 	return item?item:item2;
 }
 /* name to item data */
-struct item_data* itemdb_name2id(const char *str) {
+struct item_data* CItemdb::name2id(const char *str) {
 	return (struct item_data *)strdb_get(itemdb->names,str);
 }
 
 /**
  * @see DBMatcher
  */
-int itemdb_searchname_array_sub(DBKey key, DBData data, va_list ap)
+int CItemdb::searchname_array_sub(DBKey key, DBData data, va_list ap)
 {
 	struct item_data *item = (struct item_data *)DB->data2ptr(&data);
 	char *str;
@@ -114,7 +130,7 @@ int itemdb_searchname_array_sub(DBKey key, DBData data, va_list ap)
  * 0 - approximate match
  * 1 - exact match
  *------------------------------------------*/
-int itemdb_searchname_array(struct item_data** data, int size, const char *str, int flag) {
+int CItemdb::search_name_array(struct item_data** data, int size, const char *str, int flag) {
 	struct item_data* item;
 	int i;
 	int count=0;
@@ -160,7 +176,7 @@ int itemdb_searchname_array(struct item_data** data, int size, const char *str, 
 	return count;
 }
 /* [Ind/Hercules] */
-int itemdb_chain_item(unsigned short chain_id, int *rate) {
+int CItemdb::chain_item(unsigned short chain_id, int *rate) {
 	struct item_chain_entry *entry;
 
 	if( chain_id >= itemdb->chain_count ) {
@@ -178,7 +194,7 @@ int itemdb_chain_item(unsigned short chain_id, int *rate) {
 	return entry->id;
 }
 /* [Ind/Hercules] */
-void itemdb_package_item(struct map_session_data *sd, struct item_package *package) {
+void CItemdb::package_item(struct map_session_data *sd, struct item_package *package) {
 	int i = 0, get_count, j, flag;
 
 	nullpo_retv(sd);
@@ -266,7 +282,7 @@ void itemdb_package_item(struct map_session_data *sd, struct item_package *packa
 /*==========================================
  * Return a random item id from group. (takes into account % chance giving/tot group)
  *------------------------------------------*/
-int itemdb_searchrandomid(struct item_group *group) {
+int CItemdb::group_item(struct item_group *group) {
 
 	nullpo_retr(UNKNOWN_ITEM_ID, group);
 	if (group->qty)
@@ -275,7 +291,7 @@ int itemdb_searchrandomid(struct item_group *group) {
 	ShowError("itemdb_searchrandomid: No item entries for group id %d\n", group->id);
 	return UNKNOWN_ITEM_ID;
 }
-bool itemdb_in_group(struct item_group *group, int nameid) {
+bool CItemdb::in_group(struct item_group *group, int nameid) {
 	int i;
 
 	nullpo_retr(false, group);
@@ -288,7 +304,7 @@ bool itemdb_in_group(struct item_group *group, int nameid) {
 
 /// Searches for the item_data.
 /// Returns the item_data or NULL if it does not exist.
-struct item_data* itemdb_exists(int nameid)
+struct item_data* CItemdb::exists(int nameid)
 {
 	struct item_data* item;
 
@@ -302,7 +318,7 @@ struct item_data* itemdb_exists(int nameid)
 
 /// Returns human readable name for given item type.
 /// @param type Type id to retrieve name for ( IT_* ).
-const char* itemdb_typename(int type)
+const char* CItemdb::_typename(int type)
 {
 	switch(type)
 	{
@@ -325,7 +341,7 @@ const char* itemdb_typename(int type)
  * Converts the jobid from the format in itemdb
  * to the format used by the map server. [Skotlex]
  *------------------------------------------*/
-void itemdb_jobid2mapid(unsigned int *bclass, unsigned int jobmask)
+void CItemdb::jobid2mapid(unsigned int *bclass, unsigned int jobmask)
 {
 	int i;
 	nullpo_retv(bclass);
@@ -398,7 +414,7 @@ void itemdb_jobid2mapid(unsigned int *bclass, unsigned int jobmask)
 		bclass[1] |= 1<<MAPID_GUNSLINGER;
 }
 
-void create_dummy_data(void)
+void CItemdb::create_dummy_data(void)
 {
 	memset(&itemdb->dummy, 0, sizeof(struct item_data));
 	itemdb->dummy.nameid=500;
@@ -410,7 +426,7 @@ void create_dummy_data(void)
 	itemdb->dummy.view_id=UNKNOWN_ITEM_ID;
 }
 
-struct item_data* create_item_data(int nameid)
+struct item_data* CItemdb::create_item_data(int nameid)
 {
 	struct item_data *id;
 	CREATE(id, struct item_data, 1);
@@ -423,21 +439,21 @@ struct item_data* create_item_data(int nameid)
 /*==========================================
  * Loads (and creates if not found) an item from the db.
  *------------------------------------------*/
-struct item_data* itemdb_load(int nameid) {
+struct item_data* CItemdb::load(int nameid) {
 	struct item_data *id;
 
 	if( nameid >= 0 && nameid < ARRAYLENGTH(itemdb->array) )
 	{
 		id = itemdb->array[nameid];
 		if( id == NULL || id == &itemdb->dummy )
-			id = itemdb->array[nameid] = itemdb->create_item_data(nameid);
+			id = itemdb->array[nameid] = itemdb->CItemdb::create_item_data(nameid);
 		return id;
 	}
 
 	id = (struct item_data*)idb_get(itemdb->other, nameid);
 	if( id == NULL || id == &itemdb->dummy )
 	{
-		id = itemdb->create_item_data(nameid);
+		id = itemdb->CItemdb::create_item_data(nameid);
 		idb_put(itemdb->other, nameid, id);
 	}
 	return id;
@@ -446,7 +462,7 @@ struct item_data* itemdb_load(int nameid) {
 /*==========================================
  * Loads an item from the db. If not found, it will return the dummy item.
  *------------------------------------------*/
-struct item_data* itemdb_search(int nameid)
+struct item_data* CItemdb::search(int nameid)
 {
 	struct item_data* id;
 	if( nameid >= 0 && nameid < ARRAYLENGTH(itemdb->array) )
@@ -466,7 +482,7 @@ struct item_data* itemdb_search(int nameid)
 /*==========================================
  * Returns if given item is a player-equippable piece.
  *------------------------------------------*/
-int itemdb_isequip(int nameid)
+int CItemdb::isequip(int nameid)
 {
 	int type=itemdb_type(nameid);
 	switch (type) {
@@ -482,7 +498,7 @@ int itemdb_isequip(int nameid)
 /*==========================================
  * Alternate version of itemdb_isequip
  *------------------------------------------*/
-int itemdb_isequip2(struct item_data *data) {
+int CItemdb::isequip2(struct item_data *data) {
 	nullpo_ret(data);
 	switch(data->type) {
 		case IT_WEAPON:
@@ -497,7 +513,7 @@ int itemdb_isequip2(struct item_data *data) {
 /*==========================================
  * Returns if given item's type is stackable.
  *------------------------------------------*/
-int itemdb_isstackable(int nameid)
+int CItemdb::isstackable(int nameid)
 {
 	int type=itemdb_type(nameid);
 	switch(type) {
@@ -514,7 +530,7 @@ int itemdb_isstackable(int nameid)
 /*==========================================
  * Alternate version of itemdb_isstackable
  *------------------------------------------*/
-int itemdb_isstackable2(struct item_data *data)
+int CItemdb::isstackable2(struct item_data *data)
 {
 	nullpo_ret(data);
 	switch(data->type) {
@@ -531,43 +547,43 @@ int itemdb_isstackable2(struct item_data *data)
 /*==========================================
  * Trade Restriction functions [Skotlex]
  *------------------------------------------*/
-int itemdb_isdropable_sub(struct item_data *item, int gmlv, int unused) {
+int CItemdb::isdropable_sub(struct item_data *item, int gmlv, int unused) {
 	return (item && (!(item->flag.trade_restriction&ITR_NODROP) || gmlv >= item->gm_lv_trade_override));
 }
 
-int itemdb_cantrade_sub(struct item_data* item, int gmlv, int gmlv2) {
+int CItemdb::cantrade_sub(struct item_data* item, int gmlv, int gmlv2) {
 	return (item && (!(item->flag.trade_restriction&ITR_NOTRADE) || gmlv >= item->gm_lv_trade_override || gmlv2 >= item->gm_lv_trade_override));
 }
 
-int itemdb_canpartnertrade_sub(struct item_data* item, int gmlv, int gmlv2) {
+int CItemdb::canpartnertrade_sub(struct item_data* item, int gmlv, int gmlv2) {
 	return (item && (item->flag.trade_restriction&ITR_PARTNEROVERRIDE || gmlv >= item->gm_lv_trade_override || gmlv2 >= item->gm_lv_trade_override));
 }
 
-int itemdb_cansell_sub(struct item_data* item, int gmlv, int unused) {
+int CItemdb::cansell_sub(struct item_data* item, int gmlv, int unused) {
 	return (item && (!(item->flag.trade_restriction&ITR_NOSELLTONPC) || gmlv >= item->gm_lv_trade_override));
 }
 
-int itemdb_cancartstore_sub(struct item_data* item, int gmlv, int unused) {
+int CItemdb::cancartstore_sub(struct item_data* item, int gmlv, int unused) {
 	return (item && (!(item->flag.trade_restriction&ITR_NOCART) || gmlv >= item->gm_lv_trade_override));
 }
 
-int itemdb_canstore_sub(struct item_data* item, int gmlv, int unused) {
+int CItemdb::canstore_sub(struct item_data* item, int gmlv, int unused) {
 	return (item && (!(item->flag.trade_restriction&ITR_NOSTORAGE) || gmlv >= item->gm_lv_trade_override));
 }
 
-int itemdb_canguildstore_sub(struct item_data* item, int gmlv, int unused) {
+int CItemdb::canguildstore_sub(struct item_data* item, int gmlv, int unused) {
 	return (item && (!(item->flag.trade_restriction&ITR_NOGSTORAGE) || gmlv >= item->gm_lv_trade_override));
 }
 
-int itemdb_canmail_sub(struct item_data* item, int gmlv, int unused) {
+int CItemdb::canmail_sub(struct item_data* item, int gmlv, int unused) {
 	return (item && (!(item->flag.trade_restriction&ITR_NOMAIL) || gmlv >= item->gm_lv_trade_override));
 }
 
-int itemdb_canauction_sub(struct item_data* item, int gmlv, int unused) {
+int CItemdb::canauction_sub(struct item_data* item, int gmlv, int unused) {
 	return (item && (!(item->flag.trade_restriction&ITR_NOAUCTION) || gmlv >= item->gm_lv_trade_override));
 }
 
-int itemdb_isrestricted(struct item* item, int gmlv, int gmlv2, int (*func)(struct item_data*, int, int))
+int CItemdb::isrestricted(struct item* item, int gmlv, int gmlv2, int (*func)(struct item_data*, int, int))
 {
 	struct item_data* item_data;
 	int i;
@@ -591,7 +607,7 @@ int itemdb_isrestricted(struct item* item, int gmlv, int gmlv2, int (*func)(stru
 /*==========================================
  * Specifies if item-type should drop unidentified.
  *------------------------------------------*/
-int itemdb_isidentified(int nameid) {
+int CItemdb::isidentified(int nameid) {
 	int type=itemdb_type(nameid);
 	switch (type) {
 		case IT_WEAPON:
@@ -603,7 +619,7 @@ int itemdb_isidentified(int nameid) {
 	}
 }
 /* same as itemdb_isidentified but without a lookup */
-int itemdb_isidentified2(struct item_data *data) {
+int CItemdb::isidentified2(struct item_data *data) {
 	nullpo_ret(data);
 	switch (data->type) {
 		case IT_WEAPON:
@@ -615,7 +631,7 @@ int itemdb_isidentified2(struct item_data *data) {
 	}
 }
 
-void itemdb_read_groups(void) {
+void CItemdb::read_groups(void) {
 	config_t item_group_conf;
 	config_setting_t *itg = NULL, *it = NULL;
 #ifdef RENEWAL
@@ -701,11 +717,11 @@ void itemdb_read_groups(void) {
 
 	libconfig->destroy(&item_group_conf);
 	aFree(gsize);
-	ShowStatus("Done reading '"CL_WHITE"%d"CL_RESET"' entries in '"CL_WHITE"%s"CL_RESET"'.\n", count, config_filename);
+	ShowStatus("Done reading '" CL_WHITE "%d" CL_RESET "' entries in '" CL_WHITE "%s" CL_RESET "'.\n", count, config_filename);
 }
 
 /* [Ind/Hercules] - HCache for Packages */
-void itemdb_write_cached_packages(const char *config_filename) {
+void CItemdb::write_cached_packages(const char *config_filename) {
 	FILE *file;
 	unsigned short pcount = itemdb->package_count;
 	unsigned short i;
@@ -776,7 +792,7 @@ void itemdb_write_cached_packages(const char *config_filename) {
 
 	return;
 }
-bool itemdb_read_cached_packages(const char *config_filename) {
+bool CItemdb::read_cached_packages(const char *config_filename) {
 	FILE *file;
 	unsigned short pcount = 0;
 	unsigned short i;
@@ -903,11 +919,11 @@ bool itemdb_read_cached_packages(const char *config_filename) {
 		}
 	}
 	fclose(file);
-	ShowStatus("Done reading '"CL_WHITE"%hu"CL_RESET"' entries in '"CL_WHITE"%s"CL_RESET"' ("CL_GREEN"C"CL_RESET").\n", pcount, config_filename);
+	ShowStatus("Done reading '" CL_WHITE "%hu" CL_RESET "' entries in '" CL_WHITE "%s" CL_RESET "' (" CL_GREEN "C" CL_RESET ").\n", pcount, config_filename);
 
 	return true;
 }
-void itemdb_read_packages(void) {
+void CItemdb::read_packages(void) {
 	config_t item_packages_conf;
 	config_setting_t *itg = NULL, *it = NULL, *t = NULL;
 #ifdef RENEWAL
@@ -1135,10 +1151,10 @@ void itemdb_read_packages(void) {
 	libconfig->destroy(&item_packages_conf);
 
 
-	ShowStatus("Done reading '"CL_WHITE"%d"CL_RESET"' entries in '"CL_WHITE"%s"CL_RESET"'.\n", count, config_filename);
+	ShowStatus("Done reading '" CL_WHITE "%d" CL_RESET "' entries in '" CL_WHITE "%s" CL_RESET "'.\n", count, config_filename);
 }
 
-void itemdb_read_chains(void) {
+void CItemdb::read_chains(void) {
 	config_t item_chain_conf;
 	config_setting_t *itc = NULL;
 #ifdef RENEWAL
@@ -1204,13 +1220,13 @@ void itemdb_read_chains(void) {
 	else
 		itemdb->chain_cache[ECC_ORE] = i;
 
-	ShowStatus("Done reading '"CL_WHITE"%d"CL_RESET"' entries in '"CL_WHITE"%s"CL_RESET"'.\n", count, config_filename);
+	ShowStatus("Done reading '" CL_WHITE "%d" CL_RESET "' entries in '" CL_WHITE "%s" CL_RESET "'.\n", count, config_filename);
 }
 
 /**
  * @return: amount of retrieved entries.
  **/
-int itemdb_combo_split_atoi (char *str, int *val) {
+int CItemdb::combo_split_atoi(char *str, int *val) {
 	int i;
 
 	nullpo_ret(val);
@@ -1232,7 +1248,7 @@ int itemdb_combo_split_atoi (char *str, int *val) {
 /**
  * <combo{:combo{:combo:{..}}}>,<{ script }>
  **/
-void itemdb_read_combos() {
+void CItemdb::read_combos() {
 	uint32 lines = 0, count = 0;
 	char line[1024];
 	char filepath[256];
@@ -1277,13 +1293,13 @@ void itemdb_read_combos() {
 		p++;
 
 		if (str[1][0] != '{') {
-			ShowError("itemdb_read_combos(#1): Invalid format (Script column) in line %d of \"%s\", skipping.\n", lines, filepath);
+			ShowError("CItemdb::read_combos(#1): Invalid format (Script column) in line %d of \"%s\", skipping.\n", lines, filepath);
 			continue;
 		}
 
 		/* no ending key anywhere (missing \}\) */
 		if ( str[1][strlen(str[1])-1] != '}' ) {
-			ShowError("itemdb_read_combos(#2): Invalid format (Script column) in line %d of \"%s\", skipping.\n", lines, filepath);
+			ShowError("CItemdb::read_combos(#2): Invalid format (Script column) in line %d of \"%s\", skipping.\n", lines, filepath);
 			continue;
 		} else {
 			int items[MAX_ITEMS_PER_COMBO];
@@ -1334,7 +1350,7 @@ void itemdb_read_combos() {
 		count++;
 	}
 	fclose(fp);
-	ShowStatus("Done reading '"CL_WHITE"%"PRIu32""CL_RESET"' entries in '"CL_WHITE"item_combo_db"CL_RESET"'.\n", count);
+	ShowStatus("Done reading '" CL_WHITE "%" PRIu32 "" CL_RESET "' entries in '" CL_WHITE "item_combo_db" CL_RESET "'.\n", count);
 
 	return;
 }
@@ -1342,7 +1358,7 @@ void itemdb_read_combos() {
 /*======================================
  * Applies gender restrictions according to settings. [Skotlex]
  *======================================*/
-int itemdb_gendercheck(struct item_data *id)
+int CItemdb::gendercheck(struct item_data *id)
 {
 	nullpo_ret(id);
 	if (id->nameid == WEDDING_RING_M) //Grom Ring
@@ -1374,7 +1390,7 @@ int itemdb_gendercheck(struct item_data *id)
  * item_db2 inheritance), as it will make sure not to free any scripts still in
  * use in the new entry.
  */
-int itemdb_validate_entry(struct item_data *entry, int n, const char *source) {
+int CItemdb::validate_entry(struct item_data *entry, int n, const char *source) {
 	struct item_data *item;
 
 	nullpo_ret(entry);
@@ -1512,7 +1528,7 @@ int itemdb_validate_entry(struct item_data *entry, int n, const char *source) {
 	return item->nameid;
 }
 
-void itemdb_readdb_additional_fields(int itemid, config_setting_t *it, int n, const char *source)
+void CItemdb::readdb_additional_fields(int itemid, config_setting_t *it, int n, const char *source)
 {
     // do nothing. plugins can do own work
 }
@@ -1530,7 +1546,7 @@ void itemdb_readdb_additional_fields(int itemid, config_setting_t *it, int n, co
  *                validation errors.
  * @return Nameid of the validated entry, or 0 in case of failure.
  */
-int itemdb_readdb_libconfig_sub(config_setting_t *it, int n, const char *source) {
+int CItemdb::readdb_libconfig_sub(config_setting_t *it, int n, const char *source) {
 	struct item_data id = { 0 };
 	config_setting_t *t = NULL;
 	const char *str = NULL;
@@ -1827,7 +1843,7 @@ int itemdb_readdb_libconfig_sub(config_setting_t *it, int n, const char *source)
 	return itemdb->validate_entry(&id, n, source);
 }
 
-bool itemdb_lookup_const(const config_setting_t *it, const char *name, int *value)
+bool CItemdb::lookup_const(const config_setting_t *it, const char *name, int *value)
 {
 	nullpo_retr(false, name);
 	nullpo_retr(false, value);
@@ -1854,7 +1870,7 @@ bool itemdb_lookup_const(const config_setting_t *it, const char *name, int *valu
  * @param *filename File name, relative to the database path.
  * @return The number of found entries.
  */
-int itemdb_readdb_libconfig(const char *filename) {
+int CItemdb::readdb_libconfig(const char *filename) {
 	bool duplicate[MAX_ITEMDB];
 	config_t item_db_conf;
 	config_setting_t *itdb, *it;
@@ -1885,7 +1901,7 @@ int itemdb_readdb_libconfig(const char *filename) {
 			duplicate[nameid] = true;
 	}
 	libconfig->destroy(&item_db_conf);
-	ShowStatus("Done reading '"CL_WHITE"%d"CL_RESET"' entries in '"CL_WHITE"%s"CL_RESET"'.\n", count, filename);
+	ShowStatus("Done reading '" CL_WHITE "%d"  CL_RESET "' entries in '" CL_WHITE "%s" CL_RESET "'.\n", count, filename);
 
 	return count;
 }
@@ -1894,7 +1910,7 @@ int itemdb_readdb_libconfig(const char *filename) {
 * Unique item ID function
 * Only one operation by once
 *------------------------------------------*/
-uint64 itemdb_unique_id(struct map_session_data *sd) {
+uint64 CItemdb::unique_id(struct map_session_data *sd) {
 
 	nullpo_ret(sd);
 	return ((uint64)sd->status.char_id << 32) | sd->status.uniqueitem_counter++;
@@ -1903,7 +1919,7 @@ uint64 itemdb_unique_id(struct map_session_data *sd) {
 /**
  * Reads all item-related databases.
  */
-void itemdb_read(bool minimal) {
+void CItemdb::read(bool minimal) {
 	int i;
 	DBData prev;
 
@@ -1936,7 +1952,7 @@ void itemdb_read(bool minimal) {
 /**
  * retrieves item_combo data by combo id
  **/
-struct item_combo * itemdb_id2combo( unsigned short id ) {
+struct item_combo * CItemdb::id2combo( unsigned short id ) {
 	if( id > itemdb->combo_count )
 		return NULL;
 	return itemdb->combos[id];
@@ -1945,7 +1961,7 @@ struct item_combo * itemdb_id2combo( unsigned short id ) {
 /**
  * check is item have usable type
  **/
-bool itemdb_is_item_usable(struct item_data *item)
+bool CItemdb::is_item_usable(struct item_data *item)
 {
 	nullpo_retr(false, item);
 	return item->type == IT_HEALING || item->type == IT_USABLE || item->type == IT_CASH;
@@ -1956,7 +1972,7 @@ bool itemdb_is_item_usable(struct item_data *item)
  *------------------------------------------*/
 
 /// Destroys the item_data.
-void destroy_item_data(struct item_data* self, int free_self)
+void CItemdb::destroy_item_data(struct item_data* self, int free_self)
 {
 	if( self == NULL )
 		return;
@@ -1981,21 +1997,21 @@ void destroy_item_data(struct item_data* self, int free_self)
 /**
  * @see DBApply
  */
-int itemdb_final_sub(DBKey key, DBData *data, va_list ap)
+int CItemdb::final_sub(DBKey key, DBData *data, va_list ap)
 {
 	struct item_data *id = (struct item_data*)DB->data2ptr(data);
 
 	if( id != &itemdb->dummy )
-		itemdb->destroy_item_data(id, 1);
+		itemdb->CItemdb::destroy_item_data(id, 1);
 
 	return 0;
 }
-void itemdb_clear(bool total) {
+void CItemdb::clear(bool total) {
 	int i;
 	// clear the previous itemdb data
 	for( i = 0; i < ARRAYLENGTH(itemdb->array); ++i ) {
 		if( itemdb->array[i] )
-			itemdb->destroy_item_data(itemdb->array[i], 1);
+			itemdb->CItemdb::destroy_item_data(itemdb->array[i], 1);
 	}
 
 	if( itemdb->groups )
@@ -2059,7 +2075,7 @@ void itemdb_clear(bool total) {
 	db_clear(itemdb->names);
 }
 
-void itemdb_reload(void) {
+void CItemdb::reload(void) {
 	struct s_mapiterator* iter;
 	struct map_session_data* sd;
 
@@ -2117,7 +2133,7 @@ void itemdb_reload(void) {
 	}
 	mapit->free(iter);
 }
-void itemdb_name_constants(void) {
+void CItemdb::name_constants(void) {
 	DBIterator *iter = db_iterator(itemdb->names);
 	struct item_data *data;
 
@@ -2132,19 +2148,19 @@ void itemdb_name_constants(void) {
 
 	dbi_destroy(iter);
 }
-void do_final_itemdb(void) {
+void CItemdb::final(void) {
 	itemdb->clear(true);
 
 	itemdb->other->destroy(itemdb->other, itemdb->final_sub);
-	itemdb->destroy_item_data(&itemdb->dummy, 0);
+	itemdb->CItemdb::destroy_item_data(&itemdb->dummy, 0);
 	db_destroy(itemdb->names);
 }
 
-void do_init_itemdb(bool minimal) {
+void CItemdb::init(bool minimal) {
 	memset(itemdb->array, 0, sizeof(itemdb->array));
 	itemdb->other = idb_alloc(DB_OPT_BASE);
 	itemdb->names = strdb_alloc(DB_OPT_BASE,ITEM_NAME_LENGTH);
-	itemdb->create_dummy_data(); //Dummy data item.
+	itemdb->CItemdb::create_dummy_data(); //Dummy data item.
 	itemdb->read(minimal);
 
 	if (minimal)
@@ -2159,10 +2175,7 @@ void do_init_itemdb(bool minimal) {
 void itemdb_defaults(void) {
 	itemdb = &itemdb_s;
 
-	itemdb->init = do_init_itemdb;
-	itemdb->final = do_final_itemdb;
-	itemdb->reload = itemdb_reload;
-	itemdb->name_constants = itemdb_name_constants;
+
 	/* */
 	itemdb->groups = NULL;
 	itemdb->group_count = 0;
@@ -2182,59 +2195,5 @@ void itemdb_defaults(void) {
 	itemdb->other = NULL;
 	memset(&itemdb->dummy, 0, sizeof(struct item_data));
 	/* */
-	itemdb->read_groups = itemdb_read_groups;
-	itemdb->read_chains = itemdb_read_chains;
-	itemdb->read_packages = itemdb_read_packages;
-	/* */
-	itemdb->write_cached_packages = itemdb_write_cached_packages;
-	itemdb->read_cached_packages = itemdb_read_cached_packages;
-	/* */
-	itemdb->name2id = itemdb_name2id;
-	itemdb->search_name = itemdb_searchname;
-	itemdb->search_name_array = itemdb_searchname_array;
-	itemdb->load = itemdb_load;
-	itemdb->search = itemdb_search;
-	itemdb->exists = itemdb_exists;
-	itemdb->in_group = itemdb_in_group;
-	itemdb->group_item = itemdb_searchrandomid;
-	itemdb->chain_item = itemdb_chain_item;
-	itemdb->package_item = itemdb_package_item;
-	itemdb->searchname_sub = itemdb_searchname_sub;
-	itemdb->searchname_array_sub = itemdb_searchname_array_sub;
-	itemdb->searchrandomid = itemdb_searchrandomid;
-	itemdb->_typename = itemdb_typename;
-	itemdb->jobid2mapid = itemdb_jobid2mapid;
-	itemdb->create_dummy_data = create_dummy_data;
-	itemdb->create_item_data = create_item_data;
-	itemdb->isequip = itemdb_isequip;
-	itemdb->isequip2 = itemdb_isequip2;
-	itemdb->isstackable = itemdb_isstackable;
-	itemdb->isstackable2 = itemdb_isstackable2;
-	itemdb->isdropable_sub = itemdb_isdropable_sub;
-	itemdb->cantrade_sub = itemdb_cantrade_sub;
-	itemdb->canpartnertrade_sub = itemdb_canpartnertrade_sub;
-	itemdb->cansell_sub = itemdb_cansell_sub;
-	itemdb->cancartstore_sub = itemdb_cancartstore_sub;
-	itemdb->canstore_sub = itemdb_canstore_sub;
-	itemdb->canguildstore_sub = itemdb_canguildstore_sub;
-	itemdb->canmail_sub = itemdb_canmail_sub;
-	itemdb->canauction_sub = itemdb_canauction_sub;
-	itemdb->isrestricted = itemdb_isrestricted;
-	itemdb->isidentified = itemdb_isidentified;
-	itemdb->isidentified2 = itemdb_isidentified2;
-	itemdb->combo_split_atoi = itemdb_combo_split_atoi;
-	itemdb->read_combos = itemdb_read_combos;
-	itemdb->gendercheck = itemdb_gendercheck;
-	itemdb->validate_entry = itemdb_validate_entry;
-	itemdb->readdb_additional_fields = itemdb_readdb_additional_fields;
-	itemdb->readdb_libconfig_sub = itemdb_readdb_libconfig_sub;
-	itemdb->readdb_libconfig = itemdb_readdb_libconfig;
-	itemdb->unique_id = itemdb_unique_id;
-	itemdb->read = itemdb_read;
-	itemdb->destroy_item_data = destroy_item_data;
-	itemdb->final_sub = itemdb_final_sub;
-	itemdb->clear = itemdb_clear;
-	itemdb->id2combo = itemdb_id2combo;
-	itemdb->is_item_usable = itemdb_is_item_usable;
-	itemdb->lookup_const = itemdb_lookup_const;
+
 }

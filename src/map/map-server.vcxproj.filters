@@ -196,9 +196,6 @@
     <ClCompile Include="map.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mapreg_sql.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="mercenary.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -254,6 +251,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mapreg_sql.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

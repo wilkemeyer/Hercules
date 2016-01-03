@@ -86,69 +86,72 @@ struct atcmd_binding_data {
 /**
  * Interface
  **/
-struct atcommand_interface {
-	unsigned char at_symbol;
-	unsigned char char_symbol;
+class CAtcommand {
+public:
+	static unsigned char at_symbol;
+	static unsigned char char_symbol;
 	/* atcommand binding */
-	struct atcmd_binding_data** binding;
-	int binding_count;
+	static struct atcmd_binding_data** binding;
+	static int binding_count;
 	/* other vars */
-	DBMap* db; //name -> AtCommandInfo
-	DBMap* alias_db; //alias -> AtCommandInfo
+	static DBMap* db; //name -> AtCommandInfo
+	static DBMap* alias_db; //alias -> AtCommandInfo
 	/**
 	 * msg_table[lang_id][msg_id]
 	 * Server messages (0-499 reserved for GM commands, 500-999 reserved for others)
 	 **/
-	char*** msg_table;
-	uint8 max_message_table;
+	static char*** msg_table;
+	static uint8 max_message_table;
+
+
 	/* */
-	void (*init) (bool minimal);
-	void (*final) (void);
+	static void init (bool minimal);
+	static void final (void);
 	/* */
-	bool (*exec) (const int fd, struct map_session_data *sd, const char *message, bool player_invoked);
-	bool (*create) (char *name, AtCommandFunc func);
-	bool (*can_use) (struct map_session_data *sd, const char *command);
-	bool (*can_use2) (struct map_session_data *sd, const char *command, AtCommandType type);
-	void (*load_groups) (GroupSettings **groups, config_setting_t **commands_, size_t sz);
-	AtCommandInfo* (*exists) (const char* name);
-	bool (*msg_read) (const char *cfg_name, bool allow_override);
-	void (*final_msg) (void);
+	static bool exec (const int fd, struct map_session_data *sd, const char *message, bool player_invoked);
+	static bool create (char *name, AtCommandFunc func);
+	static bool can_use (struct map_session_data *sd, const char *command);
+	static bool can_use2 (struct map_session_data *sd, const char *command, AtCommandType type);
+	static void load_groups (GroupSettings **groups, config_setting_t **commands_, size_t sz);
+	static AtCommandInfo* exists (const char* name);
+	static bool msg_read (const char *cfg_name, bool allow_override);
+	static void final_msg (void);
 	/* atcommand binding */
-	struct atcmd_binding_data* (*get_bind_byname) (const char* name);
+	static struct atcmd_binding_data* get_bind_byname (const char* name);
 	/* */
-	AtCommandInfo* (*get_info_byname) (const char *name); // @help
-	const char* (*check_alias) (const char *aliasname); // @help
-	void (*get_suggestions) (struct map_session_data* sd, const char *name, bool is_atcmd_cmd); // @help
-	void (*config_read) (const char* config_filename);
+	static AtCommandInfo* get_info_byname (const char *name); // @help
+	static const char* check_alias (const char *aliasname); // @help
+	static void get_suggestions (struct map_session_data* sd, const char *name, bool is_atcmd_cmd); // @help
+	static void config_read (const char* config_filename);
 	/* command-specific subs */
-	int (*stopattack) (struct block_list *bl,va_list ap);
-	int (*pvpoff_sub) (struct block_list *bl,va_list ap);
-	int (*pvpon_sub) (struct block_list *bl,va_list ap);
-	int (*atkillmonster_sub) (struct block_list *bl, va_list ap);
-	void (*raise_sub) (struct map_session_data* sd);
-	void (*get_jail_time) (int jailtime, int* year, int* month, int* day, int* hour, int* minute);
-	int (*cleanfloor_sub) (struct block_list *bl, va_list ap);
-	int (*mutearea_sub) (struct block_list *bl,va_list ap);
-	void (*getring) (struct map_session_data* sd);
-	void (*channel_help) (int fd, const char *command, bool can_create);
+	static int stopattack (struct block_list *bl,va_list ap);
+	static int pvpoff_sub (struct block_list *bl,va_list ap);
+	static int pvpon_sub (struct block_list *bl,va_list ap);
+	static int atkillmonster_sub (struct block_list *bl, va_list ap);
+	static void raise_sub (struct map_session_data* sd);
+	static void get_jail_time (int jailtime, int* year, int* month, int* day, int* hour, int* minute);
+	static int cleanfloor_sub (struct block_list *bl, va_list ap);
+	static int mutearea_sub (struct block_list *bl,va_list ap);
+	static void getring (struct map_session_data* sd);
+	static void channel_help (int fd, const char *command, bool can_create);
 	/* */
-	void (*commands_sub) (struct map_session_data* sd, const int fd, AtCommandType type);
-	void (*cmd_db_clear) (void);
-	int (*cmd_db_clear_sub) (DBKey key, DBData *data, va_list args);
-	void (*doload) (void);
-	void (*base_commands) (void);
-	bool (*add) (char *name, AtCommandFunc func, bool replace);
-	const char* (*msg) (int msg_number);
-	void (*expand_message_table) (void);
-	const char* (*msgfd) (int fd, int msg_number);
-	const char* (*msgsd) (struct map_session_data *sd, int msg_number);
+	static void commands_sub (struct map_session_data* sd, const int fd, AtCommandType type);
+	static void cmd_db_clear (void);
+	static int cmd_db_clear_sub (DBKey key, DBData *data, va_list args);
+	static void doload (void);
+	static void base_commands (void);
+	static bool add (char *name, AtCommandFunc func, bool replace);
+	static const char* msg (int msg_number);
+	static void expand_message_table (void);
+	static const char* msgfd (int fd, int msg_number);
+	static const char* msgsd (struct map_session_data *sd, int msg_number);
 };
+extern CAtcommand *atcommand;
 
 #ifdef HERCULES_CORE
 void atcommand_defaults(void);
 #endif // HERCULES_CORE
 
-HPShared struct atcommand_interface *atcommand;
 
 /* stay here */
 #define ACMD(x) static bool atcommand_ ## x (const int fd, struct map_session_data* sd, const char* command, const char* message, struct AtCommandInfo *info) __attribute__((nonnull (2, 3, 4, 5))); \

@@ -123,56 +123,56 @@ struct pet_data {
 #define pet_stop_walking(pd, type) (unit->stop_walking(&(pd)->bl, (type)))
 #define pet_stop_attack(pd)        (unit->stop_attack(&(pd)->bl))
 
-struct pet_interface {
-	struct s_pet_db db[MAX_PET_DB];
-	struct eri *item_drop_ers; //For loot drops delay structures.
-	struct eri *item_drop_list_ers;
+class CPet {
+public:
+	static struct s_pet_db db[MAX_PET_DB];
+	static struct eri *item_drop_ers; //For loot drops delay structures.
+	static struct eri *item_drop_list_ers;
 	/* */
-	int (*init) (bool minimal);
-	int (*final) (void);
+	static int init (bool minimal);
+	static int final (void);
 	/* */
-	int (*hungry_val) (struct pet_data *pd);
-	void (*set_intimate) (struct pet_data *pd, int value);
-	int (*create_egg) (struct map_session_data *sd, int item_id);
-	int (*unlocktarget) (struct pet_data *pd);
-	int (*attackskill) (struct pet_data *pd, int target_id);
-	int (*target_check) (struct map_session_data *sd, struct block_list *bl, int type);
-	int (*sc_check) (struct map_session_data *sd, int type);
-	int (*hungry) (int tid, int64 tick, int id, intptr_t data);
-	int (*search_petDB_index) (int key, int type);
-	int (*hungry_timer_delete) (struct pet_data *pd);
-	int (*performance) (struct map_session_data *sd, struct pet_data *pd);
-	int (*return_egg) (struct map_session_data *sd, struct pet_data *pd);
-	int (*data_init) (struct map_session_data *sd, struct s_pet *petinfo);
-	int (*birth_process) (struct map_session_data *sd, struct s_pet *petinfo);
-	int (*recv_petdata) (int account_id, struct s_pet *p, int flag);
-	int (*select_egg) (struct map_session_data *sd, short egg_index);
-	int (*catch_process1) (struct map_session_data *sd, int target_class);
-	int (*catch_process2) (struct map_session_data *sd, int target_id);
-	bool (*get_egg) (int account_id, short pet_class, int pet_id );
-	int (*unequipitem) (struct map_session_data *sd, struct pet_data *pd);
-	int (*food) (struct map_session_data *sd, struct pet_data *pd);
-	int (*ai_sub_hard_lootsearch) (struct block_list *bl, va_list ap);
-	int (*menu) (struct map_session_data *sd, int menunum);
-	int (*change_name) (struct map_session_data *sd, char *name);
-	int (*change_name_ack) (struct map_session_data *sd, char *name, int flag);
-	int (*equipitem) (struct map_session_data *sd, int index);
-	int (*randomwalk) (struct pet_data *pd, int64 tick);
-	int (*ai_sub_hard) (struct pet_data *pd, struct map_session_data *sd, int64 tick);
-	int (*ai_sub_foreachclient) (struct map_session_data *sd, va_list ap);
-	int (*ai_hard) (int tid, int64 tick, int id, intptr_t data);
-	int (*delay_item_drop) (int tid, int64 tick, int id, intptr_t data);
-	int (*lootitem_drop) (struct pet_data *pd, struct map_session_data *sd);
-	int (*skill_bonus_timer) (int tid, int64 tick, int id, intptr_t data);
-	int (*recovery_timer) (int tid, int64 tick, int id, intptr_t data);
-	int (*skill_support_timer) (int tid, int64 tick, int id, intptr_t data);
-	int (*read_db) ();
+	static int hungry_val (struct pet_data *pd);
+	static void set_intimate (struct pet_data *pd, int value);
+	static int create_egg (struct map_session_data *sd, int item_id);
+	static int unlocktarget (struct pet_data *pd);
+	static int attackskill (struct pet_data *pd, int target_id);
+	static int target_check (struct map_session_data *sd, struct block_list *bl, int type);
+	static int sc_check (struct map_session_data *sd, int type);
+	static int hungry (int tid, int64 tick, int id, intptr_t data);
+	static int search_petDB_index (int key, int type);
+	static int hungry_timer_delete (struct pet_data *pd);
+	static int performance (struct map_session_data *sd, struct pet_data *pd);
+	static int return_egg (struct map_session_data *sd, struct pet_data *pd);
+	static int data_init (struct map_session_data *sd, struct s_pet *petinfo);
+	static int birth_process (struct map_session_data *sd, struct s_pet *petinfo);
+	static int recv_petdata (int account_id, struct s_pet *p, int flag);
+	static int select_egg (struct map_session_data *sd, short egg_index);
+	static int catch_process1 (struct map_session_data *sd, int target_class);
+	static int catch_process2 (struct map_session_data *sd, int target_id);
+	static bool get_egg (int account_id, short pet_class, int pet_id );
+	static int unequipitem (struct map_session_data *sd, struct pet_data *pd);
+	static int food (struct map_session_data *sd, struct pet_data *pd);
+	static int ai_sub_hard_lootsearch (struct block_list *bl, va_list ap);
+	static int menu (struct map_session_data *sd, int menunum);
+	static int change_name (struct map_session_data *sd, char *name);
+	static int change_name_ack (struct map_session_data *sd, char *name, int flag);
+	static int equipitem (struct map_session_data *sd, int index);
+	static int randomwalk (struct pet_data *pd, int64 tick);
+	static int ai_sub_hard (struct pet_data *pd, struct map_session_data *sd, int64 tick);
+	static int ai_sub_foreachclient (struct map_session_data *sd, va_list ap);
+	static int ai_hard (int tid, int64 tick, int id, intptr_t data);
+	static int delay_item_drop (int tid, int64 tick, int id, intptr_t data);
+	static int lootitem_drop (struct pet_data *pd, struct map_session_data *sd);
+	static int skill_bonus_timer (int tid, int64 tick, int id, intptr_t data);
+	static int recovery_timer (int tid, int64 tick, int id, intptr_t data);
+	static int skill_support_timer (int tid, int64 tick, int id, intptr_t data);
+	static int read_db ();
 };
-
+extern CPet *pet;
 #ifdef HERCULES_CORE
 void pet_defaults(void);
 #endif // HERCULES_CORE
 
-HPShared struct pet_interface *pet;
 
 #endif /* MAP_PET_H */

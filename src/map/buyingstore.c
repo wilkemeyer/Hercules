@@ -20,15 +20,21 @@
  */
 #include "stdafx.h"
 
-struct buyingstore_interface buyingstore_s;
-struct buyingstore_interface *buyingstore;
+CBuyingstore buyingstore_s;
+CBuyingstore *buyingstore;
+
+// Subsystem Globals:
+unsigned int CBuyingstore::nextid;
+short CBuyingstore::blankslots[MAX_SLOTS];  // used when checking whether or not an item's card slots are blank
+
+
 
 /// Returns unique buying store id
-unsigned int buyingstore_getuid(void) {
+unsigned int CBuyingstore::getuid(void) {
 	return buyingstore->nextid++;
 }
 
-bool buyingstore_setup(struct map_session_data* sd, unsigned char slots)
+bool CBuyingstore::setup(struct map_session_data* sd, unsigned char slots)
 {
 	nullpo_retr(false, sd);
 	if( !battle_config.feature_buying_store || sd->state.vending || sd->state.buyingstore || sd->state.trading || slots == 0 )
@@ -65,7 +71,7 @@ bool buyingstore_setup(struct map_session_data* sd, unsigned char slots)
 	return true;
 }
 
-void buyingstore_create(struct map_session_data* sd, int zenylimit, unsigned char result, const char* storename, const uint8* itemlist, unsigned int count)
+void CBuyingstore::create(struct map_session_data* sd, int zenylimit, unsigned char result, const char* storename, const uint8* itemlist, unsigned int count)
 {
 	unsigned int i, weight, listidx;
 
@@ -181,7 +187,7 @@ void buyingstore_create(struct map_session_data* sd, int zenylimit, unsigned cha
 	clif->buyingstore_entry(sd);
 }
 
-void buyingstore_close(struct map_session_data* sd)
+void CBuyingstore::close(struct map_session_data* sd)
 {
 	nullpo_retv(sd);
 	if (sd->state.buyingstore)
@@ -195,7 +201,7 @@ void buyingstore_close(struct map_session_data* sd)
 	}
 }
 
-void buyingstore_open(struct map_session_data* sd, int account_id)
+void CBuyingstore::open(struct map_session_data* sd, int account_id)
 {
 	struct map_session_data* pl_sd;
 
@@ -226,7 +232,7 @@ void buyingstore_open(struct map_session_data* sd, int account_id)
 }
 
 
-void buyingstore_trade(struct map_session_data* sd, int account_id, unsigned int buyer_id, const uint8* itemlist, unsigned int count)
+void CBuyingstore::trade(struct map_session_data* sd, int account_id, unsigned int buyer_id, const uint8* itemlist, unsigned int count)
 {
 	int zeny = 0;
 	unsigned int i, weight, listidx, k;
@@ -402,7 +408,7 @@ void buyingstore_trade(struct map_session_data* sd, int account_id, unsigned int
 
 
 /// Checks if an item is being bought in given player's buying store.
-bool buyingstore_search(struct map_session_data* sd, unsigned short nameid)
+bool CBuyingstore::search(struct map_session_data* sd, unsigned short nameid)
 {
 	unsigned int i;
 
@@ -424,7 +430,7 @@ bool buyingstore_search(struct map_session_data* sd, unsigned short nameid)
 
 /// Searches for all items in a buyingstore, that match given ids, price and possible cards.
 /// @return Whether or not the search should be continued.
-bool buyingstore_searchall(struct map_session_data* sd, const struct s_search_store_search* s)
+bool CBuyingstore::searchall(struct map_session_data* sd, const struct s_search_store_search* s)
 {
 	unsigned int i, idx;
 	struct s_buyingstore_item* it;
@@ -473,14 +479,6 @@ void buyingstore_defaults(void) {
 
 	buyingstore->nextid = 0;
 	memset(buyingstore->blankslots,0,sizeof(buyingstore->blankslots));
-	/* */
-	buyingstore->setup = buyingstore_setup;
-	buyingstore->create = buyingstore_create;
-	buyingstore->close = buyingstore_close;
-	buyingstore->open = buyingstore_open;
-	buyingstore->trade = buyingstore_trade;
-	buyingstore->search = buyingstore_search;
-	buyingstore->searchall = buyingstore_searchall;
-	buyingstore->getuid = buyingstore_getuid;
+
 
 }

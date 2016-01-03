@@ -55,28 +55,30 @@ struct storage_interface {
 	int (*reconnect_sub) (DBKey key, DBData *data, va_list ap);
 };
 
-struct guild_storage_interface {
+class CGstorage {
+public:
 	struct DBMap* db; // int guild_id -> struct guild_storage*
 	/* */
-	struct guild_storage *(*ensure) (int guild_id);
+	static struct guild_storage *ensure (int guild_id);
 	/* */
-	void (*init) (bool minimal);
-	void (*final) (void);
+	static void init (bool minimal);
+	static void final (void);
 	/* */
-	int (*_delete) (int guild_id);
-	int (*open) (struct map_session_data *sd);
-	int (*additem) (struct map_session_data *sd,struct guild_storage *stor,struct item *item_data,int amount);
-	int (*delitem) (struct map_session_data *sd,struct guild_storage *stor,int n,int amount);
-	int (*add) (struct map_session_data *sd,int index,int amount);
-	int (*get) (struct map_session_data *sd,int index,int amount);
-	int (*addfromcart) (struct map_session_data *sd,int index,int amount);
-	int (*gettocart) (struct map_session_data *sd,int index,int amount);
-	int (*close) (struct map_session_data *sd);
-	int (*pc_quit) (struct map_session_data *sd,int flag);
-	int (*save) (int account_id, int guild_id, int flag);
-	int (*saved) (int guild_id); //Ack from char server that guild store was saved.
-	DBData (*create) (DBKey key, va_list args);
+	static int _delete (int guild_id);
+	static int open (struct map_session_data *sd);
+	static int additem (struct map_session_data *sd,struct guild_storage *stor,struct item *item_data,int amount);
+	static int delitem (struct map_session_data *sd,struct guild_storage *stor,int n,int amount);
+	static int add (struct map_session_data *sd,int index,int amount);
+	static int get (struct map_session_data *sd,int index,int amount);
+	static int addfromcart (struct map_session_data *sd,int index,int amount);
+	static int gettocart (struct map_session_data *sd,int index,int amount);
+	static int close (struct map_session_data *sd);
+	static int pc_quit (struct map_session_data *sd,int flag);
+	static int save (int account_id, int guild_id, int flag);
+	static int saved (int guild_id); //Ack from char server that guild store was saved.
+	static DBData create (DBKey key, va_list args);
 };
+extern CGstorage *gstorage;
 
 #ifdef HERCULES_CORE
 void storage_defaults(void);
@@ -84,6 +86,5 @@ void gstorage_defaults(void);
 #endif // HERCULES_CORE
 
 HPShared struct storage_interface *storage;
-HPShared struct guild_storage_interface *gstorage;
 
 #endif /* MAP_STORAGE_H */

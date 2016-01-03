@@ -55,32 +55,33 @@ enum quest_check_type {
 	HUNTING,   ///< Check if the given hunting quest's requirements have been met
 };
 
-struct quest_interface {
-	struct quest_db **db_data; ///< Quest database
-	struct quest_db dummy;                  ///< Dummy entry for invalid quest lookups
+class CQuest {
+public:
+	static struct quest_db **db_data; ///< Quest database
+	static struct quest_db dummy;                  ///< Dummy entry for invalid quest lookups
 	/* */
-	void (*init) (bool minimal);
-	void (*final) (void);
-	void (*reload) (void);
+	static void init (bool minimal);
+	static void final (void);
+	static void reload (void);
 	/* */
-	struct quest_db *(*db) (int quest_id);
-	int (*pc_login) (TBL_PC *sd);
-	int (*add) (TBL_PC *sd, int quest_id);
-	int (*change) (TBL_PC *sd, int qid1, int qid2);
-	int (*_delete) (TBL_PC *sd, int quest_id);
-	int (*update_objective_sub) (struct block_list *bl, va_list ap);
-	void (*update_objective) (TBL_PC *sd, int mob_id);
-	int (*update_status) (TBL_PC *sd, int quest_id, enum quest_state qs);
-	int (*check) (TBL_PC *sd, int quest_id, enum quest_check_type type);
-	void (*clear) (void);
-	int (*read_db) (void);
-	struct quest_db *(*read_db_sub) (config_setting_t *cs, int n, const char *source);
+	static struct quest_db *db (int quest_id);
+	static int pc_login (TBL_PC *sd);
+	static int add (TBL_PC *sd, int quest_id);
+	static int change (TBL_PC *sd, int qid1, int qid2);
+	static int _delete (TBL_PC *sd, int quest_id);
+	static int update_objective_sub (struct block_list *bl, va_list ap);
+	static void update_objective (TBL_PC *sd, int mob_id);
+	static int update_status (TBL_PC *sd, int quest_id, enum quest_state qs);
+	static int check (TBL_PC *sd, int quest_id, enum quest_check_type type);
+	static void clear (void);
+	static int read_db (void);
+	static struct quest_db *read_db_sub (config_setting_t *cs, int n, const char *source);
 };
+extern CQuest *quest;
 
 #ifdef HERCULES_CORE
 void quest_defaults(void);
 #endif // HERCULES_CORE
 
-HPShared struct quest_interface *quest;
 
 #endif /* MAP_QUEST_H */

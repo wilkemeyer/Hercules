@@ -20,20 +20,24 @@
  */
 #include "stdafx.h"
 
-struct elemental_interface elemental_s;
-struct elemental_interface *elemental;
+CElemental elemental_s;
+CElemental *elemental = NULL;
 
-int elemental_search_index(int class_) {
+// Subsystem Globals:
+struct s_elemental_db CElemental::db[MAX_ELEMENTAL_CLASS]; // Elemental Database
+
+
+int CElemental::search_index(int class_) {
 	int i;
 	ARR_FIND(0, MAX_ELEMENTAL_CLASS, i, elemental->db[i].class_ == class_);
 	return (i == MAX_ELEMENTAL_CLASS)?-1:i;
 }
 
-bool elemental_class(int class_) {
+bool CElemental::_class(int class_) {
 	return (bool)(elemental->search_index(class_) > -1);
 }
 
-struct view_data * elemental_get_viewdata(int class_) {
+struct view_data * CElemental::get_viewdata(int class_) {
 	int i = elemental->search_index(class_);
 	if( i < 0 )
 		return 0;
@@ -41,7 +45,7 @@ struct view_data * elemental_get_viewdata(int class_) {
 	return &elemental->db[i].vd;
 }
 
-int elemental_create(struct map_session_data *sd, int class_, unsigned int lifetime) {
+int CElemental::create(struct map_session_data *sd, int class_, unsigned int lifetime) {
 	struct s_elemental ele;
 	struct s_elemental_db *db;
 	int i, summon_level, skill_level;
@@ -132,7 +136,7 @@ int elemental_create(struct map_session_data *sd, int class_, unsigned int lifet
 	return 1;
 }
 
-int elemental_get_lifetime(struct elemental_data *ed) {
+int CElemental::get_lifetime(struct elemental_data *ed) {
 	const struct TimerData * td;
 	if( ed == NULL || ed->summon_timer == INVALID_TIMER )
 		return 0;
@@ -141,7 +145,7 @@ int elemental_get_lifetime(struct elemental_data *ed) {
 	return (td != NULL) ? DIFF_TICK32(td->tick, timer->gettick()) : 0;
 }
 
-int elemental_save(struct elemental_data *ed) {
+int CElemental::save(struct elemental_data *ed) {
 	nullpo_retr(1, ed);
 	ed->elemental.mode = ed->battle_status.mode;
 	ed->elemental.hp = ed->battle_status.hp;
@@ -160,7 +164,7 @@ int elemental_save(struct elemental_data *ed) {
 	return 1;
 }
 
-int elemental_summon_end_timer(int tid, int64 tick, int id, intptr_t data) {
+int CElemental::summon_end_timer(int tid, int64 tick, int id, intptr_t data) {
 	struct map_session_data *sd;
 	struct elemental_data *ed;
 
@@ -180,14 +184,14 @@ int elemental_summon_end_timer(int tid, int64 tick, int id, intptr_t data) {
 	return 0;
 }
 
-void elemental_summon_stop(struct elemental_data *ed) {
+void CElemental::summon_stop(struct elemental_data *ed) {
 	nullpo_retv(ed);
 	if( ed->summon_timer != INVALID_TIMER )
 		timer->_delete(ed->summon_timer, elemental->summon_end_timer);
 	ed->summon_timer = INVALID_TIMER;
 }
 
-int elemental_delete(struct elemental_data *ed, int reply) {
+int CElemental::_delete(struct elemental_data *ed, int reply) {
 	struct map_session_data *sd;
 	nullpo_ret(ed);
 
@@ -209,7 +213,7 @@ int elemental_delete(struct elemental_data *ed, int reply) {
 	return unit->remove_map(&ed->bl, CLR_OUTSIGHT, ALC_MARK);
 }
 
-void elemental_summon_init(struct elemental_data *ed) {
+void CElemental::summon_init(struct elemental_data *ed) {
 	nullpo_retv(ed);
 	if (ed->summon_timer == INVALID_TIMER)
 		ed->summon_timer = timer->add(timer->gettick() + ed->elemental.life_time, elemental->summon_end_timer, ed->master->bl.id, 0);
@@ -217,7 +221,7 @@ void elemental_summon_init(struct elemental_data *ed) {
 	ed->regen.state.block = 0;
 }
 
-int elemental_data_received(struct s_elemental *ele, bool flag) {
+int CElemental::data_received(struct s_elemental *ele, bool flag) {
 	struct map_session_data *sd;
 	struct elemental_data *ed;
 	struct s_elemental_db *db;
@@ -279,7 +283,7 @@ int elemental_data_received(struct s_elemental *ele, bool flag) {
 	return 1;
 }
 
-int elemental_clean_single_effect(struct elemental_data *ed, uint16 skill_id) {
+int CElemental::clean_single_effect(struct elemental_data *ed, uint16 skill_id) {
 	struct block_list *bl;
 	sc_type type = status->skill2sc(skill_id);
 
@@ -326,7 +330,7 @@ int elemental_clean_single_effect(struct elemental_data *ed, uint16 skill_id) {
 	return 1;
 }
 
-int elemental_clean_effect(struct elemental_data *ed) {
+int CElemental::clean_effect(struct elemental_data *ed) {
 	struct map_session_data *sd;
 
 	nullpo_ret(ed);
@@ -386,7 +390,7 @@ int elemental_clean_effect(struct elemental_data *ed) {
 	return 1;
 }
 
-int elemental_action(struct elemental_data *ed, struct block_list *bl, int64 tick) {
+int CElemental::action(struct elemental_data *ed, struct block_list *bl, int64 tick) {
 	struct skill_condition req;
 	uint16 skill_id, skill_lv;
 	int i;
@@ -467,7 +471,7 @@ int elemental_action(struct elemental_data *ed, struct block_list *bl, int64 tic
  * Action that elemental perform after changing mode.
  * Activates one of the skills of the new mode.
  *-------------------------------------------------------------*/
-int elemental_change_mode_ack(struct elemental_data *ed, int mode) {
+int CElemental::change_mode_ack(struct elemental_data *ed, int mode) {
 	struct block_list *bl = &ed->master->bl;
 	uint16 skill_id, skill_lv;
 	int i;
@@ -509,7 +513,7 @@ int elemental_change_mode_ack(struct elemental_data *ed, int mode) {
 /*===============================================================
  * Change elemental mode.
  *-------------------------------------------------------------*/
-int elemental_change_mode(struct elemental_data *ed, int mode) {
+int CElemental::change_mode(struct elemental_data *ed, int mode) {
 	nullpo_ret(ed);
 
 	// Remove target
@@ -531,7 +535,7 @@ int elemental_change_mode(struct elemental_data *ed, int mode) {
 	return 1;
 }
 
-void elemental_heal(struct elemental_data *ed, int hp, int sp) {
+void CElemental::heal(struct elemental_data *ed, int hp, int sp) {
 	nullpo_retv(ed);
 	if( hp )
 		clif->elemental_updatestatus(ed->master, SP_HP);
@@ -539,12 +543,12 @@ void elemental_heal(struct elemental_data *ed, int hp, int sp) {
 		clif->elemental_updatestatus(ed->master, SP_SP);
 }
 
-int elemental_dead(struct elemental_data *ed) {
+int CElemental::dead(struct elemental_data *ed) {
 	elemental->_delete(ed, 1);
 	return 0;
 }
 
-int elemental_unlocktarget(struct elemental_data *ed) {
+int CElemental::unlocktarget(struct elemental_data *ed) {
 	nullpo_ret(ed);
 
 	ed->target_id = 0;
@@ -553,7 +557,7 @@ int elemental_unlocktarget(struct elemental_data *ed) {
 	return 0;
 }
 
-int elemental_skillnotok(uint16 skill_id, struct elemental_data *ed) {
+int CElemental::skillnotok(uint16 skill_id, struct elemental_data *ed) {
 	int idx = skill->get_index(skill_id);
 	nullpo_retr(1,ed);
 
@@ -563,7 +567,7 @@ int elemental_skillnotok(uint16 skill_id, struct elemental_data *ed) {
 	return skill->not_ok(skill_id, ed->master);
 }
 
-struct skill_condition elemental_skill_get_requirements(uint16 skill_id, uint16 skill_lv){
+struct skill_condition CElemental::skill_get_requirements(uint16 skill_id, uint16 skill_lv){
 	struct skill_condition req;
 	int idx = skill->get_index(skill_id);
 
@@ -581,7 +585,7 @@ struct skill_condition elemental_skill_get_requirements(uint16 skill_id, uint16 
 	return req;
 }
 
-int elemental_set_target( struct map_session_data *sd, struct block_list *bl ) {
+int CElemental::set_target( struct map_session_data *sd, struct block_list *bl ) {
 	struct elemental_data *ed;
 
 	nullpo_ret(sd);
@@ -601,7 +605,7 @@ int elemental_set_target( struct map_session_data *sd, struct block_list *bl ) {
 	return 1;
 }
 
-int elemental_ai_sub_timer_activesearch(struct block_list *bl, va_list ap) {
+int CElemental::ai_sub_timer_activesearch(struct block_list *bl, va_list ap) {
 	struct elemental_data *ed;
 	struct block_list **target;
 	int dist;
@@ -640,7 +644,7 @@ int elemental_ai_sub_timer_activesearch(struct block_list *bl, va_list ap) {
 	return 0;
 }
 
-int elemental_ai_sub_timer(struct elemental_data *ed, struct map_session_data *sd, int64 tick) {
+int CElemental::ai_sub_timer(struct elemental_data *ed, struct map_session_data *sd, int64 tick) {
 	struct block_list *target = NULL;
 	int master_dist, view_range, mode;
 
@@ -755,7 +759,7 @@ int elemental_ai_sub_timer(struct elemental_data *ed, struct map_session_data *s
 	return 0;
 }
 
-int elemental_ai_sub_foreachclient(struct map_session_data *sd, va_list ap) {
+int CElemental::ai_sub_foreachclient(struct map_session_data *sd, va_list ap) {
 	int64 tick = va_arg(ap,int64);
 	nullpo_ret(sd);
 	if(sd->status.ele_id && sd->ed)
@@ -764,12 +768,12 @@ int elemental_ai_sub_foreachclient(struct map_session_data *sd, va_list ap) {
 	return 0;
 }
 
-int elemental_ai_timer(int tid, int64 tick, int id, intptr_t data) {
+int CElemental::ai_timer(int tid, int64 tick, int id, intptr_t data) {
 	map->foreachpc(elemental->ai_sub_foreachclient,tick);
 	return 0;
 }
 
-int read_elementaldb(void) {
+int CElemental::read_db(void) {
 	FILE *fp;
 	char line[1024], *p;
 	char *str[26];
@@ -856,12 +860,12 @@ int read_elementaldb(void) {
 	}
 
 	fclose(fp);
-	ShowStatus("Done reading '"CL_WHITE"%d"CL_RESET"' elementals in '"CL_WHITE"db/elemental_db.txt"CL_RESET"'.\n",j);
+	ShowStatus("Done reading '" CL_WHITE "%d" CL_RESET "' elementals in '" CL_WHITE "db/elemental_db.txt" CL_RESET "'.\n",j);
 
 	return 0;
 }
 
-int read_elemental_skilldb(void) {
+int CElemental::read_skilldb(void) {
 	FILE *fp;
 	char line[1024], *p;
 	char *str[4];
@@ -929,20 +933,20 @@ int read_elemental_skilldb(void) {
 	}
 
 	fclose(fp);
-	ShowStatus("Done reading '"CL_WHITE"%d"CL_RESET"' entries in '"CL_WHITE"db/elemental_skill_db.txt"CL_RESET"'.\n",j);
+	ShowStatus("Done reading '" CL_WHITE "%d" CL_RESET "' entries in '" CL_WHITE "db/elemental_skill_db.txt" CL_RESET "'.\n",j);
 	return 0;
 }
 
-void reload_elementaldb(void) {
+void CElemental::reload_db(void) {
 	elemental->read_db();
 	elemental->reload_skilldb();
 }
 
-void reload_elemental_skilldb(void) {
+void CElemental::reload_skilldb(void) {
 	elemental->read_skilldb();
 }
 
-int do_init_elemental(bool minimal) {
+int CElemental::init(bool minimal) {
 	if (minimal)
 		return 0;
 
@@ -955,7 +959,7 @@ int do_init_elemental(bool minimal) {
 	return 0;
 }
 
-void do_final_elemental(void) {
+void CElemental::final(void) {
 	return;
 }
 
@@ -968,49 +972,7 @@ void elemental_defaults(void) {
 	elemental = &elemental_s;
 
 	/* */
-	elemental->init = do_init_elemental;
-	elemental->final = do_final_elemental;
-
-	/* */
 	memset(elemental->db,0,sizeof(elemental->db));
 
-	/* funcs */
-	elemental->_class = elemental_class;
-	elemental->get_viewdata = elemental_get_viewdata;
 
-	elemental->create = elemental_create;
-	elemental->data_received = elemental_data_received;
-	elemental->save = elemental_save;
-
-	elemental->change_mode_ack = elemental_change_mode_ack;
-	elemental->change_mode = elemental_change_mode;
-
-	elemental->heal = elemental_heal;
-	elemental->dead = elemental_dead;
-
-	elemental->_delete = elemental_delete;
-	elemental->summon_stop = elemental_summon_stop;
-
-	elemental->get_lifetime = elemental_get_lifetime;
-
-	elemental->unlocktarget = elemental_unlocktarget;
-	elemental->skillnotok = elemental_skillnotok;
-	elemental->set_target = elemental_set_target;
-	elemental->clean_single_effect = elemental_clean_single_effect;
-	elemental->clean_effect = elemental_clean_effect;
-	elemental->action = elemental_action;
-	elemental->skill_get_requirements = elemental_skill_get_requirements;
-
-	elemental->read_skilldb = read_elemental_skilldb;
-	elemental->reload_db = reload_elementaldb;
-	elemental->reload_skilldb = reload_elemental_skilldb;
-
-	elemental->search_index = elemental_search_index;
-	elemental->summon_init = elemental_summon_init;
-	elemental->summon_end_timer = elemental_summon_end_timer;
-	elemental->ai_sub_timer_activesearch = elemental_ai_sub_timer_activesearch;
-	elemental->ai_sub_timer = elemental_ai_sub_timer;
-	elemental->ai_sub_foreachclient = elemental_ai_sub_foreachclient;
-	elemental->ai_timer = elemental_ai_timer;
-	elemental->read_db = read_elementaldb;
 }

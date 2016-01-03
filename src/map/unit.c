@@ -23,8 +23,8 @@
 const short dirx[8]={0,-1,-1,-1,0,1,1,1};
 const short diry[8]={1,1,0,-1,-1,-1,0,1};
 
-struct unit_interface unit_s;
-struct unit_interface *unit;
+CUnit unit_s;
+CUnit *unit = NULL;
 
 /**
  * Returns the unit_data for the given block_list. If the object is using
@@ -32,7 +32,7 @@ struct unit_interface *unit;
  * @param bl block_list to process
  * @return a pointer to the given object's unit_data
  **/
-struct unit_data* unit_bl2ud(struct block_list *bl) {
+struct unit_data* CUnit::bl2ud(struct block_list *bl) {
 	if( bl == NULL) return NULL;
 	if( bl->type == BL_PC)  return &((struct map_session_data*)bl)->ud;
 	if( bl->type == BL_MOB) return &((struct mob_data*)bl)->ud;
@@ -51,7 +51,7 @@ struct unit_data* unit_bl2ud(struct block_list *bl) {
  * @param bl block_list to process
  * @return a pointer to the given object's unit_data
  */
-struct unit_data* unit_bl2ud2(struct block_list *bl) {
+struct unit_data* CUnit::bl2ud2(struct block_list *bl) {
 	if( bl && bl->type == BL_NPC && ((struct npc_data*)bl)->ud == &npc->base_ud ) {
 		struct npc_data *nd = (struct npc_data *)bl;
 		nd->ud = NULL;
@@ -61,7 +61,7 @@ struct unit_data* unit_bl2ud2(struct block_list *bl) {
 	return unit->bl2ud(bl);
 }
 
-int unit_walktoxy_sub(struct block_list *bl)
+int CUnit::walktoxy_sub(struct block_list *bl)
 {
 	int i;
 	struct walkpath_data wpd;
@@ -131,7 +131,7 @@ int unit_walktoxy_sub(struct block_list *bl)
  * @param data: Not used
  * @return 1: Success 0: Fail (No valid bl)
  */
-int unit_step_timer(int tid, int64 tick, int id, intptr_t data)
+int CUnit::step_timer(int tid, int64 tick, int id, intptr_t data)
 {
 	struct block_list *bl;
 	struct unit_data *ud;
@@ -192,7 +192,7 @@ int unit_step_timer(int tid, int64 tick, int id, intptr_t data)
 }
 
 
-int unit_walktoxy_timer(int tid, int64 tick, int id, intptr_t data) {
+int CUnit::walktoxy_timer(int tid, int64 tick, int id, intptr_t data) {
 	int i;
 	int x,y,dx,dy;
 	unsigned char icewall_walk_block;
@@ -443,7 +443,7 @@ int unit_walktoxy_timer(int tid, int64 tick, int id, intptr_t data) {
 	return 0;
 }
 
-int unit_delay_walktoxy_timer(int tid, int64 tick, int id, intptr_t data) {
+int CUnit::delay_walktoxy_timer(int tid, int64 tick, int id, intptr_t data) {
 	struct block_list *bl = map->id2bl(id);
 
 	if (!bl || bl->prev == NULL)
@@ -457,7 +457,7 @@ int unit_delay_walktoxy_timer(int tid, int64 tick, int id, intptr_t data) {
 //&2 -> force walking
 //&4 -> Delay walking if the reason you can't walk is the canwalk delay
 //&8 -> Search for an unoccupied cell and cancel if none available
-int unit_walktoxy( struct block_list *bl, short x, short y, int flag)
+int CUnit::walktoxy( struct block_list *bl, short x, short y, int flag)
 {
 	struct unit_data* ud = NULL;
 	struct status_change* sc = NULL;
@@ -526,7 +526,7 @@ static inline void set_mobstate(struct block_list* bl, int flag)
 		md->state.skillstate = md->state.aggressive ? MSS_FOLLOW : MSS_RUSH;
 }
 
-int unit_walktobl_sub(int tid, int64 tick, int id, intptr_t data) {
+int CUnit::walktobl_sub(int tid, int64 tick, int id, intptr_t data) {
 	struct block_list *bl = map->id2bl(id);
 	struct unit_data *ud = bl?unit->bl2ud(bl):NULL;
 
@@ -543,7 +543,7 @@ int unit_walktobl_sub(int tid, int64 tick, int id, intptr_t data) {
 
 // Chases a tbl. If the flag&1, use hard-path seek,
 // if flag&2, start attacking upon arrival within range, otherwise just walk to that character.
-int unit_walktobl(struct block_list *bl, struct block_list *tbl, int range, int flag)
+int CUnit::walktobl(struct block_list *bl, struct block_list *tbl, int range, int flag)
 {
 	struct unit_data     *ud = NULL;
 	struct status_change *sc = NULL;
@@ -605,7 +605,7 @@ int unit_walktobl(struct block_list *bl, struct block_list *tbl, int range, int 
  * Called by unit_run when an object was hit
  * @param sd Required only when using SC_WUGDASH
  **/
-void unit_run_hit( struct block_list *bl, struct status_change *sc, struct map_session_data *sd, enum sc_type type ) {
+void CUnit::run_hit( struct block_list *bl, struct status_change *sc, struct map_session_data *sd, enum sc_type type ) {
 	int lv = sc->data[type]->val1;
 
 	//If you can't run forward, you must be next to a wall, so bounce back. [Skotlex]
@@ -633,7 +633,7 @@ void unit_run_hit( struct block_list *bl, struct status_change *sc, struct map_s
  * @retval true Finished running
  * @retval false Hit an object/Couldn't run
  **/
-bool unit_run( struct block_list *bl, struct map_session_data *sd, enum sc_type type ) {
+bool CUnit::run( struct block_list *bl, struct map_session_data *sd, enum sc_type type ) {
 	struct status_change *sc;
 	short to_x,to_y,dir_x,dir_y;
 	int i;
@@ -693,7 +693,7 @@ bool unit_run( struct block_list *bl, struct map_session_data *sd, enum sc_type 
 }
 
 //Makes bl attempt to run dist cells away from target. Uses hard-paths.
-int unit_escape(struct block_list *bl, struct block_list *target, short dist) {
+int CUnit::escape(struct block_list *bl, struct block_list *target, short dist) {
 	uint8 dir = map->calc_dir(target, bl->x, bl->y);
 	while (dist > 0 && map->getcell(bl->m, bl, bl->x + dist * dirx[dir], bl->y + dist * diry[dir], CELL_CHKNOREACH))
 		dist--;
@@ -701,7 +701,7 @@ int unit_escape(struct block_list *bl, struct block_list *target, short dist) {
 }
 
 //Instant warp function.
-int unit_movepos(struct block_list *bl, short dst_x, short dst_y, int easy, bool checkpath) {
+int CUnit::movepos(struct block_list *bl, short dst_x, short dst_y, int easy, bool checkpath) {
 	short dx,dy;
 	uint8 dir;
 	struct unit_data        *ud = NULL;
@@ -764,7 +764,7 @@ int unit_movepos(struct block_list *bl, short dst_x, short dst_y, int easy, bool
 	return 1;
 }
 
-int unit_setdir(struct block_list *bl,unsigned char dir)
+int CUnit::setdir(struct block_list *bl,unsigned char dir)
 {
 	struct unit_data *ud;
 	nullpo_ret(bl );
@@ -777,7 +777,7 @@ int unit_setdir(struct block_list *bl,unsigned char dir)
 	return 0;
 }
 
-uint8 unit_getdir(struct block_list *bl) {
+uint8 CUnit::getdir(struct block_list *bl) {
 	struct unit_data *ud;
 	nullpo_ret(bl);
 
@@ -792,7 +792,7 @@ uint8 unit_getdir(struct block_list *bl) {
 // map cell restrictions are respected.
 // flag:
 //  &1  Do not send position update packets.
-int unit_blown(struct block_list* bl, int dx, int dy, int count, int flag)
+int CUnit::blown(struct block_list* bl, int dx, int dy, int count, int flag)
 {
 	if(count) {
 		struct map_session_data* sd;
@@ -858,7 +858,7 @@ int unit_blown(struct block_list* bl, int dx, int dy, int count, int flag)
 //Warps a unit/ud to a given map/position.
 //In the case of players, pc->setpos is used.
 //it respects the no warp flags, so it is safe to call this without doing nowarpto/nowarp checks.
-int unit_warp(struct block_list *bl,short m,short x,short y,clr_type type)
+int CUnit::warp(struct block_list *bl,short m,short x,short y,clr_type type)
 {
 	struct unit_data *ud;
 	nullpo_ret(bl);
@@ -931,7 +931,7 @@ int unit_warp(struct block_list *bl,short m,short x,short y,clr_type type)
  * Flag values: @see unit_stopwalking_flag.
  * Upper bytes may be used for other purposes depending on the unit type.
  *------------------------------------------*/
-int unit_stop_walking(struct block_list *bl, int flag) {
+int CUnit::stop_walking(struct block_list *bl, int flag) {
 	struct unit_data *ud;
 	const struct TimerData* td;
 	int64 tick;
@@ -973,7 +973,7 @@ int unit_stop_walking(struct block_list *bl, int flag) {
 	return 1;
 }
 
-int unit_skilluse_id(struct block_list *src, int target_id, uint16 skill_id, uint16 skill_lv)
+int CUnit::skilluse_id(struct block_list *src, int target_id, uint16 skill_id, uint16 skill_lv)
 {
 	return unit->skilluse_id2(
 		src, target_id, skill_id, skill_lv,
@@ -982,7 +982,7 @@ int unit_skilluse_id(struct block_list *src, int target_id, uint16 skill_id, uin
 	);
 }
 
-int unit_is_walking(struct block_list *bl)
+int CUnit::is_walking(struct block_list *bl)
 {
 	struct unit_data *ud = unit->bl2ud(bl);
 	nullpo_ret(bl);
@@ -993,7 +993,7 @@ int unit_is_walking(struct block_list *bl)
 /*==========================================
  * Determines if the bl can move based on status changes. [Skotlex]
  *------------------------------------------*/
-int unit_can_move(struct block_list *bl) {
+int CUnit::can_move(struct block_list *bl) {
 	struct map_session_data *sd;
 	struct unit_data *ud;
 	struct status_change *sc;
@@ -1093,7 +1093,7 @@ int unit_can_move(struct block_list *bl) {
  * Resume running after a walk delay
  *------------------------------------------*/
 
-int unit_resume_running(int tid, int64 tick, int id, intptr_t data) {
+int CUnit::resume_running(int tid, int64 tick, int id, intptr_t data) {
 
 	struct unit_data *ud = (struct unit_data *)data;
 	TBL_PC * sd = map->id2sd(id);
@@ -1117,7 +1117,7 @@ int unit_resume_running(int tid, int64 tick, int id, intptr_t data) {
  * if type is 0, this is a damage induced delay: if previous delay is active, do not change it.
  * if type is 1, this is a skill induced delay: walk-delay may only be increased, not decreased.
  *------------------------------------------*/
-int unit_set_walkdelay(struct block_list *bl, int64 tick, int delay, int type) {
+int CUnit::set_walkdelay(struct block_list *bl, int64 tick, int delay, int type) {
 	struct unit_data *ud = unit->bl2ud(bl);
 	if (delay <= 0 || !ud) return 0;
 
@@ -1156,7 +1156,7 @@ int unit_set_walkdelay(struct block_list *bl, int64 tick, int delay, int type) {
 	return 1;
 }
 
-int unit_skilluse_id2(struct block_list *src, int target_id, uint16 skill_id, uint16 skill_lv, int casttime, int castcancel) {
+int CUnit::skilluse_id2(struct block_list *src, int target_id, uint16 skill_id, uint16 skill_lv, int casttime, int castcancel) {
 	struct unit_data *ud;
 	struct status_data *tstatus;
 	struct status_change *sc;
@@ -1584,7 +1584,7 @@ int unit_skilluse_id2(struct block_list *src, int target_id, uint16 skill_id, ui
 	return 1;
 }
 
-int unit_skilluse_pos(struct block_list *src, short skill_x, short skill_y, uint16 skill_id, uint16 skill_lv)
+int CUnit::skilluse_pos(struct block_list *src, short skill_x, short skill_y, uint16 skill_id, uint16 skill_lv)
 {
 	return unit->skilluse_pos2(
 		src, skill_x, skill_y, skill_id, skill_lv,
@@ -1593,7 +1593,7 @@ int unit_skilluse_pos(struct block_list *src, short skill_x, short skill_y, uint
 	);
 }
 
-int unit_skilluse_pos2( struct block_list *src, short skill_x, short skill_y, uint16 skill_id, uint16 skill_lv, int casttime, int castcancel)
+int CUnit::skilluse_pos2( struct block_list *src, short skill_x, short skill_y, uint16 skill_id, uint16 skill_lv, int casttime, int castcancel)
 {
 	struct map_session_data *sd = NULL;
 	struct unit_data        *ud = NULL;
@@ -1733,7 +1733,7 @@ int unit_skilluse_pos2( struct block_list *src, short skill_x, short skill_y, ui
 /*========================================
  * update a block's attack target
  *----------------------------------------*/
-int unit_set_target(struct unit_data* ud, int target_id)
+int CUnit::set_target(struct unit_data* ud, int target_id)
 {
 	nullpo_ret(ud);
 
@@ -1754,7 +1754,7 @@ int unit_set_target(struct unit_data* ud, int target_id)
  * Stop a unit's attacks
  * @param bl: Object to stop
  */
-void unit_stop_attack(struct block_list *bl)
+void CUnit::stop_attack(struct block_list *bl)
 {
 	struct unit_data *ud;
 	nullpo_retv(bl);
@@ -1776,7 +1776,7 @@ void unit_stop_attack(struct block_list *bl)
  * Stop a unit's step action
  * @param bl: Object to stop
  */
-void unit_stop_stepaction(struct block_list *bl)
+void CUnit::stop_stepaction(struct block_list *bl)
 {
 	struct unit_data *ud;
 	nullpo_retv(bl);
@@ -1798,7 +1798,7 @@ void unit_stop_stepaction(struct block_list *bl)
 }
 
 //Means current target is unattackable. For now only unlocks mobs.
-int unit_unattackable(struct block_list *bl)
+int CUnit::unattackable(struct block_list *bl)
 {
 	struct unit_data *ud = unit->bl2ud(bl);
 	if (ud) {
@@ -1818,7 +1818,7 @@ int unit_unattackable(struct block_list *bl)
  * Attack request
  * If type is an ongoing attack
  *------------------------------------------*/
-int unit_attack(struct block_list *src,int target_id,int continuous) {
+int CUnit::attack(struct block_list *src,int target_id,int continuous) {
 	struct block_list *target;
 	struct unit_data  *ud;
 	int range;
@@ -1886,7 +1886,7 @@ int unit_attack(struct block_list *src,int target_id,int continuous) {
 
 //Cancels an ongoing combo, resets attackable time and restarts the
 //attack timer to resume attacking after amotion time. [Skotlex]
-int unit_cancel_combo(struct block_list *bl)
+int CUnit::cancel_combo(struct block_list *bl)
 {
 	struct unit_data  *ud;
 
@@ -1908,7 +1908,7 @@ int unit_cancel_combo(struct block_list *bl)
 /*==========================================
  *
  *------------------------------------------*/
-bool unit_can_reach_pos(struct block_list *bl,int x,int y, int easy)
+bool CUnit::can_reach_pos(struct block_list *bl,int x,int y, int easy)
 {
 	nullpo_retr(false, bl);
 
@@ -1921,7 +1921,7 @@ bool unit_can_reach_pos(struct block_list *bl,int x,int y, int easy)
 /*==========================================
  *
  *------------------------------------------*/
-bool unit_can_reach_bl(struct block_list *bl,struct block_list *tbl, int range, int easy, short *x, short *y)
+bool CUnit::can_reach_bl(struct block_list *bl,struct block_list *tbl, int range, int easy, short *x, short *y)
 {
 	short dx,dy;
 	nullpo_retr(false, bl);
@@ -1958,7 +1958,7 @@ bool unit_can_reach_bl(struct block_list *bl,struct block_list *tbl, int range, 
 /*==========================================
  * Calculates position of Pet/Mercenary/Homunculus/Elemental
  *------------------------------------------*/
-int unit_calc_pos(struct block_list *bl, int tx, int ty, uint8 dir)
+int CUnit::calc_pos(struct block_list *bl, int tx, int ty, uint8 dir)
 {
 	int dx, dy, x, y;
 	struct unit_data *ud = unit->bl2ud(bl);
@@ -2012,7 +2012,7 @@ int unit_calc_pos(struct block_list *bl, int tx, int ty, uint8 dir)
 /*==========================================
  * Continuous Attack (function timer)
  *------------------------------------------*/
-int unit_attack_timer_sub(struct block_list* src, int tid, int64 tick) {
+int CUnit::attack_timer_sub(struct block_list* src, int tid, int64 tick) {
 	struct block_list *target;
 	struct unit_data *ud;
 	struct status_data *sstatus;
@@ -2152,7 +2152,7 @@ int unit_attack_timer_sub(struct block_list* src, int tid, int64 tick) {
 	return 1;
 }
 
-int unit_attack_timer(int tid, int64 tick, int id, intptr_t data) {
+int CUnit::attack_timer(int tid, int64 tick, int id, intptr_t data) {
 	struct block_list *bl;
 	bl = map->id2bl(id);
 	if(bl && unit->attack_timer_sub(bl, tid, tick) == 0)
@@ -2165,7 +2165,7 @@ int unit_attack_timer(int tid, int64 tick, int id, intptr_t data) {
  * flag&1: Cast-Cancel invoked.
  * flag&2: Cancel only if skill is can be cancel.
  *------------------------------------------*/
-int unit_skillcastcancel(struct block_list *bl,int type)
+int CUnit::skillcastcancel(struct block_list *bl,int type)
 {
 	struct map_session_data *sd = NULL;
 	struct unit_data *ud = unit->bl2ud( bl);
@@ -2222,7 +2222,7 @@ int unit_skillcastcancel(struct block_list *bl,int type)
 }
 
 // unit_data initialization process
-void unit_dataset(struct block_list *bl) {
+void CUnit::dataset(struct block_list *bl) {
 	struct unit_data *ud;
 	nullpo_retv(ud = unit->bl2ud(bl));
 
@@ -2240,7 +2240,7 @@ void unit_dataset(struct block_list *bl) {
 /*==========================================
  * Counts the number of units attacking 'bl'
  *------------------------------------------*/
-int unit_counttargeted(struct block_list* bl)
+int CUnit::counttargeted(struct block_list* bl)
 {
 	struct unit_data* ud;
 	if (bl && (ud = unit->bl2ud(bl)) != NULL)
@@ -2251,7 +2251,7 @@ int unit_counttargeted(struct block_list* bl)
 /*==========================================
  *
  *------------------------------------------*/
-int unit_fixdamage(struct block_list *src, struct block_list *target, int sdelay, int ddelay, int64 damage, short div, unsigned char type, int64 damage2) {
+int CUnit::fixdamage(struct block_list *src, struct block_list *target, int sdelay, int ddelay, int64 damage, short div, unsigned char type, int64 damage2) {
 	nullpo_ret(target);
 
 	if(damage+damage2 <= 0)
@@ -2263,7 +2263,7 @@ int unit_fixdamage(struct block_list *src, struct block_list *target, int sdelay
 /*==========================================
  * To change the size of the char (player or mob only)
  *------------------------------------------*/
-int unit_changeviewsize(struct block_list *bl,short size)
+int CUnit::changeviewsize(struct block_list *bl,short size)
 {
 	nullpo_ret(bl);
 
@@ -2287,7 +2287,7 @@ int unit_changeviewsize(struct block_list *bl,short size)
  * Otherwise it is assumed bl is being warped.
  * On-Kill specific stuff is not performed here, look at status->damage for that.
  *------------------------------------------*/
-int unit_remove_map(struct block_list *bl, clr_type clrtype, const char* file, int line, const char* func) {
+int CUnit::remove_map(struct block_list *bl, clr_type clrtype, const char* file, int line, const char* func) {
 	struct unit_data *ud = unit->bl2ud(bl);
 	struct status_change *sc = status->get_sc(bl);
 	nullpo_ret(ud);
@@ -2526,7 +2526,7 @@ int unit_remove_map(struct block_list *bl, clr_type clrtype, const char* file, i
 	return 1;
 }
 
-void unit_remove_map_pc(struct map_session_data *sd, clr_type clrtype)
+void CUnit::remove_map_pc(struct map_session_data *sd, clr_type clrtype)
 {
 	unit->remove_map(&sd->bl,clrtype,ALC_MARK);
 
@@ -2543,7 +2543,7 @@ void unit_remove_map_pc(struct map_session_data *sd, clr_type clrtype)
 		unit->remove_map(&sd->ed->bl, clrtype, ALC_MARK);
 }
 
-void unit_free_pc(struct map_session_data *sd)
+void CUnit::free_pc(struct map_session_data *sd)
 {
 	if (sd->pd) unit->free(&sd->pd->bl,CLR_OUTSIGHT);
 	if (sd->hd) unit->free(&sd->hd->bl,CLR_OUTSIGHT);
@@ -2556,7 +2556,7 @@ void unit_free_pc(struct map_session_data *sd)
  * Function to free all related resources to the bl
  * if unit is on map, it is removed using the clrtype specified
  *------------------------------------------*/
-int unit_free(struct block_list *bl, clr_type clrtype) {
+int CUnit::free(struct block_list *bl, clr_type clrtype) {
 	struct unit_data *ud = unit->bl2ud( bl );
 	nullpo_ret(ud);
 
@@ -2799,7 +2799,7 @@ int unit_free(struct block_list *bl, clr_type clrtype) {
 	return 0;
 }
 
-int do_init_unit(bool minimal) {
+int CUnit::init(bool minimal) {
 	if (minimal)
 		return 0;
 
@@ -2811,7 +2811,7 @@ int do_init_unit(bool minimal) {
 	return 0;
 }
 
-int do_final_unit(void) {
+int CUnit::final(void) {
 	// nothing to do
 	return 0;
 }
@@ -2819,53 +2819,5 @@ int do_final_unit(void) {
 void unit_defaults(void) {
 	unit = &unit_s;
 
-	unit->init = do_init_unit;
-	unit->final = do_final_unit;
-	/* */
-	unit->bl2ud = unit_bl2ud;
-	unit->bl2ud2 = unit_bl2ud2;
-	unit->attack_timer = unit_attack_timer;
-	unit->walktoxy_timer = unit_walktoxy_timer;
-	unit->walktoxy_sub = unit_walktoxy_sub;
-	unit->delay_walktoxy_timer = unit_delay_walktoxy_timer;
-	unit->walktoxy = unit_walktoxy;
-	unit->walktobl_sub = unit_walktobl_sub;
-	unit->walktobl = unit_walktobl;
-	unit->run = unit_run;
-	unit->run_hit = unit_run_hit;
-	unit->escape = unit_escape;
-	unit->movepos = unit_movepos;
-	unit->setdir = unit_setdir;
-	unit->getdir = unit_getdir;
-	unit->blown = unit_blown;
-	unit->warp = unit_warp;
-	unit->stop_walking = unit_stop_walking;
-	unit->skilluse_id = unit_skilluse_id;
-	unit->step_timer = unit_step_timer;
-	unit->stop_stepaction = unit_stop_stepaction;
-	unit->is_walking = unit_is_walking;
-	unit->can_move = unit_can_move;
-	unit->resume_running = unit_resume_running;
-	unit->set_walkdelay = unit_set_walkdelay;
-	unit->skilluse_id2 = unit_skilluse_id2;
-	unit->skilluse_pos = unit_skilluse_pos;
-	unit->skilluse_pos2 = unit_skilluse_pos2;
-	unit->set_target = unit_set_target;
-	unit->stop_attack = unit_stop_attack;
-	unit->unattackable = unit_unattackable;
-	unit->attack = unit_attack;
-	unit->cancel_combo = unit_cancel_combo;
-	unit->can_reach_pos = unit_can_reach_pos;
-	unit->can_reach_bl = unit_can_reach_bl;
-	unit->calc_pos = unit_calc_pos;
-	unit->attack_timer_sub = unit_attack_timer_sub;
-	unit->skillcastcancel = unit_skillcastcancel;
-	unit->dataset = unit_dataset;
-	unit->counttargeted = unit_counttargeted;
-	unit->fixdamage = unit_fixdamage;
-	unit->changeviewsize = unit_changeviewsize;
-	unit->remove_map = unit_remove_map;
-	unit->remove_map_pc = unit_remove_map_pc;
-	unit->free_pc = unit_free_pc;
-	unit->free = unit_free;
+	
 }

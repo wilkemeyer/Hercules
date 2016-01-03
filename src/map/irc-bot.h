@@ -39,48 +39,50 @@ struct irc_func {
 	void (*func)(int, char*, char*, char*, char*);
 };
 
-struct irc_bot_interface {
-	int fd;
-	bool isIn, isOn;
-	int64 last_try;
-	unsigned char fails;
-	uint32 ip;
-	unsigned short port;
+class CIrcbot {
+public:
+	static int fd;
+	static bool isIn, isOn;
+	static int64 last_try;
+	static unsigned char fails;
+	static uint32 ip;
+	static unsigned short port;
 	/* */
-	struct channel_data *channel;
+	static struct channel_data *channel;
 	/* */
-	struct {
+	static struct _FuncList{
 		struct irc_func **list;
 		unsigned int size;
 	} funcs;
+
 	/* */
-	void (*init) (bool minimal);
-	void (*final) (void);
+	static void init (bool minimal);
+	static void final (void);
 	/* */
-	int (*parse) (int fd);
-	void (*parse_sub) (int fd, char *str);
-	void (*parse_source) (char *source, char *nick, char *ident, char *host);
+	static int parse (int fd);
+	static void parse_sub (int fd, char *str);
+	static void parse_source (char *source, char *nick, char *ident, char *host);
 	/* */
-	struct irc_func* (*func_search) (char* function_name);
+	static struct irc_func* func_search (char* function_name);
 	/* */
-	int (*connect_timer) (int tid, int64 tick, int id, intptr_t data);
-	int (*identify_timer) (int tid, int64 tick, int id, intptr_t data);
-	int (*join_timer) (int tid, int64 tick, int id, intptr_t data);
+	static int connect_timer (int tid, int64 tick, int id, intptr_t data);
+	static int identify_timer (int tid, int64 tick, int id, intptr_t data);
+	static int join_timer (int tid, int64 tick, int id, intptr_t data);
 	/* */
-	void (*send)(char *str);
-	void (*relay) (const char *name, const char *msg);
+	static void send(char *str);
+	static void relay (const char *name, const char *msg);
 	/* */
-	void (*pong) (int fd, char *cmd, char *source, char *target, char *msg);
-	void (*privmsg) (int fd, char *cmd, char *source, char *target, char *msg);
-	void (*userjoin) (int fd, char *cmd, char *source, char *target, char *msg);
-	void (*userleave) (int fd, char *cmd, char *source, char *target, char *msg);
-	void (*usernick) (int fd, char *cmd, char *source, char *target, char *msg);
+	static void pong (int fd, char *cmd, char *source, char *target, char *msg);
+	static void privmsg (int fd, char *cmd, char *source, char *target, char *msg);
+	static void userjoin (int fd, char *cmd, char *source, char *target, char *msg);
+	static void userleave (int fd, char *cmd, char *source, char *target, char *msg);
+	static void usernick (int fd, char *cmd, char *source, char *target, char *msg);
 };
+extern CIrcbot *ircbot;
 
 #ifdef HERCULES_CORE
 void ircbot_defaults(void);
 #endif // HERCULES_CORE
 
-HPShared struct irc_bot_interface *ircbot;
 
 #endif /* MAP_IRC_BOT_H */

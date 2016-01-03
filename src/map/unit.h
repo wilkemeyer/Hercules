@@ -98,57 +98,59 @@ struct view_data {
 	unsigned dead_sit : 2;
 };
 
-struct unit_interface {
-	int (*init) (bool minimal);
-	int (*final) (void);
+class CUnit {
+public:
+	static int init (bool minimal);
+	static int final (void);
 	/* */
-	struct unit_data* (*bl2ud) (struct block_list *bl);
-	struct unit_data* (*bl2ud2) (struct block_list *bl);
-	int (*attack_timer) (int tid, int64 tick, int id, intptr_t data);
-	int (*walktoxy_timer) (int tid, int64 tick, int id, intptr_t data);
-	int (*walktoxy_sub) (struct block_list *bl);
-	int (*delay_walktoxy_timer) (int tid, int64 tick, int id, intptr_t data);
-	int (*walktoxy) (struct block_list *bl, short x, short y, int flag);
-	int (*walktobl_sub) (int tid, int64 tick, int id, intptr_t data);
-	int (*walktobl) (struct block_list *bl, struct block_list *tbl, int range, int flag);
-	bool (*run) (struct block_list *bl, struct map_session_data *sd, enum sc_type type);
-	void (*run_hit) (struct block_list *bl, struct status_change *sc, struct map_session_data *sd, enum sc_type type);
-	int (*escape) (struct block_list *bl, struct block_list *target, short dist);
-	int (*movepos) (struct block_list *bl, short dst_x, short dst_y, int easy, bool checkpath);
-	int (*setdir) (struct block_list *bl, unsigned char dir);
-	uint8 (*getdir) (struct block_list *bl);
-	int (*blown) (struct block_list *bl, int dx, int dy, int count, int flag);
-	int (*warp) (struct block_list *bl, short m, short x, short y, clr_type type);
-	int (*stop_walking) (struct block_list *bl, int type);
-	int (*skilluse_id) (struct block_list *src, int target_id, uint16 skill_id, uint16 skill_lv);
-	int (*step_timer) (int tid, int64 tick, int id, intptr_t data);
-	void (*stop_stepaction) (struct block_list *bl);
-	int (*is_walking) (struct block_list *bl);
-	int (*can_move) (struct block_list *bl);
-	int (*resume_running) (int tid, int64 tick, int id, intptr_t data);
-	int (*set_walkdelay) (struct block_list *bl, int64 tick, int delay, int type);
-	int (*skilluse_id2) (struct block_list *src, int target_id, uint16 skill_id, uint16 skill_lv, int casttime, int castcancel);
-	int (*skilluse_pos) (struct block_list *src, short skill_x, short skill_y, uint16 skill_id, uint16 skill_lv);
-	int (*skilluse_pos2) (struct block_list *src, short skill_x, short skill_y, uint16 skill_id, uint16 skill_lv, int casttime, int castcancel);
-	int (*set_target) (struct unit_data *ud, int target_id);
-	void (*stop_attack) (struct block_list *bl);
-	int (*unattackable) (struct block_list *bl);
-	int (*attack) (struct block_list *src, int target_id, int continuous);
-	int (*cancel_combo) (struct block_list *bl);
-	bool (*can_reach_pos) (struct block_list *bl, int x, int y, int easy);
-	bool (*can_reach_bl) (struct block_list *bl, struct block_list *tbl, int range, int easy, short *x, short *y);
-	int (*calc_pos) (struct block_list *bl, int tx, int ty, uint8 dir);
-	int (*attack_timer_sub) (struct block_list *src, int tid, int64 tick);
-	int (*skillcastcancel) (struct block_list *bl, int type);
-	void (*dataset) (struct block_list *bl);
-	int (*counttargeted) (struct block_list *bl);
-	int (*fixdamage) (struct block_list *src, struct block_list *target, int sdelay, int ddelay, int64 damage, short div, unsigned char type, int64 damage2);
-	int (*changeviewsize) (struct block_list *bl, short size);
-	int (*remove_map) (struct block_list *bl, clr_type clrtype, const char *file, int line, const char *func);
-	void (*remove_map_pc) (struct map_session_data *sd, clr_type clrtype);
-	void (*free_pc) (struct map_session_data *sd);
-	int (*free) (struct block_list *bl, clr_type clrtype);
+	static struct unit_data* bl2ud (struct block_list *bl);
+	static struct unit_data* bl2ud2 (struct block_list *bl);
+	static int attack_timer (int tid, int64 tick, int id, intptr_t data);
+	static int walktoxy_timer (int tid, int64 tick, int id, intptr_t data);
+	static int walktoxy_sub (struct block_list *bl);
+	static int delay_walktoxy_timer (int tid, int64 tick, int id, intptr_t data);
+	static int walktoxy (struct block_list *bl, short x, short y, int flag);
+	static int walktobl_sub (int tid, int64 tick, int id, intptr_t data);
+	static int walktobl (struct block_list *bl, struct block_list *tbl, int range, int flag);
+	static bool run (struct block_list *bl, struct map_session_data *sd, enum sc_type type);
+	static void run_hit (struct block_list *bl, struct status_change *sc, struct map_session_data *sd, enum sc_type type);
+	static int escape (struct block_list *bl, struct block_list *target, short dist);
+	static int movepos (struct block_list *bl, short dst_x, short dst_y, int easy, bool checkpath);
+	static int setdir (struct block_list *bl, unsigned char dir);
+	static uint8 getdir (struct block_list *bl);
+	static int blown (struct block_list *bl, int dx, int dy, int count, int flag);
+	static int warp (struct block_list *bl, short m, short x, short y, clr_type type);
+	static int stop_walking (struct block_list *bl, int type);
+	static int skilluse_id (struct block_list *src, int target_id, uint16 skill_id, uint16 skill_lv);
+	static int step_timer (int tid, int64 tick, int id, intptr_t data);
+	static void stop_stepaction (struct block_list *bl);
+	static int is_walking (struct block_list *bl);
+	static int can_move (struct block_list *bl);
+	static int resume_running (int tid, int64 tick, int id, intptr_t data);
+	static int set_walkdelay (struct block_list *bl, int64 tick, int delay, int type);
+	static int skilluse_id2 (struct block_list *src, int target_id, uint16 skill_id, uint16 skill_lv, int casttime, int castcancel);
+	static int skilluse_pos (struct block_list *src, short skill_x, short skill_y, uint16 skill_id, uint16 skill_lv);
+	static int skilluse_pos2 (struct block_list *src, short skill_x, short skill_y, uint16 skill_id, uint16 skill_lv, int casttime, int castcancel);
+	static int set_target (struct unit_data *ud, int target_id);
+	static void stop_attack (struct block_list *bl);
+	static int unattackable (struct block_list *bl);
+	static int attack (struct block_list *src, int target_id, int continuous);
+	static int cancel_combo (struct block_list *bl);
+	static bool can_reach_pos (struct block_list *bl, int x, int y, int easy);
+	static bool can_reach_bl (struct block_list *bl, struct block_list *tbl, int range, int easy, short *x, short *y);
+	static int calc_pos (struct block_list *bl, int tx, int ty, uint8 dir);
+	static int attack_timer_sub (struct block_list *src, int tid, int64 tick);
+	static int skillcastcancel (struct block_list *bl, int type);
+	static void dataset (struct block_list *bl);
+	static int counttargeted (struct block_list *bl);
+	static int fixdamage (struct block_list *src, struct block_list *target, int sdelay, int ddelay, int64 damage, short div, unsigned char type, int64 damage2);
+	static int changeviewsize (struct block_list *bl, short size);
+	static int remove_map (struct block_list *bl, clr_type clrtype, const char *file, int line, const char *func);
+	static void remove_map_pc (struct map_session_data *sd, clr_type clrtype);
+	static void free_pc (struct map_session_data *sd);
+	static int free (struct block_list *bl, clr_type clrtype);
 };
+extern CUnit *unit;
 
 #ifdef HERCULES_CORE
 extern const short dirx[8];
@@ -157,6 +159,5 @@ extern const short diry[8];
 void unit_defaults(void);
 #endif // HERCULES_CORE
 
-HPShared struct unit_interface *unit;
 
 #endif /* MAP_UNIT_H */

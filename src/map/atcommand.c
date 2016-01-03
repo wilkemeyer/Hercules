@@ -20,14 +20,25 @@
  */
 #include "stdafx.h"
 
-struct atcommand_interface atcommand_s;
-struct atcommand_interface *atcommand;
+CAtcommand atcommand_s;
+CAtcommand *atcommand=NULL;
 
+// Subsystem Globals
+unsigned char CAtcommand::at_symbol;
+unsigned char CAtcommand::char_symbol;
+struct atcmd_binding_data** CAtcommand::binding;
+int CAtcommand::binding_count;
+DBMap* CAtcommand::db; //name -> AtCommandInfo
+DBMap* CAtcommand::alias_db; //alias -> AtCommandInfo
+char*** CAtcommand::msg_table;
+uint8 CAtcommand::max_message_table;
+
+////
 static char atcmd_output[CHAT_SIZE_MAX];
 static char atcmd_player_name[NAME_LENGTH];
 
 // @commands (script-based)
-struct atcmd_binding_data* get_atcommandbind_byname(const char* name) {
+struct atcmd_binding_data* CAtcommand::get_bind_byname(const char* name) {
 	int i = 0;
 
 	nullpo_retr(NULL, name);
@@ -39,14 +50,14 @@ struct atcmd_binding_data* get_atcommandbind_byname(const char* name) {
 	return ( i < atcommand->binding_count ) ? atcommand->binding[i] : NULL;
 }
 
-const char* atcommand_msgsd(struct map_session_data *sd, int msg_number) {
+const char* CAtcommand::msgsd(struct map_session_data *sd, int msg_number) {
 	Assert_retr("??", msg_number >= 0 && msg_number < MAX_MSG && atcommand->msg_table[0][msg_number] != NULL);
 	if (!sd || sd->lang_id >= atcommand->max_message_table || !atcommand->msg_table[sd->lang_id][msg_number])
 		return atcommand->msg_table[0][msg_number];
 	return atcommand->msg_table[sd->lang_id][msg_number];
 }
 
-const char* atcommand_msgfd(int fd, int msg_number) {
+const char* CAtcommand::msgfd(int fd, int msg_number) {
 	struct map_session_data *sd = (struct map_session_data*) (sockt->session_is_valid(fd) ? sockt->session[fd]->session_data : NULL);
 	Assert_retr("??", msg_number >= 0 && msg_number < MAX_MSG && atcommand->msg_table[0][msg_number] != NULL);
 	if (!sd || sd->lang_id >= atcommand->max_message_table || !atcommand->msg_table[sd->lang_id][msg_number])
@@ -57,7 +68,7 @@ const char* atcommand_msgfd(int fd, int msg_number) {
 //-----------------------------------------------------------
 // Return the message string of the specified number by [Yor]
 //-----------------------------------------------------------
-const char* atcommand_msg(int msg_number) {
+const char* CAtcommand::msg(int msg_number) {
 	Assert_retr("??", msg_number >= 0 && msg_number < MAX_MSG);
 	if (atcommand->msg_table[map->default_lang_id][msg_number] != NULL && atcommand->msg_table[map->default_lang_id][msg_number][0] != '\0')
 		return atcommand->msg_table[map->default_lang_id][msg_number];
@@ -75,7 +86,7 @@ const char* atcommand_msg(int msg_number) {
  * @param[in] allow_override whether to allow duplicate message IDs to override the original value.
  * @return success state.
  */
-bool msg_config_read(const char *cfg_name, bool allow_override) {
+bool CAtcommand::msg_read(const char *cfg_name, bool allow_override) {
 	int msg_number;
 	char line[1024], w1[1024], w2[1024];
 	FILE *fp;
@@ -138,7 +149,7 @@ bool msg_config_read(const char *cfg_name, bool allow_override) {
 /*==========================================
  * Cleanup Message Data
  *------------------------------------------*/
-void do_final_msg(void) {
+void CAtcommand::final_msg(void) {
 	int i, j;
 
 	for(i = 0; i < atcommand->max_message_table; i++) {
@@ -1490,7 +1501,7 @@ ACMD(help) {
  * Arglist parameters:
  * - (int) id: If 0, stop any attacks. Otherwise, the target block list id to stop attacking.
  */
-int atcommand_stopattack(struct block_list *bl,va_list ap)
+int CAtcommand::stopattack(struct block_list *bl,va_list ap)
 {
 	struct unit_data *ud = NULL;
 	int id = 0;
@@ -1509,7 +1520,7 @@ int atcommand_stopattack(struct block_list *bl,va_list ap)
 /*==========================================
  *
  *------------------------------------------*/
-int atcommand_pvpoff_sub(struct block_list *bl,va_list ap)
+int CAtcommand::pvpoff_sub(struct block_list *bl,va_list ap)
 {
 	TBL_PC* sd = (TBL_PC*)bl;
 	nullpo_ret(bl);
@@ -1544,7 +1555,7 @@ ACMD(pvpoff)
 /*==========================================
  *
  *------------------------------------------*/
-int atcommand_pvpon_sub(struct block_list *bl,va_list ap)
+int CAtcommand::pvpon_sub(struct block_list *bl,va_list ap)
 {
 	TBL_PC* sd = (TBL_PC*)bl;
 	nullpo_ret(bl);
@@ -1961,7 +1972,7 @@ ACMD(monster)
 /*==========================================
  *
  *------------------------------------------*/
-int atkillmonster_sub(struct block_list *bl, va_list ap)
+int CAtcommand::atkillmonster_sub(struct block_list *bl, va_list ap)
 {
 	struct mob_data *md = (struct mob_data *)bl;
 	int flag = va_arg(ap, int);
@@ -2925,7 +2936,7 @@ ACMD(doommap)
 /*==========================================
  *
  *------------------------------------------*/
-void atcommand_raise_sub(struct map_session_data* sd)
+void CAtcommand::raise_sub(struct map_session_data* sd)
 {
 	nullpo_retv(sd);
 	status->revive(&sd->bl, 100, 100);
@@ -4341,7 +4352,7 @@ ACMD(servertime) {
 //Added by Coltaro
 //We're using this function here instead of using time_t so that it only counts player's jail time when he/she's online (and since the idea is to reduce the amount of minutes one by one in status->change_timer...).
 //Well, using time_t could still work but for some reason that looks like more coding x_x
-void get_jail_time(int jailtime, int* year, int* month, int* day, int* hour, int* minute)
+void CAtcommand::get_jail_time(int jailtime, int* year, int* month, int* day, int* hour, int* minute)
 {
 	const int factor_year = 518400; //12*30*24*60 = 518400
 	const int factor_month = 43200; //30*24*60 = 43200
@@ -4542,7 +4553,7 @@ ACMD(jailfor) {
 			clif->message(pl_sd->fd, msg_fd(fd,120)); // GM has discharge you.
 			clif->message(fd, msg_fd(fd,121)); // Player unjailed
 		} else {
-			atcommand->get_jail_time(jailtime,&year,&month,&day,&hour,&minute);
+			atcommand->CAtcommand::get_jail_time(jailtime,&year,&month,&day,&hour,&minute);
 			safesnprintf(atcmd_output, sizeof(atcmd_output),msg_fd(fd,402),msg_fd(fd,1137),year,month,day,hour,minute); //%s in jail for %d years, %d months, %d days, %d hours and %d minutes
 			clif->message(pl_sd->fd, atcmd_output);
 			safesnprintf(atcmd_output, sizeof(atcmd_output),msg_fd(fd,402),msg_fd(fd,1138),year,month,day,hour,minute); //This player is now in jail for %d years, %d months, %d days, %d hours and %d minutes
@@ -4591,7 +4602,7 @@ ACMD(jailtime)
 	}
 
 	//Get remaining jail time
-	atcommand->get_jail_time(sd->sc.data[SC_JAILED]->val1,&year,&month,&day,&hour,&minute);
+	atcommand->CAtcommand::get_jail_time(sd->sc.data[SC_JAILED]->val1,&year,&month,&day,&hour,&minute);
 	safesnprintf(atcmd_output, sizeof(atcmd_output),msg_fd(fd,402),msg_fd(fd,1142),year,month,day,hour,minute); // You will remain in jail for %d years, %d months, %d days, %d hours and %d minutes
 
 	clif->message(fd, atcmd_output);
@@ -5361,7 +5372,7 @@ ACMD(skilltree) {
 }
 
 // Hand a ring with partners name on it to this char
-void atcommand_getring(struct map_session_data* sd) {
+void CAtcommand::getring(struct map_session_data* sd) {
 	int flag, item_id;
 	struct item item_tmp;
 	nullpo_retv(sd);
@@ -6037,7 +6048,7 @@ ACMD(mobsearch)
  * @cleanmap - cleans items on the ground
  * @cleanarea - cleans items on the ground within an specified area
  *------------------------------------------*/
-int atcommand_cleanfloor_sub(struct block_list *bl, va_list ap) {
+int CAtcommand::cleanfloor_sub(struct block_list *bl, va_list ap) {
 	nullpo_ret(bl);
 	map->clearflooritem(bl);
 
@@ -7222,7 +7233,7 @@ ACMD(version) {
 /*==========================================
  * @mutearea by MouseJstr
  *------------------------------------------*/
-int atcommand_mutearea_sub(struct block_list *bl, va_list ap)
+int CAtcommand::mutearea_sub(struct block_list *bl, va_list ap)
 { // As it is being used [ACMD(mutearea)] there's no need to be a bool, but if there's need to reuse it, it's better to be this way
 
 	int time, id;
@@ -8278,7 +8289,7 @@ ACMD(font) {
 /*==========================================
  * type: 1 = commands (@), 2 = charcommands (#)
  *------------------------------------------*/
-void atcommand_commands_sub(struct map_session_data* sd, const int fd, AtCommandType type)
+void CAtcommand::commands_sub(struct map_session_data* sd, const int fd, AtCommandType type)
 {
 	char line_buff[CHATBOX_SIZE];
 	char* cur = line_buff;
@@ -8655,7 +8666,7 @@ ACMD(join)
 	return true;
 }
 /* [Ind/Hercules] */
-void atcommand_channel_help(int fd, const char *command, bool can_create) {
+void CAtcommand::channel_help(int fd, const char *command, bool can_create) {
 	nullpo_retv(command);
 	safesnprintf(atcmd_output, sizeof(atcmd_output), msg_fd(fd,1404),command); // %s failed.
 	clif->message(fd, atcmd_output);
@@ -9331,7 +9342,7 @@ ACMD(lang) {
  **/
 #define ACMD_DEF(x) { #x, atcommand_ ## x, NULL, NULL, NULL, true }
 #define ACMD_DEF2(x2, x) { x2, atcommand_ ## x, NULL, NULL, NULL, true }
-void atcommand_basecommands(void) {
+void CAtcommand::base_commands(void) {
 	/**
 	 * Command reference list, place the base of your commands here
 	 **/
@@ -9614,7 +9625,7 @@ void atcommand_basecommands(void) {
 #undef ACMD_DEF
 #undef ACMD_DEF2
 
-bool atcommand_add(char *name, AtCommandFunc func, bool replace) {
+bool CAtcommand::add(char *name, AtCommandFunc func, bool replace) {
 	AtCommandInfo* cmd;
 
 	nullpo_retr(false, name);
@@ -9637,18 +9648,18 @@ bool atcommand_add(char *name, AtCommandFunc func, bool replace) {
 /*==========================================
  * Command lookup functions
  *------------------------------------------*/
-AtCommandInfo* atcommand_exists(const char* name) {
+AtCommandInfo* CAtcommand::exists(const char* name) {
 	return (AtCommandInfo*)strdb_get(atcommand->db, name);
 }
 
-AtCommandInfo* get_atcommandinfo_byname(const char *name) {
+AtCommandInfo* CAtcommand::get_info_byname(const char *name) {
 	AtCommandInfo *cmd;
 	if ((cmd = (AtCommandInfo*)strdb_get(atcommand->db, name)))
 		return cmd;
 	return NULL;
 }
 
-const char* atcommand_checkalias(const char *aliasname) {
+const char* CAtcommand::check_alias(const char *aliasname) {
 	AliasInfo *alias_info = NULL;
 	if ((alias_info = (AliasInfo*)strdb_get(atcommand->alias_db, aliasname)) != NULL)
 		return alias_info->command->command;
@@ -9656,7 +9667,7 @@ const char* atcommand_checkalias(const char *aliasname) {
 }
 
 /// AtCommand suggestion
-void atcommand_get_suggestions(struct map_session_data* sd, const char *name, bool is_atcmd_cmd) {
+void CAtcommand::get_suggestions(struct map_session_data* sd, const char *name, bool is_atcmd_cmd) {
 	DBIterator* atcommand_iter;
 	DBIterator* alias_iter;
 	AtCommandInfo* command_info = NULL;
@@ -9734,7 +9745,7 @@ void atcommand_get_suggestions(struct map_session_data* sd, const char *name, bo
  * @param message        atcommand arguments
  * @param player_invoked true if the command was invoked by a player, false if invoked by the server (bypassing any restrictions)
  */
-bool atcommand_exec(const int fd, struct map_session_data *sd, const char *message, bool player_invoked) {
+bool CAtcommand::exec(const int fd, struct map_session_data *sd, const char *message, bool player_invoked) {
 	char charname[NAME_LENGTH], params[100];
 	char charname2[NAME_LENGTH];
 	char command[100];
@@ -9933,7 +9944,7 @@ bool atcommand_exec(const int fd, struct map_session_data *sd, const char *messa
 /*==========================================
  *
  *------------------------------------------*/
-void atcommand_config_read(const char* config_filename) {
+void CAtcommand::config_read(const char* config_filename) {
 	config_t atcommand_config;
 	config_setting_t *aliases = NULL, *help = NULL, *nolog = NULL;
 	const char *symbol = NULL;
@@ -10072,7 +10083,7 @@ static inline int atcommand_command_type2idx(AtCommandType type)
  * Loads permissions for groups to use commands.
  *
  */
-void atcommand_db_load_groups(GroupSettings **groups, config_setting_t **commands_, size_t sz)
+void CAtcommand::load_groups(GroupSettings **groups, config_setting_t **commands_, size_t sz)
 {
 	DBIterator *iter = db_iterator(atcommand->db);
 	AtCommandInfo *atcmd;
@@ -10096,7 +10107,7 @@ void atcommand_db_load_groups(GroupSettings **groups, config_setting_t **command
 
 			idx = pcg->get_idx(group);
 			if (idx < 0 || idx >= sz) {
-				ShowError("atcommand_db_load_groups: index (%d) out of bounds [0,%"PRIuS"]\n", idx, sz - 1);
+				ShowError("atcommand_db_load_groups: index (%d) out of bounds [0,%" PRIuS "]\n", idx, sz - 1);
 				continue;
 			}
 
@@ -10132,7 +10143,7 @@ void atcommand_db_load_groups(GroupSettings **groups, config_setting_t **command
 	return;
 }
 
-bool atcommand_can_use(struct map_session_data *sd, const char *command) {
+bool CAtcommand::can_use(struct map_session_data *sd, const char *command) {
 	AtCommandInfo *info = atcommand->get_info_byname(atcommand->check_alias(command + 1));
 
 	nullpo_retr(false, sd);
@@ -10147,7 +10158,7 @@ bool atcommand_can_use(struct map_session_data *sd, const char *command) {
 
 	return false;
 }
-bool atcommand_can_use2(struct map_session_data *sd, const char *command, AtCommandType type) {
+bool CAtcommand::can_use2(struct map_session_data *sd, const char *command, AtCommandType type) {
 	AtCommandInfo *info = atcommand->get_info_byname(atcommand->check_alias(command));
 
 	nullpo_retr(false, sd);
@@ -10162,7 +10173,7 @@ bool atcommand_can_use2(struct map_session_data *sd, const char *command, AtComm
 
 	return false;
 }
-bool atcommand_hp_add(char *name, AtCommandFunc func) {
+bool CAtcommand::create(char *name, AtCommandFunc func) {
 	/* if commands are added after group permissions are thrown in, they end up with no permissions */
 	/* so we restrict commands to be linked in during boot */
 	if( core->runflag == MAPSERVER_ST_RUNNING ) {
@@ -10175,7 +10186,7 @@ bool atcommand_hp_add(char *name, AtCommandFunc func) {
 /**
  * @see DBApply
  */
-int atcommand_db_clear_sub(DBKey key, DBData *data, va_list args) {
+int CAtcommand::cmd_db_clear_sub(DBKey key, DBData *data, va_list args) {
 	AtCommandInfo *cmd = (AtCommandInfo*)DB->data2ptr(data);
 	aFree(cmd->at_groups);
 	aFree(cmd->char_groups);
@@ -10184,7 +10195,7 @@ int atcommand_db_clear_sub(DBKey key, DBData *data, va_list args) {
 	return 0;
 }
 
-void atcommand_db_clear(void) {
+void CAtcommand::cmd_db_clear(void) {
 	if( atcommand->db != NULL ) {
 		atcommand->db->destroy(atcommand->db, atcommand->cmd_db_clear_sub);
 		atcommand->db = NULL;
@@ -10195,7 +10206,7 @@ void atcommand_db_clear(void) {
 	}
 }
 
-void atcommand_doload(void) {
+void CAtcommand::doload(void) {
 	if( core->runflag >= MAPSERVER_ST_RUNNING )
 		atcommand->cmd_db_clear();
 	if( atcommand->db == NULL )
@@ -10206,12 +10217,12 @@ void atcommand_doload(void) {
 	atcommand->config_read(map->ATCOMMAND_CONF_FILENAME);
 }
 
-void atcommand_expand_message_table(void) {
+void CAtcommand::expand_message_table(void) {
 	RECREATE(atcommand->msg_table, char **, ++atcommand->max_message_table);
 	CREATE(atcommand->msg_table[atcommand->max_message_table - 1], char *, MAX_MSG);
 }
 
-void do_init_atcommand(bool minimal) {
+void CAtcommand::init(bool minimal) {
 	if (minimal)
 		return;
 
@@ -10222,9 +10233,12 @@ void do_init_atcommand(bool minimal) {
 	atcommand->doload();
 }
 
-void do_final_atcommand(void) {
+void CAtcommand::final(void) {
 	atcommand->cmd_db_clear();
 }
+
+
+
 
 void atcommand_defaults(void) {
 	atcommand = &atcommand_s;
@@ -10232,40 +10246,5 @@ void atcommand_defaults(void) {
 	atcommand->db = NULL;
 	atcommand->alias_db = NULL;
 
-	atcommand->init = do_init_atcommand;
-	atcommand->final = do_final_atcommand;
-
-	atcommand->exec = atcommand_exec;
-	atcommand->create = atcommand_hp_add;
-	atcommand->can_use = atcommand_can_use;
-	atcommand->can_use2 = atcommand_can_use2;
-	atcommand->load_groups = atcommand_db_load_groups;
-	atcommand->exists = atcommand_exists;
-	atcommand->msg_read = msg_config_read;
-	atcommand->final_msg = do_final_msg;
-	atcommand->get_bind_byname = get_atcommandbind_byname;
-	atcommand->get_info_byname = get_atcommandinfo_byname;
-	atcommand->check_alias = atcommand_checkalias;
-	atcommand->get_suggestions = atcommand_get_suggestions;
-	atcommand->config_read = atcommand_config_read;
-	atcommand->stopattack = atcommand_stopattack;
-	atcommand->pvpoff_sub = atcommand_pvpoff_sub;
-	atcommand->pvpon_sub = atcommand_pvpon_sub;
-	atcommand->atkillmonster_sub = atkillmonster_sub;
-	atcommand->raise_sub = atcommand_raise_sub;
-	atcommand->get_jail_time = get_jail_time;
-	atcommand->cleanfloor_sub = atcommand_cleanfloor_sub;
-	atcommand->mutearea_sub = atcommand_mutearea_sub;
-	atcommand->commands_sub = atcommand_commands_sub;
-	atcommand->getring = atcommand_getring;
-	atcommand->channel_help = atcommand_channel_help;
-	atcommand->cmd_db_clear = atcommand_db_clear;
-	atcommand->cmd_db_clear_sub = atcommand_db_clear_sub;
-	atcommand->doload = atcommand_doload;
-	atcommand->base_commands = atcommand_basecommands;
-	atcommand->add = atcommand_add;
-	atcommand->msg = atcommand_msg;
-	atcommand->expand_message_table = atcommand_expand_message_table;
-	atcommand->msgfd = atcommand_msgfd;
-	atcommand->msgsd = atcommand_msgsd;
+	
 }

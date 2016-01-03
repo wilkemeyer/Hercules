@@ -566,103 +566,106 @@ struct delay_damage {
 /**
  * Battle.c Interface
  **/
-struct battle_interface {
+class CBattle {
+public:
 	/* */
-	struct Battle_Config *bc;
+	static struct Battle_Config *bc;
 	/* */
-	int attr_fix_table[4][ELE_MAX][ELE_MAX];
-	struct eri *delay_damage_ers; //For battle delay damage structures.
+	static int attr_fix_table[4][ELE_MAX][ELE_MAX];
+	static struct eri *delay_damage_ers; //For battle delay damage structures.
 	/* init */
-	void (*init) (bool minimal);
+	static void init (bool minimal);
 	/* final */
-	void (*final) (void);
+	static void final (void);
 	/* damage calculation */
-	struct Damage (*calc_attack) (int attack_type, struct block_list *bl, struct block_list *target, uint16 skill_id, uint16 skill_lv, int count);
+	static struct Damage calc_attack (int attack_type, struct block_list *bl, struct block_list *target, uint16 skill_id, uint16 skill_lv, int count);
 	/* generic final damage calculation */
-	int64 (*calc_damage) (struct block_list *src, struct block_list *bl, struct Damage *d, int64 damage, uint16 skill_id, uint16 skill_lv);
+	static int64 calc_damage (struct block_list *src, struct block_list *bl, struct Damage *d, int64 damage, uint16 skill_id, uint16 skill_lv);
 	/* gvg final damage calculation */
-	int64 (*calc_gvg_damage) (struct block_list *src, struct block_list *bl, int64 damage, int div_, uint16 skill_id, uint16 skill_lv, int flag);
+	static int64 calc_gvg_damage (struct block_list *src, struct block_list *bl, int64 damage, int div_, uint16 skill_id, uint16 skill_lv, int flag);
 	/* battlegrounds final damage calculation */
-	int64 (*calc_bg_damage) (struct block_list *src, struct block_list *bl, int64 damage, int div_, uint16 skill_id, uint16 skill_lv, int flag);
+	static int64 calc_bg_damage (struct block_list *src, struct block_list *bl, int64 damage, int div_, uint16 skill_id, uint16 skill_lv, int flag);
 	/* normal weapon attack */
-	enum damage_lv (*weapon_attack) (struct block_list *bl, struct block_list *target, int64 tick, int flag);
+	static enum damage_lv weapon_attack (struct block_list *bl, struct block_list *target, int64 tick, int flag);
 	/* calculate weapon attack */
-	struct Damage (*calc_weapon_attack) (struct block_list *src,struct block_list *target,uint16 skill_id,uint16 skill_lv,int wflag);
+	static struct Damage calc_weapon_attack (struct block_list *src,struct block_list *target,uint16 skill_id,uint16 skill_lv,int wflag);
 	/* delays damage or skills by a timer */
-	int (*delay_damage) (int64 tick, int amotion, struct block_list *src, struct block_list *target, int attack_type, uint16 skill_id, uint16 skill_lv, int64 damage, enum damage_lv dmg_lv, int ddelay, bool additional_effects);
+	static int delay_damage (int64 tick, int amotion, struct block_list *src, struct block_list *target, int attack_type, uint16 skill_id, uint16 skill_lv, int64 damage, enum damage_lv dmg_lv, int ddelay, bool additional_effects);
 	/* drain damage */
-	void (*drain) (struct map_session_data *sd, struct block_list *tbl, int64 rdamage, int64 ldamage, int race, int boss);
+	static void drain (struct map_session_data *sd, struct block_list *tbl, int64 rdamage, int64 ldamage, int race, int boss);
 	/* damage reflect */
-	void (*reflect_damage) (struct block_list *target, struct block_list *src, struct Damage *wd,uint16 skill_id);
+	static void reflect_damage (struct block_list *target, struct block_list *src, struct Damage *wd,uint16 skill_id);
 	/* attribute rate */
-	int (*attr_ratio) (int atk_elem, int def_type, int def_lv);
+	static int attr_ratio (int atk_elem, int def_type, int def_lv);
 	/* applies attribute modifiers */
-	int64 (*attr_fix) (struct block_list *src, struct block_list *target, int64 damage, int atk_elem, int def_type, int def_lv);
+	static int64 attr_fix (struct block_list *src, struct block_list *target, int64 damage, int atk_elem, int def_type, int def_lv);
 	/* applies card modifiers */
-	int64 (*calc_cardfix) (int attack_type, struct block_list *src, struct block_list *target, int nk, int s_ele, int s_ele_, int64 damage, int left, int flag);
-	int64 (*calc_cardfix2) (struct block_list *src, struct block_list *bl, int64 damage, int s_ele, int nk, int flag);
+	static int64 calc_cardfix (int attack_type, struct block_list *src, struct block_list *target, int nk, int s_ele, int s_ele_, int64 damage, int left, int flag);
+	static int64 calc_cardfix2 (struct block_list *src, struct block_list *bl, int64 damage, int s_ele, int nk, int flag);
 	/* applies element modifiers */
-	int64 (*calc_elefix) (struct block_list *src, struct block_list *target, uint16 skill_id, uint16 skill_lv, int64 damage, int nk, int n_ele, int s_ele, int s_ele_, bool left, int flag);
+	static int64 calc_elefix (struct block_list *src, struct block_list *target, uint16 skill_id, uint16 skill_lv, int64 damage, int nk, int n_ele, int s_ele, int s_ele_, bool left, int flag);
 	/* applies mastery modifiers */
-	int64 (*calc_masteryfix) (struct block_list *src, struct block_list *target, uint16 skill_id, uint16 skill_lv, int64 damage, int div, bool left, bool weapon);
+	static int64 calc_masteryfix (struct block_list *src, struct block_list *target, uint16 skill_id, uint16 skill_lv, int64 damage, int div, bool left, bool weapon);
 	/* calculates chorus bonus */
-	int (*calc_chorusbonus) (struct map_session_data *sd);
+	static int calc_chorusbonus (struct map_session_data *sd);
 	/* applies skill modifiers */
-	int (*calc_skillratio) (int attack_type, struct block_list *src, struct block_list *target, uint16 skill_id, uint16 skill_lv, int skillratio, int flag);
+	static int calc_skillratio (int attack_type, struct block_list *src, struct block_list *target, uint16 skill_id, uint16 skill_lv, int skillratio, int flag);
 	/* applies size modifiers */
-	int64 (*calc_sizefix) (struct map_session_data *sd, int64 damage, int type, int size,  bool ignore);
+	static int64 calc_sizefix (struct map_session_data *sd, int64 damage, int type, int size,  bool ignore);
 	/* get weapon damage */
-	int64 (*calc_weapon_damage) (struct block_list *src, struct block_list *bl, uint16 skill_id, uint16 skill_lv, struct weapon_atk *watk, int nk, bool n_ele, short s_ele, short s_ele_, int size, int type, int flag, int flag2);
+	static int64 calc_weapon_damage (struct block_list *src, struct block_list *bl, uint16 skill_id, uint16 skill_lv, struct weapon_atk *watk, int nk, bool n_ele, short s_ele, short s_ele_, int size, int type, int flag, int flag2);
 	/* applies defense reductions */
-	int64 (*calc_defense) (int attack_type, struct block_list *src, struct block_list *target, uint16 skill_id, uint16 skill_lv, int64 damage, int flag, int pdef);
+	static int64 calc_defense (int attack_type, struct block_list *src, struct block_list *target, uint16 skill_id, uint16 skill_lv, int64 damage, int flag, int pdef);
 	/* get master (who does this unit respond to?) */
-	struct block_list *(*get_master) (struct block_list *src);
+	static struct block_list *get_master (struct block_list *src);
 	/* returns a random unit who is targeting this unit */
-	struct block_list *(*get_targeted) (struct block_list *target);
+	static struct block_list *get_targeted (struct block_list *target);
 	/* picks a random enemy unit who is in the area of sight */
-	struct block_list *(*get_enemy) (struct block_list *target, int type, int range);
+	static struct block_list *get_enemy (struct block_list *target, int type, int range);
 	/* the target id (if any) of this unit */
-	int (*get_target) (struct block_list *bl);
+	static int get_target (struct block_list *bl);
 	/* the current skill being processed/casted by this unit */
-	int (*get_current_skill) (struct block_list *bl);
+	static int get_current_skill (struct block_list *bl);
 	/* is either this race or element enough to be considered undead? */
-	bool (*check_undead) (int race,int element);
+	static bool check_undead (int race,int element);
 	/* check if src and target are part of flag (e.g. enemies or allies) */
-	int (*check_target) (struct block_list *src, struct block_list *target,int flag);
+	static int check_target (struct block_list *src, struct block_list *target,int flag);
 	/* is src and bl within range? */
-	bool (*check_range) (struct block_list *src,struct block_list *bl,int range);
+	static bool check_range (struct block_list *src,struct block_list *bl,int range);
 	/* consume ammo for this skill and lv */
-	void (*consume_ammo) (struct map_session_data* sd, int skill_id, int lv);
-	int (*get_targeted_sub) (struct block_list *bl, va_list ap);
-	int (*get_enemy_sub) (struct block_list *bl, va_list ap);
-	int (*get_enemy_area_sub) (struct block_list *bl, va_list ap);
-	int (*delay_damage_sub) (int tid, int64 tick, int id, intptr_t data);
-	int (*blewcount_bonus) (struct map_session_data *sd, uint16 skill_id);
+	static void consume_ammo (struct map_session_data* sd, int skill_id, int lv);
+	static int get_targeted_sub (struct block_list *bl, va_list ap);
+	static int get_enemy_sub (struct block_list *bl, va_list ap);
+	static int get_enemy_area_sub (struct block_list *bl, va_list ap);
+	static int delay_damage_sub (int tid, int64 tick, int id, intptr_t data);
+	static int blewcount_bonus (struct map_session_data *sd, uint16 skill_id);
 	/* skill range criteria */
-	int (*range_type) (struct block_list *src, struct block_list *target, uint16 skill_id, uint16 skill_lv);
-	int64 (*calc_base_damage) (struct block_list *src, struct block_list *bl, uint16 skill_id, uint16 skill_lv, int nk, bool n_ele, short s_ele, short s_ele_, int type, int flag, int flag2);
-	int64 (*calc_base_damage2) (struct status_data *st, struct weapon_atk *wa, struct status_change *sc, unsigned short t_size, struct map_session_data *sd, int flag);
-	struct Damage (*calc_misc_attack) (struct block_list *src,struct block_list *target,uint16 skill_id,uint16 skill_lv,int mflag);
-	struct Damage (*calc_magic_attack) (struct block_list *src,struct block_list *target,uint16 skill_id,uint16 skill_lv,int mflag);
-	int (*adjust_skill_damage) (int m, unsigned short skill_id);
-	int64 (*add_mastery) (struct map_session_data *sd,struct block_list *target,int64 dmg,int type);
-	int (*calc_drain) (int64 damage, int rate, int per);
+	static int range_type (struct block_list *src, struct block_list *target, uint16 skill_id, uint16 skill_lv);
+	static int64 calc_base_damage (struct block_list *src, struct block_list *bl, uint16 skill_id, uint16 skill_lv, int nk, bool n_ele, short s_ele, short s_ele_, int type, int flag, int flag2);
+	static int64 calc_base_damage2 (struct status_data *st, struct weapon_atk *wa, struct status_change *sc, unsigned short t_size, struct map_session_data *sd, int flag);
+	static struct Damage calc_misc_attack (struct block_list *src,struct block_list *target,uint16 skill_id,uint16 skill_lv,int mflag);
+	static struct Damage calc_magic_attack (struct block_list *src,struct block_list *target,uint16 skill_id,uint16 skill_lv,int mflag);
+	static int adjust_skill_damage (int m, unsigned short skill_id);
+	static int64 add_mastery (struct map_session_data *sd,struct block_list *target,int64 dmg,int type);
+	static int calc_drain (int64 damage, int rate, int per);
 	/* - battle_config                           */
-	int (*config_read) (const char *cfgName);
-	void (*config_set_defaults) (void);
-	int (*config_set_value) (const char *w1, const char *w2);
-	bool (*config_get_value) (const char *w1, int *value);
-	void (*config_adjust) (void);
+	static int config_read (const char *cfgName);
+	static void config_set_defaults (void);
+	static int config_set_value (const char *w1, const char *w2);
+	static bool config_get_value (const char *w1, int *value);
+	static void config_adjust (void);
 	/* ----------------------------------------- */
 	/* picks a random enemy within the specified range */
-	struct block_list* (*get_enemy_area) (struct block_list *src, int x, int y, int range, int type, int ignore_id);
+	static struct block_list* get_enemy_area (struct block_list *src, int x, int y, int range, int type, int ignore_id);
 	/* damages area, originally for royal guard's reflect damage */
-	int (*damage_area) (struct block_list *bl, va_list ap);
-	void (*calc_masteryfix_unknown) (struct block_list *src, struct block_list *target, uint16 *skill_id, uint16 *skill_lv, int64 *damage, int *div, bool *left, bool *weapon);
-	void (*calc_skillratio_magic_unknown) (int *attack_type, struct block_list *src, struct block_list *target, uint16 *skill_id, uint16 *skill_lv, int *skillratio, int *flag);
-	void (*calc_skillratio_weapon_unknown) (int *attack_type, struct block_list *src, struct block_list *target, uint16 *skill_id, uint16 *skill_lv, int *skillratio, int *flag);
-	void (*calc_misc_attack_unknown) (struct block_list *src, struct block_list *target, uint16 *skill_id, uint16 *skill_lv, int *mflag, struct Damage *md);
+	static int damage_area (struct block_list *bl, va_list ap);
+	static void calc_masteryfix_unknown (struct block_list *src, struct block_list *target, uint16 *skill_id, uint16 *skill_lv, int64 *damage, int *div, bool *left, bool *weapon);
+	static void calc_skillratio_magic_unknown (int *attack_type, struct block_list *src, struct block_list *target, uint16 *skill_id, uint16 *skill_lv, int *skillratio, int *flag);
+	static void calc_skillratio_weapon_unknown (int *attack_type, struct block_list *src, struct block_list *target, uint16 *skill_id, uint16 *skill_lv, int *skillratio, int *flag);
+	static void calc_misc_attack_unknown (struct block_list *src, struct block_list *target, uint16 *skill_id, uint16 *skill_lv, int *mflag, struct Damage *md);
 };
+
+extern CBattle *battle;
 
 #ifdef HERCULES_CORE
 extern struct Battle_Config battle_config;
@@ -670,6 +673,5 @@ extern struct Battle_Config battle_config;
 void battle_defaults(void);
 #endif // HERCULES_CORE
 
-HPShared struct battle_interface *battle;
 
 #endif /* MAP_BATTLE_H */

@@ -20,12 +20,12 @@
  */
 #include "stdafx.h"
 
+CGstorage gstorage_s;
+CGstorage *gstorage = NULL;
 
 struct storage_interface storage_s;
-struct guild_storage_interface gstorage_s;
-
 struct storage_interface *storage;
-struct guild_storage_interface *gstorage;
+
 
 /*==========================================
  * Sort items in the warehouse
@@ -346,7 +346,7 @@ void storage_storage_quit(struct map_session_data* sd, int flag) {
 /**
  * @see DBCreateData
  */
-DBData create_guildstorage(DBKey key, va_list args)
+DBData CGstorage::create(DBKey key, va_list args)
 {
 	struct guild_storage *gs = NULL;
 	gs = (struct guild_storage *) aCalloc(sizeof(struct guild_storage), 1);
@@ -354,7 +354,7 @@ DBData create_guildstorage(DBKey key, va_list args)
 	return DB->ptr2data(gs);
 }
 
-struct guild_storage *guild2storage_ensure(int guild_id)
+struct guild_storage *CGstorage::ensure(int guild_id)
 {
 	struct guild_storage *gs = NULL;
 	if(guild->search(guild_id) != NULL)
@@ -362,7 +362,7 @@ struct guild_storage *guild2storage_ensure(int guild_id)
 	return gs;
 }
 
-int guild_storage_delete(int guild_id) {
+int CGstorage::_delete(int guild_id) {
 	idb_remove(gstorage->db,guild_id);
 	return 0;
 }
@@ -374,7 +374,7 @@ int guild_storage_delete(int guild_id) {
 *   1 : fail
 *   2 : no guild for sd
  *------------------------------------------*/
-int storage_guild_storageopen(struct map_session_data* sd)
+int CGstorage::open(struct map_session_data* sd)
 {
 	struct guild_storage *gstor;
 
@@ -415,7 +415,7 @@ int storage_guild_storageopen(struct map_session_data* sd)
 *   0 : success
 *   1 : fail
  *------------------------------------------*/
-int guild_storage_additem(struct map_session_data* sd, struct guild_storage* stor, struct item* item_data, int amount)
+int CGstorage::additem(struct map_session_data* sd, struct guild_storage* stor, struct item* item_data, int amount)
 {
 	struct item_data *data;
 	int i;
@@ -478,7 +478,7 @@ int guild_storage_additem(struct map_session_data* sd, struct guild_storage* sto
 *   0 : success
 *   1 : fail
  *------------------------------------------*/
-int guild_storage_delitem(struct map_session_data* sd, struct guild_storage* stor, int n, int amount)
+int CGstorage::delitem(struct map_session_data* sd, struct guild_storage* stor, int n, int amount)
 {
 	nullpo_retr(1, sd);
 	nullpo_retr(1, stor);
@@ -504,7 +504,7 @@ int guild_storage_delitem(struct map_session_data* sd, struct guild_storage* sto
 *   0 : fail
 *   1 : succes
  *------------------------------------------*/
-int storage_guild_storageadd(struct map_session_data* sd, int index, int amount)
+int CGstorage::add(struct map_session_data* sd, int index, int amount)
 {
 	struct guild_storage *stor;
 
@@ -543,7 +543,7 @@ int storage_guild_storageadd(struct map_session_data* sd, int index, int amount)
 *   0 : fail
 *   1 : success
  *------------------------------------------*/
-int storage_guild_storageget(struct map_session_data* sd, int index, int amount)
+int CGstorage::get(struct map_session_data* sd, int index, int amount)
 {
 	struct guild_storage *stor;
 	int flag;
@@ -584,7 +584,7 @@ int storage_guild_storageget(struct map_session_data* sd, int index, int amount)
 *   0 : fail
 *   1 : success
  *------------------------------------------*/
-int storage_guild_storageaddfromcart(struct map_session_data* sd, int index, int amount)
+int CGstorage::addfromcart(struct map_session_data* sd, int index, int amount)
 {
 	struct guild_storage *stor;
 
@@ -616,7 +616,7 @@ int storage_guild_storageaddfromcart(struct map_session_data* sd, int index, int
 *   0 : fail
 *   1 : success
  *------------------------------------------*/
-int storage_guild_storagegettocart(struct map_session_data* sd, int index, int amount)
+int CGstorage::gettocart(struct map_session_data* sd, int index, int amount)
 {
 	struct guild_storage *stor;
 
@@ -647,7 +647,7 @@ int storage_guild_storagegettocart(struct map_session_data* sd, int index, int a
 *   0 : fail (no storage)
 *   1 : success
  *------------------------------------------*/
-int storage_guild_storagesave(int account_id, int guild_id, int flag)
+int CGstorage::save(int account_id, int guild_id, int flag)
 {
 	struct guild_storage *stor = (struct guild_storage *)idb_get(gstorage->db,guild_id);
 
@@ -668,7 +668,7 @@ int storage_guild_storagesave(int account_id, int guild_id, int flag)
 *   0 : fail (no storage)
 *   1 : success
  *------------------------------------------*/
-int storage_guild_storagesaved(int guild_id)
+int CGstorage::saved(int guild_id)
 {
 	struct guild_storage *stor;
 
@@ -683,7 +683,7 @@ int storage_guild_storagesaved(int guild_id)
 }
 
 //Close storage for sd and save it
-int storage_guild_storageclose(struct map_session_data* sd) {
+int CGstorage::close(struct map_session_data* sd) {
 	struct guild_storage *stor;
 
 	nullpo_ret(sd);
@@ -702,7 +702,7 @@ int storage_guild_storageclose(struct map_session_data* sd) {
 	return 0;
 }
 
-int storage_guild_storage_quit(struct map_session_data* sd, int flag) {
+int CGstorage::pc_quit(struct map_session_data* sd, int flag) {
 	struct guild_storage *stor;
 
 	nullpo_ret(sd);
@@ -729,12 +729,12 @@ int storage_guild_storage_quit(struct map_session_data* sd, int flag) {
 
 	return 0;
 }
-void do_init_gstorage(bool minimal) {
+void CGstorage::init(bool minimal) {
 	if (minimal)
 		return;
 	gstorage->db = idb_alloc(DB_OPT_RELEASE_DATA);
 }
-void do_final_gstorage(void) {
+void CGstorage::final(void) {
 	db_destroy(gstorage->db);
 }
 void storage_defaults(void) {
@@ -759,22 +759,5 @@ void storage_defaults(void) {
 void gstorage_defaults(void) {
 	gstorage = &gstorage_s;
 
-	/* */
-	gstorage->init = do_init_gstorage;
-	gstorage->final = do_final_gstorage;
-	/* */
-	gstorage->ensure = guild2storage_ensure;
-	gstorage->_delete = guild_storage_delete;
-	gstorage->open = storage_guild_storageopen;
-	gstorage->additem = guild_storage_additem;
-	gstorage->delitem = guild_storage_delitem;
-	gstorage->add = storage_guild_storageadd;
-	gstorage->get = storage_guild_storageget;
-	gstorage->addfromcart = storage_guild_storageaddfromcart;
-	gstorage->gettocart = storage_guild_storagegettocart;
-	gstorage->close = storage_guild_storageclose;
-	gstorage->pc_quit = storage_guild_storage_quit;
-	gstorage->save = storage_guild_storagesave;
-	gstorage->saved = storage_guild_storagesaved;
-	gstorage->create = create_guildstorage;
+
 }

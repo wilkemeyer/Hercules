@@ -92,43 +92,44 @@ struct channel_data {
 	unsigned char msg_delay;
 };
 
-struct channel_interface {
+class CChannel {
+public:
 	/* vars */
-	DBMap *db;
-	struct Channel_Config *config;
+	static DBMap *db;
+	static struct Channel_Config *config;
 
-	int (*init) (bool minimal);
-	void (*final) (void);
+	static int init (bool minimal);
+	static void final (void);
 
-	struct channel_data *(*search) (const char *name, struct map_session_data *sd);
-	struct channel_data *(*create) (enum channel_types type, const char *name, unsigned char color);
-	void (*_delete) (struct channel_data *chan);
+	static struct channel_data *search (const char *name, struct map_session_data *sd);
+	static struct channel_data *create (enum channel_types type, const char *name, unsigned char color);
+	static void _delete (struct channel_data *chan);
 
-	void (*set_password) (struct channel_data *chan, const char *password);
-	enum channel_operation_status (*ban) (struct channel_data *chan, const struct map_session_data *ssd, struct map_session_data *tsd);
-	enum channel_operation_status (*unban) (struct channel_data *chan, const struct map_session_data *ssd, struct map_session_data *tsd);
-	void (*set_options) (struct channel_data *chan, unsigned int options);
+	static void set_password (struct channel_data *chan, const char *password);
+	static enum channel_operation_status ban (struct channel_data *chan, const struct map_session_data *ssd, struct map_session_data *tsd);
+	static enum channel_operation_status unban (struct channel_data *chan, const struct map_session_data *ssd, struct map_session_data *tsd);
+	static void set_options (struct channel_data *chan, unsigned int options);
 
-	void (*send) (struct channel_data *chan, struct map_session_data *sd, const char *msg);
-	void (*join_sub) (struct channel_data *chan, struct map_session_data *sd, bool stealth);
-	enum channel_operation_status (*join) (struct channel_data *chan, struct map_session_data *sd, const char *password, bool silent);
-	void (*leave) (struct channel_data *chan, struct map_session_data *sd);
-	void (*leave_sub) (struct channel_data *chan, struct map_session_data *sd);
-	void (*quit) (struct map_session_data *sd);
+	static void send (struct channel_data *chan, struct map_session_data *sd, const char *msg);
+	static void join_sub (struct channel_data *chan, struct map_session_data *sd, bool stealth);
+	static enum channel_operation_status join (struct channel_data *chan, struct map_session_data *sd, const char *password, bool silent);
+	static void leave (struct channel_data *chan, struct map_session_data *sd);
+	static void leave_sub (struct channel_data *chan, struct map_session_data *sd);
+	static void quit (struct map_session_data *sd);
 
-	void (*map_join) (struct map_session_data *sd);
-	void (*guild_join_alliance) (const struct guild *g_source, const struct guild *g_ally);
-	void (*guild_leave_alliance) (const struct guild *g_source, const struct guild *g_ally);
-	void (*quit_guild) (struct map_session_data *sd);
-	void (*irc_join) (struct map_session_data *sd);
+	static void map_join (struct map_session_data *sd);
+	static void guild_join_alliance (const struct guild *g_source, const struct guild *g_ally);
+	static void guild_leave_alliance (const struct guild *g_source, const struct guild *g_ally);
+	static void quit_guild (struct map_session_data *sd);
+	static void irc_join (struct map_session_data *sd);
 
-	void (*config_read) (void);
+	static void config_read (void);
 };
+extern CChannel *channel;
 
 #ifdef HERCULES_CORE
 void channel_defaults(void);
 #endif // HERCULES_CORE
 
-HPShared struct channel_interface *channel;
 
 #endif /* MAP_CHANNEL_H */

@@ -21,8 +21,20 @@
 #include "stdafx.h"
 
 
-struct mob_interface mob_s;
-struct mob_interface *mob;
+CMob mob_s;
+CMob *mob=NULL;
+
+// Subsystem Globals:
+// Dynamic mob database, allows saving of memory when there's big gaps in the mob_db [Skotlex]
+struct mob_db *CMob::db_data[MAX_MOB_DB + 1];
+struct mob_db *CMob::dummy; //Dummy mob to be returned when a non-existant one is requested.
+					  // Dynamic mob chat database
+struct mob_chat *CMob::chat_db[MAX_MOB_CHAT + 1];
+// Defines the Manuk/Splendide/Mora mob groups for the status reductions [Epoque & Frost]
+int CMob::manuk[8];
+int CMob::splendide[5];
+int CMob::mora[5];
+
 
 #define ACTIVE_AI_RANGE 2 //Distance added on top of 'AREA_SIZE' at which mobs enter active AI mode.
 
@@ -54,12 +66,12 @@ static struct {
 	int class_[350];
 } summon[MAX_RANDOMMONSTER];
 
-struct mob_db *mob_db(int index) {
+struct mob_db *CMob::db(int index) {
 	if (index < 0 || index > MAX_MOB_DB || mob->db_data[index] == NULL)
 		return mob->dummy;
 	return mob->db_data[index];
 }
-struct mob_chat *mob_chat(short id) {
+struct mob_chat *CMob::chat(short id) {
 	if(id <= 0 || id > MAX_MOB_CHAT || mob->chat_db[id] == NULL)
 		return NULL;
 	return mob->chat_db[id];
@@ -68,7 +80,7 @@ struct mob_chat *mob_chat(short id) {
 /*==========================================
  * Mob is searched with a name.
  *------------------------------------------*/
-int mobdb_searchname(const char *str)
+int CMob::db_searchname(const char *str)
 {
 	int i;
 	for(i=0;i<=MAX_MOB_DB;i++){
@@ -85,7 +97,7 @@ int mobdb_searchname(const char *str)
 
 	return 0;
 }
-int mobdb_searchname_array_sub(struct mob_db* monster, const char *str, int flag) {
+int CMob::db_searchname_array_sub(struct mob_db* monster, const char *str, int flag) {
 	if (monster == mob->dummy)
 		return 1;
 	if(!monster->base_exp && !monster->job_exp && monster->spawn[0].qty < 1)
@@ -109,12 +121,12 @@ int mobdb_searchname_array_sub(struct mob_db* monster, const char *str, int flag
 /*==========================================
  *              MvP Tomb [GreenBox]
  *------------------------------------------*/
-void mvptomb_create(struct mob_data *md, char *killer, time_t time)
+void CMob::mvptomb_create(struct mob_data *md, char *killer, time_t time)
 {
 	struct npc_data *nd;
 
 	if ( md->tomb_nid )
-		mob->mvptomb_destroy(md);
+		mob->CMob::mvptomb_destroy(md);
 
 	nd = npc->create_npc(TOMB, md->bl.m, md->bl.x, md->bl.y, md->ud.dir, MOB_TOMB);
 	md->tomb_nid = nd->bl.id;
@@ -135,7 +147,7 @@ void mvptomb_create(struct mob_data *md, char *killer, time_t time)
 	clif->spawn(&nd->bl);
 }
 
-void mvptomb_destroy(struct mob_data *md) {
+void CMob::mvptomb_destroy(struct mob_data *md) {
 	struct npc_data *nd;
 
 	if ( (nd = map->id2nd(md->tomb_nid)) ) {
@@ -165,7 +177,7 @@ void mvptomb_destroy(struct mob_data *md) {
 /*==========================================
  * Founds up to N matches. Returns number of matches [Skotlex]
  *------------------------------------------*/
-int mobdb_searchname_array(struct mob_db** data, int size, const char *str, int flag)
+int CMob::db_searchname_array(struct mob_db** data, int size, const char *str, int flag)
 {
 	int count = 0, i;
 	struct mob_db* monster;
@@ -185,7 +197,7 @@ int mobdb_searchname_array(struct mob_db** data, int size, const char *str, int 
 /*==========================================
  * Id Mob is checked.
  *------------------------------------------*/
-int mobdb_checkid(const int id)
+int CMob::db_checkid(const int id)
 {
 	if (mob->db(id) == mob->dummy)
 		return 0;
@@ -197,7 +209,7 @@ int mobdb_checkid(const int id)
 /*==========================================
  * Returns the view data associated to this mob class.
  *------------------------------------------*/
-struct view_data * mob_get_viewdata(int class_)
+struct view_data * CMob::get_viewdata(int class_)
 {
 	if (mob->db(class_) == mob->dummy)
 		return 0;
@@ -206,7 +218,7 @@ struct view_data * mob_get_viewdata(int class_)
 /*==========================================
  * Cleans up mob-spawn data to make it "valid"
  *------------------------------------------*/
-int mob_parse_dataset(struct spawn_data *data)
+int CMob::parse_dataset(struct spawn_data *data)
 {
 	size_t len;
 
@@ -231,7 +243,7 @@ int mob_parse_dataset(struct spawn_data *data)
 /*==========================================
  * Generates the basic mob data using the spawn_data provided.
  *------------------------------------------*/
-struct mob_data* mob_spawn_dataset(struct spawn_data *data) {
+struct mob_data* CMob::spawn_dataset(struct spawn_data *data) {
 	struct mob_data *md = (struct mob_data*)aCalloc(1, sizeof(struct mob_data));
 	md->bl.id= npc->get_new_npc_id();
 	md->bl.type = BL_MOB;
@@ -276,7 +288,7 @@ struct mob_data* mob_spawn_dataset(struct spawn_data *data) {
  * &8: Selected monster must have normal spawn.
  * lv: Mob level to check against
  *------------------------------------------*/
-int mob_get_random_id(int type, int flag, int lv)
+int CMob::get_random_id(int type, int flag, int lv)
 {
 	struct mob_db *monster;
 	int i=0, class_;
@@ -306,7 +318,7 @@ int mob_get_random_id(int type, int flag, int lv)
 /*==========================================
  * Kill Steal Protection [Zephyrus]
  *------------------------------------------*/
-bool mob_ksprotected(struct block_list *src, struct block_list *target) {
+bool CMob::ksprotected(struct block_list *src, struct block_list *target) {
 	struct block_list *s_bl, *t_bl;
 	struct map_session_data
 		*sd,    // Source
@@ -389,7 +401,7 @@ bool mob_ksprotected(struct block_list *src, struct block_list *target) {
 	return false;
 }
 
-struct mob_data *mob_once_spawn_sub(struct block_list *bl, int16 m, int16 x, int16 y, const char *mobname, int class_, const char *event, unsigned int size, unsigned int ai)
+struct mob_data *CMob::once_spawn_sub(struct block_list *bl, int16 m, int16 x, int16 y, const char *mobname, int class_, const char *event, unsigned int size, unsigned int ai)
 {
 	struct spawn_data data;
 
@@ -431,7 +443,7 @@ struct mob_data *mob_once_spawn_sub(struct block_list *bl, int16 m, int16 x, int
 /*==========================================
  * Spawn a single mob on the specified coordinates.
  *------------------------------------------*/
-int mob_once_spawn(struct map_session_data* sd, int16 m, int16 x, int16 y, const char* mobname, int class_, int amount, const char* event, unsigned int size, unsigned int ai) {
+int CMob::once_spawn(struct map_session_data* sd, int16 m, int16 x, int16 y, const char* mobname, int class_, int amount, const char* event, unsigned int size, unsigned int ai) {
 	struct mob_data* md = NULL;
 	int count, lv;
 	bool no_guardian_data = false;
@@ -482,7 +494,7 @@ int mob_once_spawn(struct map_session_data* sd, int16 m, int16 x, int16 y, const
 /*==========================================
  * Spawn mobs in the specified area.
  *------------------------------------------*/
-int mob_once_spawn_area(struct map_session_data* sd, int16 m, int16 x0, int16 y0, int16 x1, int16 y1, const char* mobname, int class_, int amount, const char* event, unsigned int size, unsigned int ai)
+int CMob::once_spawn_area(struct map_session_data* sd, int16 m, int16 x0, int16 y0, int16 x1, int16 y1, const char* mobname, int class_, int amount, const char* event, unsigned int size, unsigned int ai)
 {
 	int i, max, id = 0;
 	int lx = -1, ly = -1;
@@ -540,7 +552,7 @@ int mob_once_spawn_area(struct map_session_data* sd, int16 m, int16 x0, int16 y0
  * @retval Always 0
  * @author Skotlex
  **/
-int mob_spawn_guardian_sub(int tid, int64 tick, int id, intptr_t data) {
+int CMob::spawn_guardian_sub(int tid, int64 tick, int id, intptr_t data) {
 	//Needed because the guild data may not be available at guardian spawn time.
 	struct block_list* bl = map->id2bl(id);
 	struct mob_data* md;
@@ -586,7 +598,7 @@ int mob_spawn_guardian_sub(int tid, int64 tick, int id, intptr_t data) {
 /*==========================================
  * Summoning Guardians [Valaris]
  *------------------------------------------*/
-int mob_spawn_guardian(const char* mapname, short x, short y, const char* mobname, int class_, const char* event, int guardian, bool has_index)
+int CMob::spawn_guardian(const char* mapname, short x, short y, const char* mobname, int class_, const char* event, int guardian, bool has_index)
 {
 	struct mob_data *md=NULL;
 	struct spawn_data data;
@@ -683,7 +695,7 @@ int mob_spawn_guardian(const char* mapname, short x, short y, const char* mobnam
 /*==========================================
  * Summoning BattleGround [Zephyrus]
  *------------------------------------------*/
-int mob_spawn_bg(const char* mapname, short x, short y, const char* mobname, int class_, const char* event, unsigned int bg_id)
+int CMob::spawn_bg(const char* mapname, short x, short y, const char* mobname, int class_, const char* event, unsigned int bg_id)
 {
 	struct mob_data *md = NULL;
 	struct spawn_data data;
@@ -730,7 +742,7 @@ int mob_spawn_bg(const char* mapname, short x, short y, const char* mobname, int
  * - MSS_RUSH: Chasing attacking player, path is complex
  * - MSS_FOLLOW: Initiative/support seek, path is complex
  *------------------------------------------*/
-int mob_can_reach(struct mob_data *md,struct block_list *bl,int range, int state)
+int CMob::can_reach(struct mob_data *md,struct block_list *bl,int range, int state)
 {
 	int easy = 0;
 
@@ -752,7 +764,7 @@ int mob_can_reach(struct mob_data *md,struct block_list *bl,int range, int state
 /*==========================================
  * Links nearby mobs (supportive mobs)
  *------------------------------------------*/
-int mob_linksearch(struct block_list *bl,va_list ap) {
+int CMob::linksearch(struct block_list *bl,va_list ap) {
 	struct mob_data *md;
 	int class_;
 	struct block_list *target;
@@ -782,7 +794,7 @@ int mob_linksearch(struct block_list *bl,va_list ap) {
 /*==========================================
  * mob spawn with delay (timer function)
  *------------------------------------------*/
-int mob_delayspawn(int tid, int64 tick, int id, intptr_t data) {
+int CMob::delayspawn(int tid, int64 tick, int id, intptr_t data) {
 	struct block_list* bl = map->id2bl(id);
 	struct mob_data* md = BL_CAST(BL_MOB, bl);
 
@@ -802,7 +814,7 @@ int mob_delayspawn(int tid, int64 tick, int id, intptr_t data) {
 /*==========================================
  * spawn timing calculation
  *------------------------------------------*/
-int mob_setdelayspawn(struct mob_data *md)
+int CMob::setdelayspawn(struct mob_data *md)
 {
 	unsigned int spawntime, mode;
 	struct mob_db *db;
@@ -843,7 +855,7 @@ int mob_setdelayspawn(struct mob_data *md)
 	return 0;
 }
 
-int mob_count_sub(struct block_list *bl, va_list ap) {
+int CMob::count_sub(struct block_list *bl, va_list ap) {
 	int mobid[10] = { 0 }, i;
 	ARR_FIND(0, 10, i, (mobid[i] = va_arg(ap, int)) == 0); //fetch till 0
 	if (mobid[0]) { //if there one let's check it otherwise go backward
@@ -858,7 +870,7 @@ int mob_count_sub(struct block_list *bl, va_list ap) {
 /*==========================================
  * Mob spawning. Initialization is also variously here.
  *------------------------------------------*/
-int mob_spawn (struct mob_data *md)
+int CMob::spawn(struct mob_data *md)
 {
 	int i=0;
 	int64 tick = timer->gettick();
@@ -938,7 +950,7 @@ int mob_spawn (struct mob_data *md)
 
 	// MvP tomb [GreenBox]
 	if ( md->tomb_nid )
-		mob->mvptomb_destroy(md);
+		mob->CMob::mvptomb_destroy(md);
 
 	map->addblock(&md->bl);
 	if( map->list[md->bl.m].users )
@@ -951,7 +963,7 @@ int mob_spawn (struct mob_data *md)
 /*==========================================
  * Determines if the mob can change target. [Skotlex]
  *------------------------------------------*/
-int mob_can_changetarget(struct mob_data* md, struct block_list* target, int mode)
+int CMob::can_changetarget(struct mob_data* md, struct block_list* target, int mode)
 {
 	// if the monster was provoked ignore the above rule [celest]
 	if(md->state.provoke_flag)
@@ -983,7 +995,7 @@ int mob_can_changetarget(struct mob_data* md, struct block_list* target, int mod
 /*==========================================
  * Determination for an attack of a monster
  *------------------------------------------*/
-int mob_target(struct mob_data *md,struct block_list *bl,int dist)
+int CMob::target(struct mob_data *md,struct block_list *bl,int dist)
 {
 	nullpo_ret(md);
 	nullpo_ret(bl);
@@ -1007,7 +1019,7 @@ int mob_target(struct mob_data *md,struct block_list *bl,int dist)
 /*==========================================
  * The ?? routine of an active monster
  *------------------------------------------*/
-int mob_ai_sub_hard_activesearch(struct block_list *bl,va_list ap)
+int CMob::ai_sub_hard_activesearch(struct block_list *bl,va_list ap)
 {
 	struct mob_data *md;
 	struct block_list **target;
@@ -1068,7 +1080,7 @@ int mob_ai_sub_hard_activesearch(struct block_list *bl,va_list ap)
 /*==========================================
  * chase target-change routine.
  *------------------------------------------*/
-int mob_ai_sub_hard_changechase(struct block_list *bl,va_list ap) {
+int CMob::ai_sub_hard_changechase(struct block_list *bl,va_list ap) {
 	struct mob_data *md;
 	struct block_list **target;
 
@@ -1094,7 +1106,7 @@ int mob_ai_sub_hard_changechase(struct block_list *bl,va_list ap) {
 /*==========================================
  * finds nearby bg ally for guardians looking for users to follow.
  *------------------------------------------*/
-int mob_ai_sub_hard_bg_ally(struct block_list *bl,va_list ap) {
+int CMob::ai_sub_hard_bg_ally(struct block_list *bl,va_list ap) {
 	struct mob_data *md;
 	struct block_list **target;
 
@@ -1111,7 +1123,7 @@ int mob_ai_sub_hard_bg_ally(struct block_list *bl,va_list ap) {
 /*==========================================
  * loot monster item search
  *------------------------------------------*/
-int mob_ai_sub_hard_lootsearch(struct block_list *bl,va_list ap)
+int CMob::ai_sub_hard_lootsearch(struct block_list *bl,va_list ap)
 {
 	struct mob_data* md;
 	struct block_list **target;
@@ -1131,7 +1143,7 @@ int mob_ai_sub_hard_lootsearch(struct block_list *bl,va_list ap)
 	return 0;
 }
 
-int mob_warpchase_sub(struct block_list *bl,va_list ap) {
+int CMob::warpchase_sub(struct block_list *bl,va_list ap) {
 	struct block_list *target;
 	struct npc_data **target_nd;
 	struct npc_data *nd;
@@ -1162,7 +1174,7 @@ int mob_warpchase_sub(struct block_list *bl,va_list ap) {
 /*==========================================
  * Processing of slave monsters
  *------------------------------------------*/
-int mob_ai_sub_hard_slavemob(struct mob_data *md, int64 tick) {
+int CMob::ai_sub_hard_slavemob(struct mob_data *md, int64 tick) {
 	struct block_list *bl;
 
 	bl=map->id2bl(md->master_id);
@@ -1244,7 +1256,7 @@ int mob_ai_sub_hard_slavemob(struct mob_data *md, int64 tick) {
  * when trying to pick new targets when the current chosen target is
  * unreachable.
  *------------------------------------------*/
-int mob_unlocktarget(struct mob_data *md, int64 tick) {
+int CMob::unlocktarget(struct mob_data *md, int64 tick) {
 	nullpo_ret(md);
 
 	switch (md->state.skillstate) {
@@ -1288,7 +1300,7 @@ int mob_unlocktarget(struct mob_data *md, int64 tick) {
 /*==========================================
  * Random walk
  *------------------------------------------*/
-int mob_randomwalk(struct mob_data *md, int64 tick) {
+int CMob::randomwalk(struct mob_data *md, int64 tick) {
 	const int retrycount=20;
 	int i,c,d;
 	int speed;
@@ -1338,7 +1350,7 @@ int mob_randomwalk(struct mob_data *md, int64 tick) {
 	return 1;
 }
 
-int mob_warpchase(struct mob_data *md, struct block_list *target)
+int CMob::warpchase(struct mob_data *md, struct block_list *target)
 {
 	struct npc_data *warp = NULL;
 	int distance = AREA_SIZE;
@@ -1364,7 +1376,7 @@ int mob_warpchase(struct mob_data *md, struct block_list *target)
 /*==========================================
  * AI of MOB whose is near a Player
  *------------------------------------------*/
-bool mob_ai_sub_hard(struct mob_data *md, int64 tick) {
+bool CMob::ai_sub_hard(struct mob_data *md, int64 tick) {
 	struct block_list *tbl = NULL, *abl = NULL;
 	int mode;
 	int view_range, can_move;
@@ -1645,7 +1657,7 @@ bool mob_ai_sub_hard(struct mob_data *md, int64 tick) {
 	return true;
 }
 
-int mob_ai_sub_hard_timer(struct block_list *bl, va_list ap) {
+int CMob::ai_sub_hard_timer(struct block_list *bl, va_list ap) {
 	struct mob_data *md = (struct mob_data*)bl;
 	int64 tick = va_arg(ap, int64);
 	if (mob->ai_sub_hard(md, tick)) {
@@ -1660,7 +1672,7 @@ int mob_ai_sub_hard_timer(struct block_list *bl, va_list ap) {
 /*==========================================
  * Serious processing for mob in PC field of view (foreachclient)
  *------------------------------------------*/
-int mob_ai_sub_foreachclient(struct map_session_data *sd, va_list ap) {
+int CMob::ai_sub_foreachclient(struct map_session_data *sd, va_list ap) {
 	int64 tick;
 	tick=va_arg(ap, int64);
 	map->foreachinrange(mob->ai_sub_hard_timer,&sd->bl, AREA_SIZE+ACTIVE_AI_RANGE, BL_MOB,tick);
@@ -1671,7 +1683,7 @@ int mob_ai_sub_foreachclient(struct map_session_data *sd, va_list ap) {
 /*==========================================
  * Negligent mode MOB AI (PC is not in near)
  *------------------------------------------*/
-int mob_ai_sub_lazy(struct mob_data *md, va_list args) {
+int CMob::ai_sub_lazy(struct mob_data *md, va_list args) {
 	int64 tick;
 
 	nullpo_ret(md);
@@ -1735,7 +1747,7 @@ int mob_ai_sub_lazy(struct mob_data *md, va_list args) {
 /*==========================================
  * Negligent processing for mob outside PC field of view   (interval timer function)
  *------------------------------------------*/
-int mob_ai_lazy(int tid, int64 tick, int id, intptr_t data) {
+int CMob::ai_lazy(int tid, int64 tick, int id, intptr_t data) {
 	map->foreachmob(mob->ai_sub_lazy,tick);
 	return 0;
 }
@@ -1743,7 +1755,7 @@ int mob_ai_lazy(int tid, int64 tick, int id, intptr_t data) {
 /*==========================================
  * Serious processing for mob in PC field of view   (interval timer function)
  *------------------------------------------*/
-int mob_ai_hard(int tid, int64 tick, int id, intptr_t data) {
+int CMob::ai_hard(int tid, int64 tick, int id, intptr_t data) {
 
 	if (battle_config.mob_ai&0x20)
 		map->foreachmob(mob->ai_sub_lazy,tick);
@@ -1756,7 +1768,7 @@ int mob_ai_hard(int tid, int64 tick, int id, intptr_t data) {
 /*==========================================
  * Initializes the delay drop structure for mob-dropped items.
  *------------------------------------------*/
-struct item_drop* mob_setdropitem(int nameid, int qty, struct item_data *data) {
+struct item_drop* CMob::setdropitem(int nameid, int qty, struct item_data *data) {
 	struct item_drop *drop = ers_alloc(item_drop_ers, struct item_drop);
 	drop->item_data.nameid = nameid;
 	drop->item_data.amount = qty;
@@ -1768,7 +1780,7 @@ struct item_drop* mob_setdropitem(int nameid, int qty, struct item_data *data) {
 /*==========================================
  * Initializes the delay drop structure for mob-looted items.
  *------------------------------------------*/
-struct item_drop* mob_setlootitem(struct item* item)
+struct item_drop* CMob::setlootitem(struct item* item)
 {
 	struct item_drop *drop = ers_alloc(item_drop_ers, struct item_drop);
 	memcpy(&drop->item_data, item, sizeof(struct item));
@@ -1779,7 +1791,7 @@ struct item_drop* mob_setlootitem(struct item* item)
 /*==========================================
  * item drop with delay (timer function)
  *------------------------------------------*/
-int mob_delay_item_drop(int tid, int64 tick, int id, intptr_t data) {
+int CMob::delay_item_drop(int tid, int64 tick, int id, intptr_t data) {
 	struct item_drop_list *list;
 	struct item_drop *ditem;
 	list=(struct item_drop_list *)data;
@@ -1803,7 +1815,7 @@ int mob_delay_item_drop(int tid, int64 tick, int id, intptr_t data) {
  * rate is the drop-rate of the item, required for autoloot.
  * flag : Killed only by homunculus?
  *------------------------------------------*/
-void mob_item_drop(struct mob_data *md, struct item_drop_list *dlist, struct item_drop *ditem, int loot, int drop_rate, unsigned short flag)
+void CMob::item_drop(struct mob_data *md, struct item_drop_list *dlist, struct item_drop *ditem, int loot, int drop_rate, unsigned short flag)
 {
 	TBL_PC* sd;
 
@@ -1835,7 +1847,7 @@ void mob_item_drop(struct mob_data *md, struct item_drop_list *dlist, struct ite
 	dlist->item = ditem;
 }
 
-int mob_timer_delete(int tid, int64 tick, int id, intptr_t data) {
+int CMob::timer_delete(int tid, int64 tick, int id, intptr_t data) {
 	struct block_list* bl = map->id2bl(id);
 	struct mob_data* md = BL_CAST(BL_MOB, bl);
 
@@ -1856,7 +1868,7 @@ int mob_timer_delete(int tid, int64 tick, int id, intptr_t data) {
 /*==========================================
  *
  *------------------------------------------*/
-int mob_deleteslave_sub(struct block_list *bl,va_list ap)
+int CMob::deleteslave_sub(struct block_list *bl,va_list ap)
 {
 	struct mob_data *md;
 	int id;
@@ -1873,14 +1885,14 @@ int mob_deleteslave_sub(struct block_list *bl,va_list ap)
 /*==========================================
  *
  *------------------------------------------*/
-int mob_deleteslave(struct mob_data *md) {
+int CMob::deleteslave(struct mob_data *md) {
 	nullpo_ret(md);
 
 	map->foreachinmap(mob->deleteslave_sub, md->bl.m, BL_MOB,md->bl.id);
 	return 0;
 }
 // Mob respawning through KAIZEL or NPC_REBIRTH [Skotlex]
-int mob_respawn(int tid, int64 tick, int id, intptr_t data) {
+int CMob::respawn(int tid, int64 tick, int id, intptr_t data) {
 	struct block_list *bl = map->id2bl(id);
 
 	if(!bl) return 0;
@@ -1888,7 +1900,7 @@ int mob_respawn(int tid, int64 tick, int id, intptr_t data) {
 	return 1;
 }
 
-void mob_log_damage(struct mob_data *md, struct block_list *src, int damage)
+void CMob::log_damage(struct mob_data *md, struct block_list *src, int damage)
 {
 	int char_id = 0, flag = MDLF_NORMAL;
 
@@ -2001,7 +2013,7 @@ void mob_log_damage(struct mob_data *md, struct block_list *src, int damage)
 	return;
 }
 //Call when a mob has received damage.
-void mob_damage(struct mob_data *md, struct block_list *src, int damage) {
+void CMob::damage(struct mob_data *md, struct block_list *src, int damage) {
 	if (damage > 0) { //Store total damage...
 		if (UINT_MAX - (unsigned int)damage > md->tdmg)
 			md->tdmg+=damage;
@@ -2054,7 +2066,7 @@ void mob_damage(struct mob_data *md, struct block_list *src, int damage) {
  * Signals death of mob.
  * type&1 -> no drops, type&2 -> no exp
  *------------------------------------------*/
-int mob_dead(struct mob_data *md, struct block_list *src, int type) {
+int CMob::dead(struct mob_data *md, struct block_list *src, int type) {
 	struct status_data *mstatus;
 	struct map_session_data *sd = NULL, *tmpsd[DAMAGELOG_SIZE];
 	struct map_session_data *mvp_sd = NULL, *second_sd = NULL, *third_sd = NULL;
@@ -2617,7 +2629,7 @@ int mob_dead(struct mob_data *md, struct block_list *src, int type) {
 
 	// MvP tomb [GreenBox]
 	if (battle_config.mvp_tomb_enabled && md->spawn->state.boss && map->list[md->bl.m].flag.notomb != 1)
-		mob->mvptomb_create(md, mvp_sd ? mvp_sd->status.name : NULL, time(NULL));
+		mob->CMob::mvptomb_create(md, mvp_sd ? mvp_sd->status.name : NULL, time(NULL));
 
 	if( !rebirth ) {
 		status->change_clear(&md->bl,1);
@@ -2626,7 +2638,7 @@ int mob_dead(struct mob_data *md, struct block_list *src, int type) {
 	return 3; //Remove from map.
 }
 
-void mob_revive(struct mob_data *md, unsigned int hp)
+void CMob::revive(struct mob_data *md, unsigned int hp)
 {
 	int64 tick = timer->gettick();
 	md->state.skillstate = MSS_IDLE;
@@ -2645,7 +2657,7 @@ void mob_revive(struct mob_data *md, unsigned int hp)
 		clif->charnameack (0, &md->bl);
 }
 
-int mob_guardian_guildchange(struct mob_data *md)
+int CMob::guardian_guildchange(struct mob_data *md)
 {
 	struct guild *g;
 	nullpo_ret(md);
@@ -2684,7 +2696,7 @@ int mob_guardian_guildchange(struct mob_data *md)
 /*==========================================
  * Pick a random class for the mob
  *------------------------------------------*/
-int mob_random_class (int *value, size_t count)
+int CMob::random_class(int *value, size_t count)
 {
 	nullpo_ret(value);
 
@@ -2706,7 +2718,7 @@ int mob_random_class (int *value, size_t count)
 /*==========================================
  * Change mob base class
  *------------------------------------------*/
-int mob_class_change (struct mob_data *md, int class_) {
+int CMob::class_change(struct mob_data *md, int class_) {
 
 	int64 tick = timer->gettick(), c = 0;
 	int i, hp_rate;
@@ -2774,7 +2786,7 @@ int mob_class_change (struct mob_data *md, int class_) {
 /*==========================================
  * mob heal, update display hp info of mob for players
  *------------------------------------------*/
-void mob_heal(struct mob_data *md, unsigned int heal)
+void CMob::heal(struct mob_data *md, unsigned int heal)
 {
 	if (battle_config.show_mob_info&3)
 		clif->charnameack (0, &md->bl);
@@ -2801,7 +2813,7 @@ void mob_heal(struct mob_data *md, unsigned int heal)
 /*==========================================
  * Added by RoVeRT
  *------------------------------------------*/
-int mob_warpslave_sub(struct block_list *bl,va_list ap) {
+int CMob::warpslave_sub(struct block_list *bl,va_list ap) {
 	struct mob_data *md=(struct mob_data *)bl;
 	struct block_list *master;
 	short x,y,range=0;
@@ -2821,7 +2833,7 @@ int mob_warpslave_sub(struct block_list *bl,va_list ap) {
  * Warps slaves. Range is the area around the master that they can
  * appear in randomly.
  *------------------------------------------*/
-int mob_warpslave(struct block_list *bl, int range) {
+int CMob::warpslave(struct block_list *bl, int range) {
 	if (range < 1)
 		range = 1; //Min range needed to avoid crashes and stuff. [Skotlex]
 
@@ -2831,7 +2843,7 @@ int mob_warpslave(struct block_list *bl, int range) {
 /*==========================================
  *  Counts slave sub, currently checking if mob master is the given ID.
  *------------------------------------------*/
-int mob_countslave_sub(struct block_list *bl,va_list ap)
+int CMob::countslave_sub(struct block_list *bl,va_list ap)
 {
 	int id;
 	struct mob_data *md;
@@ -2846,14 +2858,14 @@ int mob_countslave_sub(struct block_list *bl,va_list ap)
 /*==========================================
  * Counts the number of slaves a mob has on the map.
  *------------------------------------------*/
-int mob_countslave(struct block_list *bl) {
+int CMob::countslave(struct block_list *bl) {
 	return map->foreachinmap(mob->countslave_sub, bl->m, BL_MOB,bl->id);
 }
 
 /*==========================================
  * Summons amount slaves contained in the value[5] array using round-robin. [adapted by Skotlex]
  *------------------------------------------*/
-int mob_summonslave(struct mob_data *md2,int *value,int amount,uint16 skill_id)
+int CMob::summonslave(struct mob_data *md2,int *value,int amount,uint16 skill_id)
 {
 	struct mob_data *md;
 	struct spawn_data data;
@@ -2951,7 +2963,7 @@ int mob_summonslave(struct mob_data *md2,int *value,int amount,uint16 skill_id)
  * MOBskill lookup (get skillindex through skill_id)
  * Returns -1 if not found.
  *------------------------------------------*/
-int mob_skill_id2skill_idx(int class_,uint16 skill_id)
+int CMob::skill_id2skill_idx(int class_,uint16 skill_id)
 {
 	int i, max = mob->db(class_)->maxskill;
 	struct mob_skill *ms=mob->db(class_)->skill;
@@ -2966,7 +2978,7 @@ int mob_skill_id2skill_idx(int class_,uint16 skill_id)
 /*==========================================
  * Friendly Mob whose HP is decreasing by a nearby MOB is looked for.
  *------------------------------------------*/
-int mob_getfriendhprate_sub(struct block_list *bl,va_list ap)
+int CMob::getfriendhprate_sub(struct block_list *bl,va_list ap)
 {
 	int min_rate, max_rate,rate;
 	struct block_list **fr;
@@ -2992,7 +3004,7 @@ int mob_getfriendhprate_sub(struct block_list *bl,va_list ap)
 		(*fr) = bl;
 	return 1;
 }
-struct block_list *mob_getfriendhprate(struct mob_data *md,int min_rate,int max_rate) {
+struct block_list *CMob::getfriendhprate(struct mob_data *md,int min_rate,int max_rate) {
 	struct block_list *fr=NULL;
 	int type = BL_MOB;
 
@@ -3007,7 +3019,7 @@ struct block_list *mob_getfriendhprate(struct mob_data *md,int min_rate,int max_
 /*==========================================
  * Check hp rate of its master
  *------------------------------------------*/
-struct block_list *mob_getmasterhpltmaxrate(struct mob_data *md,int rate) {
+struct block_list *CMob::getmasterhpltmaxrate(struct mob_data *md,int rate) {
 	if( md && md->master_id > 0 ) {
 		struct block_list *bl = map->id2bl(md->master_id);
 		if( bl && get_percentage(status_get_hp(bl), status_get_max_hp(bl)) < rate )
@@ -3019,7 +3031,7 @@ struct block_list *mob_getmasterhpltmaxrate(struct mob_data *md,int rate) {
 /*==========================================
  * What a status state suits by nearby MOB is looked for.
  *------------------------------------------*/
-int mob_getfriendstatus_sub(struct block_list *bl,va_list ap)
+int CMob::getfriendstatus_sub(struct block_list *bl,va_list ap)
 {
 	int cond1,cond2;
 	struct mob_data **fr, *md, *mmd;
@@ -3051,7 +3063,7 @@ int mob_getfriendstatus_sub(struct block_list *bl,va_list ap)
 	return 0;
 }
 
-struct mob_data *mob_getfriendstatus(struct mob_data *md,int cond1,int cond2) {
+struct mob_data *CMob::getfriendstatus(struct mob_data *md,int cond1,int cond2) {
 	struct mob_data* fr = NULL;
 	nullpo_ret(md);
 
@@ -3062,7 +3074,7 @@ struct mob_data *mob_getfriendstatus(struct mob_data *md,int cond1,int cond2) {
 /*==========================================
  * Skill use judging
  *------------------------------------------*/
-int mobskill_use(struct mob_data *md, int64 tick, int event) {
+int CMob::skill_use(struct mob_data *md, int64 tick, int event) {
 	struct mob_skill *ms;
 	struct block_list *fbl = NULL; //Friend bl, which can either be a BL_PC or BL_MOB depending on the situation. [Skotlex]
 	struct block_list *bl;
@@ -3279,7 +3291,7 @@ int mobskill_use(struct mob_data *md, int64 tick, int event) {
 /*==========================================
  * Skill use event processing
  *------------------------------------------*/
-int mobskill_event(struct mob_data *md, struct block_list *src, int64 tick, int flag) {
+int CMob::skill_event(struct mob_data *md, struct block_list *src, int64 tick, int flag) {
 	int target_id, res = 0;
 
 	if(md->bl.prev == NULL || md->status.hp <= 0)
@@ -3314,7 +3326,7 @@ int mobskill_event(struct mob_data *md, struct block_list *src, int64 tick, int 
 }
 
 // Player cloned mobs. [Valaris]
-int mob_is_clone(int class_)
+int CMob::is_clone(int class_)
 {
 	if(class_ < MOB_CLONE_START || class_ > MOB_CLONE_END)
 		return 0;
@@ -3328,7 +3340,7 @@ int mob_is_clone(int class_)
 //If mode is not passed, a default aggressive mode is used.
 //If master_id is passed, clone is attached to him.
 //Returns: ID of newly crafted copy.
-int mob_clone_spawn(struct map_session_data *sd, int16 m, int16 x, int16 y, const char *event, int master_id, int mode, int flag, unsigned int duration) {
+int CMob::clone_spawn(struct map_session_data *sd, int16 m, int16 x, int16 y, const char *event, int master_id, int mode, int flag, unsigned int duration) {
 	int class_;
 	int i,j,h,inf, fd;
 	struct mob_data *md;
@@ -3530,7 +3542,7 @@ int mob_clone_spawn(struct map_session_data *sd, int16 m, int16 x, int16 y, cons
 	return md->bl.id;
 }
 
-int mob_clone_delete(struct mob_data *md)
+int CMob::clone_delete(struct mob_data *md)
 {
 	const int class_ = md->class_;
 	if (class_ >= MOB_CLONE_START && class_ < MOB_CLONE_END
@@ -3550,7 +3562,7 @@ int mob_clone_delete(struct mob_data *md)
 /*==========================================
  * Since un-setting [ mob ] up was used, it is an initial provisional value setup.
  *------------------------------------------*/
-int mob_makedummymobdb(int class_)
+int CMob::makedummymobdb(int class_)
 {
 	if (mob->dummy != NULL)
 	{
@@ -3592,7 +3604,7 @@ int mob_makedummymobdb(int class_)
 }
 
 //Adjusts the drop rate of item according to the criteria given. [Skotlex]
-unsigned int mob_drop_adjust(int baserate, int rate_adjust, unsigned short rate_min, unsigned short rate_max)
+unsigned int CMob::drop_adjust(int baserate, int rate_adjust, unsigned short rate_min, unsigned short rate_max)
 {
 	double rate = baserate;
 
@@ -3614,7 +3626,7 @@ unsigned int mob_drop_adjust(int baserate, int rate_adjust, unsigned short rate_
  * @param mob_id ID of the monster
  * @param rate_adjust pointer to store ratio if found
  */
-void item_dropratio_adjust(int nameid, int mob_id, int *rate_adjust)
+void CMob::item_dropratio_adjust(int nameid, int mob_id, int *rate_adjust)
 {
 	if( item_drop_ratio_db[nameid] ) {
 		if( item_drop_ratio_db[nameid]->mob_id[0] ) { // only for listed mobs
@@ -3640,7 +3652,7 @@ static inline int mob_parse_dbrow_cap_value(int class_, int min, int max, int va
 	return value;
 }
 
-void mob_read_db_stats_sub(struct mob_db *entry, struct status_data *mstatus, int class_, config_setting_t *t)
+void CMob::read_db_stats_sub(struct mob_db *entry, struct status_data *mstatus, int class_, config_setting_t *t)
 {
 	int i32;
 	if (mob->lookup_const(t, "Str", &i32) && i32 >= 0) {
@@ -3663,7 +3675,7 @@ void mob_read_db_stats_sub(struct mob_db *entry, struct status_data *mstatus, in
 	}
 }
 
-int mob_read_db_mode_sub(struct mob_db *entry, struct status_data *mstatus, int class_, config_setting_t *t)
+int CMob::read_db_mode_sub(struct mob_db *entry, struct status_data *mstatus, int class_, config_setting_t *t)
 {
 	int mode = 0;
 	config_setting_t *t2;
@@ -3702,7 +3714,7 @@ int mob_read_db_mode_sub(struct mob_db *entry, struct status_data *mstatus, int 
 	return mode;
 }
 
-void mob_read_db_mvpdrops_sub(struct mob_db *entry, struct status_data *mstatus, int class_, config_setting_t *t)
+void CMob::read_db_mvpdrops_sub(struct mob_db *entry, struct status_data *mstatus, int class_, config_setting_t *t)
 {
 	config_setting_t *drop;
 	int i = 0;
@@ -3735,7 +3747,7 @@ void mob_read_db_mvpdrops_sub(struct mob_db *entry, struct status_data *mstatus,
 			i ++;
 			continue;
 		}
-		mob->item_dropratio_adjust(entry->mvpitem[idx].nameid, class_, &rate_adjust);
+		mob->CMob::item_dropratio_adjust(entry->mvpitem[idx].nameid, class_, &rate_adjust);
 		entry->mvpitem[idx].p = mob->drop_adjust(value, rate_adjust, battle_config.item_drop_mvp_min, battle_config.item_drop_mvp_max);
 
 		//calculate and store Max available drop chance of the MVP item
@@ -3753,7 +3765,7 @@ void mob_read_db_mvpdrops_sub(struct mob_db *entry, struct status_data *mstatus,
 	}
 }
 
-void mob_read_db_drops_sub(struct mob_db *entry, struct status_data *mstatus, int class_, config_setting_t *t)
+void CMob::read_db_drops_sub(struct mob_db *entry, struct status_data *mstatus, int class_, config_setting_t *t)
 {
 	config_setting_t *drop;
 	int i = 0;
@@ -3827,7 +3839,7 @@ void mob_read_db_drops_sub(struct mob_db *entry, struct status_data *mstatus, in
 				ratemax = battle_config.item_drop_common_max;
 				break;
 		}
-		mob->item_dropratio_adjust(id->nameid, class_, &rate_adjust);
+		mob->CMob::item_dropratio_adjust(id->nameid, class_, &rate_adjust);
 		entry->dropitem[idx].p = mob->drop_adjust(value, rate_adjust, ratemin, ratemax);
 
 		//calculate and store Max available drop chance of the item
@@ -3865,7 +3877,7 @@ void mob_read_db_drops_sub(struct mob_db *entry, struct status_data *mstatus, in
 /*==========================================
  * processes one mobdb entry
  *------------------------------------------*/
-bool mob_read_db_sub(config_setting_t *mobt, int id, const char *source)
+bool CMob::read_db_sub(config_setting_t *mobt, int id, const char *source)
 {
 	struct mob_db *entry = NULL, tmpEntry;
 	config_setting_t *t = NULL;
@@ -4196,12 +4208,12 @@ bool mob_read_db_sub(config_setting_t *mobt, int id, const char *source)
 	return true;
 }
 
-void mob_read_db_additional_fields(struct mob_db *entry, int class_, config_setting_t *it, int n, const char *source)
+void CMob::read_db_additional_fields(struct mob_db *entry, int class_, config_setting_t *it, int n, const char *source)
 {
 	// do nothing. plugins can do own work
 }
 
-bool mob_lookup_const(const config_setting_t *it, const char *name, int *value)
+bool CMob::lookup_const(const config_setting_t *it, const char *name, int *value)
 {
 	if (libconfig->setting_lookup_int(it, name, value))
 	{
@@ -4219,7 +4231,7 @@ bool mob_lookup_const(const config_setting_t *it, const char *name, int *value)
 	return false;
 }
 
-bool mob_get_const(const config_setting_t *it, int *value)
+bool CMob::get_const(const config_setting_t *it, int *value)
 {
 	const char *str = config_setting_get_string(it);
 	if (str && *str && script->get_constant(str, value))
@@ -4232,7 +4244,7 @@ bool mob_get_const(const config_setting_t *it, int *value)
 /*==========================================
  * mob_db.txt reading
  *------------------------------------------*/
-void mob_readdb(void) {
+void CMob::readdb(void) {
 	const char* filename[] = {
 		DBPATH"mob_db.conf",
 		"mob_db2.conf" };
@@ -4244,7 +4256,7 @@ void mob_readdb(void) {
 	mob->name_constants();
 }
 
-int mob_read_libconfig(const char *filename, bool ignore_missing)
+int CMob::read_libconfig(const char *filename, bool ignore_missing)
 {
 	config_t mob_db_conf;
 	char filepath[256];
@@ -4271,7 +4283,7 @@ int mob_read_libconfig(const char *filename, bool ignore_missing)
 	return 0;
 }
 
-void mob_name_constants(void) {
+void CMob::name_constants(void) {
 	int i;
 #ifdef ENABLE_CASE_CHECK
 	script->parser_current_file = "Mob Database (Likely an invalid or conflicting SpriteName)";
@@ -4288,7 +4300,7 @@ void mob_name_constants(void) {
 /*==========================================
  * MOB display graphic change data reading
  *------------------------------------------*/
-bool mob_readdb_mobavail(char* str[], int columns, int current)
+bool CMob::readdb_mobavail(char* str[], int columns, int current)
 {
 	int class_, k;
 
@@ -4329,7 +4341,7 @@ bool mob_readdb_mobavail(char* str[], int columns, int current)
 /*==========================================
  * Reading of random monster data
  *------------------------------------------*/
-int mob_read_randommonster(void)
+int CMob::read_randommonster(void)
 {
 	char line[1024];
 	char *str[10],*p;
@@ -4396,7 +4408,7 @@ int mob_read_randommonster(void)
  * processes one mob_chat_db entry [SnakeDrak]
  * @param last_msg_id ensures that only one error message per mob id is printed
  *------------------------------------------*/
-bool mob_parse_row_chatdb(char** str, const char* source, int line, int* last_msg_id)
+bool CMob::parse_row_chatdb(char** str, const char* source, int line, int* last_msg_id)
 {
 	char* msg;
 	struct mob_chat *ms;
@@ -4454,7 +4466,7 @@ bool mob_parse_row_chatdb(char** str, const char* source, int line, int* last_ms
 /*==========================================
  * mob_chat_db.txt reading [SnakeDrak]
  *-------------------------------------------------------------------------*/
-void mob_readchatdb(void) {
+void CMob::readchatdb(void) {
 	char arc[]="mob_chat_db.txt";
 	uint32 lines=0, count=0;
 	char line[1024], filepath[256];
@@ -4507,7 +4519,7 @@ void mob_readchatdb(void) {
 /*==========================================
  * processes one mob_skill_db entry
  *------------------------------------------*/
-bool mob_parse_row_mobskilldb(char** str, int columns, int current)
+bool CMob::parse_row_mobskilldb(char** str, int columns, int current)
 {
 	static const struct {
 		char str[32];
@@ -4767,7 +4779,7 @@ bool mob_parse_row_mobskilldb(char** str, int columns, int current)
 /*==========================================
  * mob_skill_db.txt reading
  *------------------------------------------*/
-void mob_readskilldb(void) {
+void CMob::readskilldb(void) {
 	const char* filename[] = {
 		DBPATH"mob_skill_db.txt",
 		"mob_skill_db2.txt" };
@@ -4794,7 +4806,7 @@ void mob_readskilldb(void) {
 /*==========================================
  * mob_race2_db.txt reading
  *------------------------------------------*/
-bool mob_readdb_race2(char* fields[], int columns, int current)
+bool CMob::readdb_race2(char* fields[], int columns, int current)
 {
 	int race, i;
 
@@ -4819,7 +4831,7 @@ bool mob_readdb_race2(char* fields[], int columns, int current)
 /**
  * Read mob_item_ratio.txt
  */
-bool mob_readdb_itemratio(char* str[], int columns, int current)
+bool CMob::readdb_itemratio(char* str[], int columns, int current)
 {
 	int nameid, ratio, i;
 	nameid = atoi(str[0]);
@@ -4845,7 +4857,7 @@ bool mob_readdb_itemratio(char* str[], int columns, int current)
 /**
  * read all mob-related databases
  */
-void mob_load(bool minimal) {
+void CMob::load(bool minimal) {
 	if (minimal) {
 		// Only read the mob db in minimal mode
 		mob->readdb();
@@ -4860,7 +4872,7 @@ void mob_load(bool minimal) {
 	sv->readdb(map->db_path, DBPATH"mob_race2_db.txt", ',', 2, 20, -1, mob->readdb_race2);
 }
 
-void mob_reload(void) {
+void CMob::reload(void) {
 	int i;
 
 	//Mob skills need to be cleared before re-reading them. [Skotlex]
@@ -4884,7 +4896,7 @@ void mob_reload(void) {
 /**
  * Clears spawn related information for a script reload.
  */
-void mob_clear_spawninfo()
+void CMob::clear_spawninfo()
 {
 	int i;
 	for (i = 0; i < MAX_MOB_DB; i++)
@@ -4895,7 +4907,7 @@ void mob_clear_spawninfo()
 /*==========================================
  * Circumference initialization of mob
  *------------------------------------------*/
-int do_init_mob(bool minimal) {
+int CMob::init(bool minimal) {
 	// Initialize the mob database
 	memset(mob->db_data,0,sizeof(mob->db_data)); //Clear the array
 	mob->db_data[0] = (struct mob_db*)aCalloc(1, sizeof (struct mob_db)); //This mob is used for random spawns
@@ -4921,7 +4933,7 @@ int do_init_mob(bool minimal) {
 	return 0;
 }
 
-void mob_destroy_mob_db(int index)
+void CMob::destroy_mob_db(int index)
 {
 	struct mob_db *data = mob->db_data[index];
 	aFree(data);
@@ -4931,7 +4943,7 @@ void mob_destroy_mob_db(int index)
 /*==========================================
  * Clean memory usage.
  *------------------------------------------*/
-int do_final_mob(void)
+int CMob::final(void)
 {
 	int i;
 	if (mob->dummy)
@@ -5004,108 +5016,5 @@ void mob_defaults(void) {
 	memcpy(mob->splendide, mob_splendide, sizeof(mob->splendide));
 	memcpy(mob->mora, mob_mora, sizeof(mob->mora));
 
-	/* */
-	mob->reload = mob_reload;
-	mob->init = do_init_mob;
-	mob->final = do_final_mob;
-	/* */
-	mob->db = mob_db;
-	mob->chat = mob_chat;
-	mob->makedummymobdb = mob_makedummymobdb;
-	mob->spawn_guardian_sub = mob_spawn_guardian_sub;
-	mob->skill_id2skill_idx = mob_skill_id2skill_idx;
-	mob->db_searchname = mobdb_searchname;
-	mob->db_searchname_array_sub = mobdb_searchname_array_sub;
-	mob->mvptomb_create = mvptomb_create;
-	mob->mvptomb_destroy = mvptomb_destroy;
-	mob->db_searchname_array = mobdb_searchname_array;
-	mob->db_checkid = mobdb_checkid;
-	mob->get_viewdata = mob_get_viewdata;
-	mob->parse_dataset = mob_parse_dataset;
-	mob->spawn_dataset = mob_spawn_dataset;
-	mob->get_random_id = mob_get_random_id;
-	mob->ksprotected = mob_ksprotected;
-	mob->once_spawn_sub = mob_once_spawn_sub;
-	mob->once_spawn = mob_once_spawn;
-	mob->once_spawn_area = mob_once_spawn_area;
-	mob->spawn_guardian = mob_spawn_guardian;
-	mob->spawn_bg = mob_spawn_bg;
-	mob->can_reach = mob_can_reach;
-	mob->linksearch = mob_linksearch;
-	mob->delayspawn = mob_delayspawn;
-	mob->setdelayspawn = mob_setdelayspawn;
-	mob->count_sub = mob_count_sub;
-	mob->spawn = mob_spawn;
-	mob->can_changetarget = mob_can_changetarget;
-	mob->target = mob_target;
-	mob->ai_sub_hard_activesearch = mob_ai_sub_hard_activesearch;
-	mob->ai_sub_hard_changechase = mob_ai_sub_hard_changechase;
-	mob->ai_sub_hard_bg_ally = mob_ai_sub_hard_bg_ally;
-	mob->ai_sub_hard_lootsearch = mob_ai_sub_hard_lootsearch;
-	mob->warpchase_sub = mob_warpchase_sub;
-	mob->ai_sub_hard_slavemob = mob_ai_sub_hard_slavemob;
-	mob->unlocktarget = mob_unlocktarget;
-	mob->randomwalk = mob_randomwalk;
-	mob->warpchase = mob_warpchase;
-	mob->ai_sub_hard = mob_ai_sub_hard;
-	mob->ai_sub_hard_timer = mob_ai_sub_hard_timer;
-	mob->ai_sub_foreachclient = mob_ai_sub_foreachclient;
-	mob->ai_sub_lazy = mob_ai_sub_lazy;
-	mob->ai_lazy = mob_ai_lazy;
-	mob->ai_hard = mob_ai_hard;
-	mob->setdropitem = mob_setdropitem;
-	mob->setlootitem = mob_setlootitem;
-	mob->delay_item_drop = mob_delay_item_drop;
-	mob->item_drop = mob_item_drop;
-	mob->timer_delete = mob_timer_delete;
-	mob->deleteslave_sub = mob_deleteslave_sub;
-	mob->deleteslave = mob_deleteslave;
-	mob->respawn = mob_respawn;
-	mob->log_damage = mob_log_damage;
-	mob->damage = mob_damage;
-	mob->dead = mob_dead;
-	mob->revive = mob_revive;
-	mob->guardian_guildchange = mob_guardian_guildchange;
-	mob->random_class = mob_random_class;
-	mob->class_change = mob_class_change;
-	mob->heal = mob_heal;
-	mob->warpslave_sub = mob_warpslave_sub;
-	mob->warpslave = mob_warpslave;
-	mob->countslave_sub = mob_countslave_sub;
-	mob->countslave = mob_countslave;
-	mob->summonslave = mob_summonslave;
-	mob->getfriendhprate_sub = mob_getfriendhprate_sub;
-	mob->getfriendhprate = mob_getfriendhprate;
-	mob->getmasterhpltmaxrate = mob_getmasterhpltmaxrate;
-	mob->getfriendstatus_sub = mob_getfriendstatus_sub;
-	mob->getfriendstatus = mob_getfriendstatus;
-	mob->skill_use = mobskill_use;
-	mob->skill_event = mobskill_event;
-	mob->is_clone = mob_is_clone;
-	mob->clone_spawn = mob_clone_spawn;
-	mob->clone_delete = mob_clone_delete;
-	mob->drop_adjust = mob_drop_adjust;
-	mob->item_dropratio_adjust = item_dropratio_adjust;
-	mob->lookup_const = mob_lookup_const;
-	mob->get_const = mob_get_const;
-	mob->readdb = mob_readdb;
-	mob->read_libconfig = mob_read_libconfig;
-	mob->read_db_additional_fields = mob_read_db_additional_fields;
-	mob->read_db_sub = mob_read_db_sub;
-	mob->read_db_drops_sub = mob_read_db_drops_sub;
-	mob->read_db_mvpdrops_sub = mob_read_db_mvpdrops_sub;
-	mob->read_db_mode_sub = mob_read_db_mode_sub;
-	mob->read_db_stats_sub = mob_read_db_stats_sub;
-	mob->name_constants = mob_name_constants;
-	mob->readdb_mobavail = mob_readdb_mobavail;
-	mob->read_randommonster = mob_read_randommonster;
-	mob->parse_row_chatdb = mob_parse_row_chatdb;
-	mob->readchatdb = mob_readchatdb;
-	mob->parse_row_mobskilldb = mob_parse_row_mobskilldb;
-	mob->readskilldb = mob_readskilldb;
-	mob->readdb_race2 = mob_readdb_race2;
-	mob->readdb_itemratio = mob_readdb_itemratio;
-	mob->load = mob_load;
-	mob->clear_spawninfo = mob_clear_spawninfo;
-	mob->destroy_mob_db = mob_destroy_mob_db;
+	
 }
