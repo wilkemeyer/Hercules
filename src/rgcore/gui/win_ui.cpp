@@ -30,7 +30,7 @@ using namespace rgCore::Logging;
 
 #define WNDCLASSNAME "roorgServerWindowCls"
 #define WND_WIDTH 1024
-#define WND_HEIGHT 768
+#define WND_HEIGHT 800
 #define WND_MAX_LOGLINES (WND_HEIGHT - 80)/16
 #define WND_MAX_LOGLINELENGTH 72
 
@@ -137,6 +137,9 @@ win_ui::win_ui(){
 
 	}
 
+	// Init Infobox
+	infobox::init();
+
 	// Set Log Hook
 	((coreLogger*)g_globalLogger)->registerHook(coreLogger::LOGLEVEL_ALL, this, win_ui::logsys_onLogLine);
 
@@ -151,6 +154,8 @@ win_ui::~win_ui(){
 	// Unregister Log Hook
 	((coreLogger*)g_globalLogger)->unregisterHook(coreLogger::LOGLEVEL_ALL, this, win_ui::logsys_onLogLine);
 
+	// Final Infobox
+	infobox::final();
 
 	// Free up allocated ressources
 	if(m_blackpen != NULL)
@@ -437,58 +442,56 @@ LRESULT CALLBACK win_ui::wndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 //////
 void win_ui::onWMPaint(){
 	PAINTSTRUCT ps;
-	HDC hdc;
+	HDC hdc, bufHDC;
+	HBITMAP bufBMP, oldBMP;
+	RECT rc;
 
 	hdc = BeginPaint(m_hWnd, &ps);
+
+	GetClientRect(m_hWnd, &rc);
+
+	bufHDC = CreateCompatibleDC(ps.hdc);
+	bufBMP = CreateCompatibleBitmap(ps.hdc, rc.right-rc.left, rc.bottom-rc.top);
+	oldBMP = (HBITMAP)SelectObject(bufHDC, bufBMP);
+
+	FillRect(bufHDC, &rc, WHITE_BRUSH);
+	//SetBkMode(bufHDC, TRANSPARENT);
+	//SetTextColor(bufHDC, GetSysColor(COLOR_WINDOWTEXT));
+	///
+	
 	//
-	this->logsys_drawLog(hdc);
+	this->logsys_drawLog(bufHDC);
 	
 	// Termination line Over Console Input Box
 	{
-		HPEN hPenOld = (HPEN)SelectObject(hdc, m_blackpen);
-		MoveToEx(hdc, 0, WND_HEIGHT-80, NULL);
-		LineTo(hdc, WND_WIDTH, WND_HEIGHT-80);
-		SelectObject(hdc, hPenOld);
+		HPEN hPenOld = (HPEN)SelectObject(bufHDC, m_blackpen);
+		MoveToEx(bufHDC, 0, WND_HEIGHT-80, NULL);
+		LineTo(bufHDC, WND_WIDTH, WND_HEIGHT-80);
+		SelectObject(bufHDC, hPenOld);
 
-		TextOutf(hdc, false, 3, WND_HEIGHT-75, ">"); // 
+		TextOutf(bufHDC, false, 3, WND_HEIGHT-75, ">"); // 
 	}
 
-	// InfoBox
-	{
-		HPEN hPenOld = (HPEN)SelectObject(hdc, m_blackpen);
-		Rectangle(hdc, 720, 20, 1000,600);
-
-		SetTextColor(hdc, RGB(0, 0, 0));
-
-		int y = 24;
-
-		// App Header (name + build date)
-		TextOutf(hdc, false, 725, y, rgCore_getAppName());
-		y += 16;
-		TextOutf(hdc, false, 725, y, "Build Date: %s %s", __DATE__, __TIME__);
-		y += 24;
-
-		// Draw Uptime
-		size_t up_days, up_hours, up_minutes, up_seconds;
-		size_t CurTime = Time::tick_get() / 1000;
-		up_days = CurTime/86400;
-		CurTime = CurTime%86400;
-		up_hours= CurTime/3600;
-		CurTime = CurTime%3600;
-		up_minutes = CurTime/60;
-		CurTime = CurTime%60;
-		up_seconds = CurTime;
-
-		TextOutf(hdc, false, 725, y, "Uptime: %ud%02u:%02u:%02u", up_days, up_hours, up_minutes, up_seconds);
-		y+=24;
-
-		SelectObject(hdc, hPenOld);
-	}
+	
+	// Draw Infobox
+	infobox::draw(this, bufHDC);
+	
 
 
+	// Copy Buffer to real HDC
+	BitBlt(ps.hdc,
+		   rc.left, rc.top,
+		   rc.right-rc.left, rc.bottom-rc.top,
+		   bufHDC,
+		   0, 0,
+		   SRCCOPY);
 
 	EndPaint(m_hWnd, &ps);
 	
+	SelectObject(bufHDC, oldBMP);
+	DeleteObject(bufBMP);
+	DeleteDC(bufHDC);
+
 }//end: onWMPaint()
 
 

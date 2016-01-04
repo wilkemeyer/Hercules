@@ -128,6 +128,9 @@
     <ClCompile Include="rbdb\strdb.cpp">
       <Filter>Source Files\rbdb</Filter>
     </ClCompile>
+    <ClCompile Include="gui\infobox.cpp">
+      <Filter>Source Files\gui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -246,6 +249,9 @@
     </ClInclude>
     <ClInclude Include="mt_util\rwlock.hpp">
       <Filter>Header Files\MT/Util</Filter>
+    </ClInclude>
+    <ClInclude Include="gui\infobox.h">
+      <Filter>Header Files\gui</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

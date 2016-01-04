@@ -19,6 +19,7 @@ private:
 
 
 private:
+	friend class infobox;
 	// Text Utility Functions
 	void TextOutf(HDC dc, bool underlined, int x, int y, const char *msg, ...);
 	HPEN m_blackpen;
@@ -67,15 +68,6 @@ private:
 	void onCMDWindowAutoRefresh();
 	void onCMDWindowClear();
 
-
-
-
-private:
-	//
-	// Infobox 
-	//
-	static void infobox_init();
-	static void infobox_final();
 	
 
 private:
@@ -92,6 +84,7 @@ private:
 
 	void logsys_drawLog(HDC hdc); // onDraw()
 	void logsys_clearHistory(); // 
+
 
 };
 

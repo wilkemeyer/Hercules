@@ -11,7 +11,7 @@ public:
 
 	static void init();
 	static void final();
-	//static void getCounters(size_t *numTotal, size_t *numFree, size_t *numPeak);
+	static void getCounters(size_t *numTotal, size_t *numFree, size_t *numPeak);
 
 	/** 
 	 * TimerProc type

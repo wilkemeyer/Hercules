@@ -94,3 +94,6 @@
 #include "network/rgNet.h"
 #include "network/netBuffer.h"
 #include "network/PendingIO.h"
+
+// GUI 
+#include "gui/infobox.h"

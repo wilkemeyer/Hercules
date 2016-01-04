@@ -171,7 +171,7 @@ void timer::final(){
 
 
 /* Stats of Pool */
-/*void timer::getCounters(size_t *numTotal, size_t *numFree, size_t *numPeak){
+void timer::getCounters(size_t *numTotal, size_t *numFree, size_t *numPeak){
 	if(g_initialized == false){
 		*numTotal = 0;
 		*numFree = 0;
@@ -182,7 +182,7 @@ void timer::final(){
 	g_timerPool->getCounters(numTotal, numFree, numPeak);
 
 }//end: timer_getCounters()
-*/
+
 
 ////
 //// timerList Methods ( list )

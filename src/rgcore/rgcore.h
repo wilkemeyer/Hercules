@@ -24,6 +24,7 @@ void rgCore_idleLoop();
 
 const char *rgCore_getAppName();
 
+
 //
 // --
 //
@@ -32,4 +33,5 @@ struct rgCoreSettings {
 	bool poolEnforceLargePages;
 };
 extern struct rgCoreSettings rgCore_settings;
+
 
