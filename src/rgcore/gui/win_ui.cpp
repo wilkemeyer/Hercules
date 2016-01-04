@@ -79,9 +79,9 @@ win_ui::win_ui(){
 	// Create Window
 	char wndTitle[256];
 #ifdef _DEBUG
-	sprintf(wndTitle, "%s (DEBUG)", rgCore_getAppName());
+	sprintf(wndTitle, "%s (DEBUG) - %s %s", rgCore_getAppName(), __DATE__, __TIME__);
 #else
-	sprintf(wndTitle, "%s", rgCore_getAppName());
+	sprintf(wndTitle, "%s - %s %s", rgCore_getAppName(), __DATE__, __TIME__);
 #endif
 	m_hWnd = CreateWindow(WNDCLASSNAME,
 						wndTitle, 
