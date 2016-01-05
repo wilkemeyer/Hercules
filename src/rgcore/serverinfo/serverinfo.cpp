@@ -177,14 +177,39 @@ struct _SERVERINFO *ServerInfo::getSelf(){
 
 
 struct _SERVERINFO *ServerInfo::getBySID(int SID){
-	if(SID > SERVERID_MAX){
-#ifdef _DEBUG
+	struct _SERVERINFO *sinfo; 
+		if(SID > SERVERID_MAX) {
+#ifdef _DEBUG 
+				auto dbg = debugInfoGet(_ReturnAddress()); 
+				putErr("ServerInfo::getBySID(%u) Out of Range ( > SERVERID_MAX ) - called by %s in %s:%u\n", SID, dbg->func, dbg->file, dbg->line); 
+#endif 
+				sinfo = NULL; 
+		} else {
+				sinfo = m_data[SID]; 
+		}
+
+	return sinfo;
+}
+
+
+ServerType ServerInfo::getServerType(int SID) {
+	struct _SERVERINFO *sinfo;
+	if(SID > SERVERID_MAX) {
+#ifdef _DEBUG 
 		auto dbg = debugInfoGet(_ReturnAddress());
 		putErr("ServerInfo::getBySID(%u) Out of Range ( > SERVERID_MAX ) - called by %s in %s:%u\n", SID, dbg->func, dbg->file, dbg->line);
-#endif
-		return NULL;
+#endif 
+		sinfo = NULL;
+	} else {
+		sinfo = m_data[SID];
 	}
+
+	if(sinfo == NULL)
+		return stUnknown;
+
+	return (ServerType)(sinfo->Type);
 }
+
 
 
 } } //end namespaces

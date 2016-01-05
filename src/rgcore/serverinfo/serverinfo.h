@@ -5,11 +5,13 @@ namespace rgCore { namespace serverinfo {
 #define SERVERID_MAX 1023
 
 typedef enum ServerType {
-	stOther = 0,
+	stUnknown = 0,
 	stAccount = 1,
 	stCharacter = 2,
 	stZone = 3,
 	stInter = 4,
+	//
+	stOther = 50
 } ServerType;
 
 
