@@ -34,6 +34,7 @@
     <ClCompile Include="rbdb\strdb.cpp" />
     <ClCompile Include="rgcore.cpp" />
     <ClCompile Include="roalloc.cpp" />
+    <ClCompile Include="serverinfo\serverinfo.cpp" />
     <ClCompile Include="sqldb\asyncDB.cpp" />
     <ClCompile Include="sqldb\syncDB.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -81,6 +82,7 @@
     <ClInclude Include="rgcore.h" />
     <ClInclude Include="rgcore_api.h" />
     <ClInclude Include="roalloc.h" />
+    <ClInclude Include="serverinfo\serverinfo.h" />
     <ClInclude Include="sqldb\asyncDB.h" />
     <ClInclude Include="sqldb\syncDB.h" />
     <ClInclude Include="stdafx.h" />

@@ -468,17 +468,26 @@ int main (int argc, char **argv) {
 		// Initialize rgCore
 		//
 		char *appName;
+		rgCore::serverinfo::ServerType ownType;
+
 		if(SERVER_TYPE == SERVER_TYPE_MAP){
 			appName = "MapServer";
+			ownType = serverinfo::ServerType::stZone;
+
 		}else if(SERVER_TYPE == SERVER_TYPE_CHAR){
 			appName = "CharServer";
+			ownType = serverinfo::ServerType::stCharacter;
+
 		}else if(SERVER_TYPE == SERVER_TYPE_LOGIN){
 			appName = "LoginServer";
+			ownType = serverinfo::ServerType::stAccount;
+
 		}else{
 			appName = "Unknown";
+			ownType = serverinfo::ServerType::stOther;
 		}
 
-		rgCore_init(appName);
+		rgCore_init(ownType, appName);
 	}
 
 

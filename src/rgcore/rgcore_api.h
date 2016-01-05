@@ -97,3 +97,6 @@
 
 // GUI 
 #include "gui/infobox.h"
+
+//
+#include "serverinfo/serverinfo.h"

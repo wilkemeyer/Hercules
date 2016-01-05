@@ -69,6 +69,12 @@
     <Filter Include="Source Files\rbdb">
       <UniqueIdentifier>{abd061f7-c0e3-4242-b5f8-871db0aa344b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\serverinfo">
+      <UniqueIdentifier>{0455f31d-9103-45b6-9a59-86793b8cd990}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\serverinfo">
+      <UniqueIdentifier>{e267863b-c6ee-43bd-9908-d4cbb63c0b44}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="rgcore.cpp">
@@ -130,6 +136,9 @@
     </ClCompile>
     <ClCompile Include="gui\infobox.cpp">
       <Filter>Source Files\gui</Filter>
+    </ClCompile>
+    <ClCompile Include="serverinfo\serverinfo.cpp">
+      <Filter>Source Files\serverinfo</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -252,6 +261,9 @@
     </ClInclude>
     <ClInclude Include="gui\infobox.h">
       <Filter>Header Files\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="serverinfo\serverinfo.h">
+      <Filter>Header Files\serverinfo</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

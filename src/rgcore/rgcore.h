@@ -11,7 +11,7 @@
 
 
 // Platformlib Init:
-void rgCore_init(const char *appName);
+void rgCore_init(int ownServerType, const char *appName);
 void rgCore_final();
 
 // Note: calling this proc will close the GUI! 

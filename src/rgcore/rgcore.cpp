@@ -3,6 +3,7 @@
 using namespace rgCore;
 using namespace rgCore::Time;
 using namespace rgCore::gui;
+using namespace rgCore::serverinfo;
 
 //
 struct rgCoreSettings rgCore_settings;
@@ -22,7 +23,7 @@ static void rgCore_readConfig(){
 }//end: rgCore_readConfig()
 
 
-void rgCore_init(const char *appName){
+void rgCore_init(int ownServerType, const char *appName){
 
 	// Assign AppName
 	strncpy_s(g_appName, appName, sizeof(g_appName));
@@ -30,7 +31,6 @@ void rgCore_init(const char *appName){
 	// Clean & Read Core Settings:
 	memset(&rgCore_settings, 0x00, sizeof(struct rgCoreSettings));
 	rgCore_readConfig();
-
 
 	// Global Core Logger:
 	Logging::coreLogger::init();
@@ -64,7 +64,7 @@ void rgCore_init(const char *appName){
 
 	}
 
-
+	
 	// Initialzie Other Subsystems:
 	tick_init();
 	timer::init();
@@ -87,10 +87,24 @@ void rgCore_init(const char *appName){
 	g_winUI = new win_ui();
 
 
+	// Initilize ServerInfo
+	{
+		int MySID = (int)iniGetAppInteger("Identification", "MYSID", 0);
+		char dsn[256];
+		iniGetAppString("Identification", "DSN ServerInfo", "Driver={SQL Server};Server=localhost;Database=GlobalInfo;Uid=Ragnarok;Pwd=Ragnarok", dsn, sizeof(dsn));
+
+		g_ServerInfo = new ServerInfo(MySID, (ServerType) ownServerType, dsn);
+	}
+
 }//end: rgCore_init()
 
 
 void rgCore_final() {
+
+	if(g_ServerInfo != NULL){
+		delete g_ServerInfo;
+		g_ServerInfo = NULL;
+	}
 
 	// Destroy UI & Show Console Window
 	if(g_winUI != NULL){
