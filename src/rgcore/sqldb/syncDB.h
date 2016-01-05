@@ -36,7 +36,7 @@ namespace rgCore { namespace sqldb {
  **
  **/
 
-class syncDBException{
+class syncDBException : public roAlloc{
 private:
 char errormsg[4096];
 	int sqlerrocde;
@@ -54,7 +54,7 @@ public:
 
 
 
-class syncDBStatement{
+class syncDBStatement : public roAlloc {
 	friend class syncDB;
 
 private:
@@ -161,7 +161,7 @@ public:
 
 
 // legacy DB Interface
-class syncDB{
+class syncDB : public roAlloc{
 private:
 	HENV env;
 	HDBC dbc;
