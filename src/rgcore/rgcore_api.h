@@ -98,5 +98,11 @@
 // GUI 
 #include "gui/infobox.h"
 
-//
+// Crypto
+#include "crypto/CRijndael.h"
+
+// RO-Specific
 #include "serverinfo/serverinfo.h"
+
+
+

@@ -75,6 +75,12 @@
     <Filter Include="Source Files\serverinfo">
       <UniqueIdentifier>{e267863b-c6ee-43bd-9908-d4cbb63c0b44}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\crypto">
+      <UniqueIdentifier>{65dc4809-22ca-4f93-8055-5df7a8e06dee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\crypto">
+      <UniqueIdentifier>{ef933273-a185-4e8e-b2be-a8d65023d741}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="rgcore.cpp">
@@ -139,6 +145,9 @@
     </ClCompile>
     <ClCompile Include="serverinfo\serverinfo.cpp">
       <Filter>Source Files\serverinfo</Filter>
+    </ClCompile>
+    <ClCompile Include="crypto\CRijndael.cpp">
+      <Filter>Source Files\crypto</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -264,6 +273,9 @@
     </ClInclude>
     <ClInclude Include="serverinfo\serverinfo.h">
       <Filter>Header Files\serverinfo</Filter>
+    </ClInclude>
+    <ClInclude Include="crypto\CRijndael.h">
+      <Filter>Header Files\crypto</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
