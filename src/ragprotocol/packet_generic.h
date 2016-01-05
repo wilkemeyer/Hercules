@@ -1,0 +1,89 @@
+#pragma once
+#pragma pack(push, 1)
+
+enum {
+	HEADER_SC_NOTIFY_BAN = 0x81,
+	HEADER_PING = 0x187,
+	HEADER_SERVER_ENTRY_ACK = 0x8f,
+	HEADER_SERVER_ENTRY = 0x2904,
+
+};
+
+
+typedef struct PACKET_SC_NOTIFY_BAN {
+	short			PacketType;
+	unsigned char	ErrorCode;
+
+
+	enum {
+		BAN_UNFAIR = 0x0,
+		BAN_SERVER_SHUTDOWN = 0x1,
+		BAN_ANOTHER_LOGIN = 0x2,
+		BAN_DETECTED_SPEEDHACK = 0x3,
+		BAN_PC_OVERFLOW = 0x4,
+		BAN_UNDER_AGE = 0x5,
+		BAN_NOT_SETTLED = 0x6,
+		BAN_ACCOUNT_BUSY = 0x7,
+		BAN_INFORMATION_REMAINED = 0x8,
+		BAN_IP_OVERFLOW = 0x9,
+		BAN_PAY_OUT = 0xa,
+		BAN_PAY_SUSPEND = 0xb,
+		BAN_PAY_CHANGE = 0xc,
+		BAN_PAY_WRONGIP = 0xd,
+		BAN_PAY_PNGAMEROOM = 0xe,
+		BAN_OP_FORCE = 0xf,
+		BAN_JAPAN_REFUSE1 = 0x10,
+		BAN_JAPAN_REFUSE2 = 0x11,
+		BAN_INFORMATION_REMAINED_ANOTHER_ACCOUNT = 0x12,
+		BAN_PC_IP_UNFAIR = 0x64,
+		BAN_PC_IP_COUNT_ALL = 0x65,
+		BAN_PC_IP_COUNT = 0x66,
+		BAN_GRAVITY_MEM_AGREE = 0x67,
+		BAN_GAME_MEM_AGREE = 0x68,
+		BAN_HAN_VALID = 0x69,
+		BAN_PC_IP_LIMIT_ACCESS = 0x6a,
+		BAN_OVER_CHARACTER_LIST = 0x6b,
+		BAN_IP_BLOCK = 0x6c,
+		BAN_INVALID_PWD_CNT = 0x6d,
+		BAN_NOT_ALLOWED_JOBCLASS = 0x6e,
+		BAN_MAX_CONNECT_USER_COUNT = 0x6f,
+		BAN_INVALID_SECOND_PWD = 0x70,
+		BAN_SHUTDOWN_TEENAGER = 0x71,
+		BAN_END = 0xff
+	};
+} PACKET_SC_NOTIFY_BAN;
+
+typedef struct PACKET_PING {
+	short PacketType;
+	unsigned long AID;
+} PACKET_PING;
+
+typedef struct PACKET_INFO_REMAINTIME {
+	short PacketType;
+	int AID;
+	int Type;
+	int RemainTime;
+} PACKET_INFO_REMAINTIME;
+
+typedef struct PACKET_RES_REMAINTIME {
+	short PacketType;
+	int AID;
+	int Result;
+	int ExpirationDate;
+	int RemainTime;
+} PACKET_RES_REMAINTIME;
+
+typedef struct PACKET_SERVER_ENTRY_ACK {
+	short Header;
+	int AID;
+} PACKET_SERVER_ENTRY_ACK;
+
+typedef struct PACKET_XX_DISCONNECT {
+	short PacketType;
+} PACKET_XX_DISCONNECT;
+
+typedef struct PACKET_XX_CONNECT {
+	short PacketType;
+} PACKET_XX_CONNECT;
+
+#pragma pack(pop)
