@@ -552,9 +552,9 @@ void win_ui::logsys_drawLog(HDC hdc){
 
 			case coreLogger::LOGLEVEL_ERROR:
 			case coreLogger::LOGLEVEL_FATALERROR:
-				xoffset = 61;
+				xoffset = 2;
 				SetTextColor(hdc, RGB(0xff, 0x00, 0x00));
-				TextOut(hdc, 2, c*16, "[Error]", 7);
+				//TextOut(hdc, 2, c*16, "[Error]", 7);
 			break;
 	
 			default:
