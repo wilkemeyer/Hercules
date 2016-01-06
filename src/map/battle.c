@@ -2,7 +2,7 @@
  * This file is part of Hercules.
  * http://herc.ws - http://github.com/HerculesWS/Hercules
  *
- * Copyright (C) 2012-2015  Hercules Dev Team
+ * Copyright (C) 2012-2016  Hercules Dev Team
  * Copyright (C)  Athena Dev Teams
  *
  * Hercules is free software: you can redistribute it and/or modify
@@ -1903,7 +1903,7 @@ int CBattle::calc_skillratio(int attack_type, struct block_list *src, struct blo
 					skillratio += 10 * skill_lv;
 					break;
 				case KN_SPEARSTAB:
-					skillratio += 15 * skill_lv;
+					skillratio += 20 * skill_lv;
 					break;
 				case KN_SPEARBOOMERANG:
 					skillratio += 50*skill_lv;
@@ -6897,8 +6897,8 @@ static const struct battle_data {
 	{ "max_walk_speed",                     &battle_config.max_walk_speed,                  300,    100,    100*DEFAULT_WALK_SPEED, },
 	{ "max_lv",                             &battle_config.max_lv,                          99,     0,      MAX_LEVEL,      },
 	{ "aura_lv",                            &battle_config.aura_lv,                         99,     0,      INT_MAX,        },
-	{ "max_hp",                             &battle_config.max_hp,                          32500,  100,    1000000000,     },
-	{ "max_sp",                             &battle_config.max_sp,                          32500,  100,    1000000000,     },
+	{ "max_hp",                             &battle_config.max_hp,                          1000000, 100,   21474836,       },
+	{ "max_sp",                             &battle_config.max_sp,                          1000000, 100,   21474836,       },
 	{ "max_cart_weight",                    &battle_config.max_cart_weight,                 8000,   100,    1000000,        },
 	{ "max_parameter",                      &battle_config.max_parameter,                   99,     10,     10000,          },
 	{ "max_baby_parameter",                 &battle_config.max_baby_parameter,              80,     10,     10000,          },
@@ -7168,6 +7168,9 @@ static const struct battle_data {
 	{ "costume_refine_def",                 &battle_config.costume_refine_def,              1,      0,      1,              },
 	{ "shadow_refine_def",                  &battle_config.shadow_refine_def,               1,      0,      1,              },
 	{ "shadow_refine_atk",                  &battle_config.shadow_refine_atk,               1,      0,      1,              },
+	{ "min_body_style",                     &battle_config.min_body_style,                  0,      0,      SHRT_MAX,       },
+	{ "max_body_style",                     &battle_config.max_body_style,                  4,      0,      SHRT_MAX,       },
+	{ "save_body_style",                    &battle_config.save_body_style,                 0,      0,      1,              },
 };
 #ifndef STATS_OPT_OUT
 /**

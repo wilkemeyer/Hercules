@@ -1023,7 +1023,7 @@ void CClif::set_unit_idle(struct block_list* bl, struct map_session_data *tsd, e
 	}
 #endif
 #if PACKETVER >= 20150513
-	p.body = 0;
+	p.body = vd->body_style;
 #endif
 
 	clif->send(&p,sizeof(p),tsd?&tsd->bl:bl,target);
@@ -1162,7 +1162,7 @@ void CClif::spawn_unit(struct block_list* bl, enum send_target target) {
 	}
 #endif
 #if PACKETVER >= 20150513
-	p.body = 0;
+	p.body = vd->body_style;
 #endif
 	if( disguised(bl) ) {
 		nullpo_retv(sd);
@@ -1252,7 +1252,7 @@ void CClif::set_unit_walking(struct block_list* bl, struct map_session_data *tsd
 	}
 #endif
 #if PACKETVER >= 20150513
-	p.body = 0;
+	p.body = vd->body_style;
 #endif
 
 	clif->send(&p,sizeof(p),tsd?&tsd->bl:bl,target);
@@ -1381,6 +1381,8 @@ bool CClif::spawn(struct block_list *bl)
 
 	if (vd->cloth_color)
 		clif->refreshlook(bl,bl->id,LOOK_CLOTHES_COLOR,vd->cloth_color,AREA_WOS);
+	if (vd->body_style)
+		clif->refreshlook(bl,bl->id,LOOK_BODY2,vd->body_style,AREA_WOS);
 
 	switch (bl->type) {
 		case BL_PC:
@@ -1645,6 +1647,8 @@ void CClif::move2(struct block_list *bl, struct view_data *vd, struct unit_data 
 
 	if(vd->cloth_color)
 		clif->refreshlook(bl,bl->id,LOOK_CLOTHES_COLOR,vd->cloth_color,AREA_WOS);
+	if (vd->body_style)
+		clif->refreshlook(bl,bl->id,LOOK_BODY2,vd->body_style,AREA_WOS);
 
 	switch(bl->type) {
 		case BL_PC:
@@ -3084,6 +3088,11 @@ void CClif::changelook(struct block_list *bl,int type,int val)
 					vd->cloth_color = 0;
 				if (sd->sc.option&OPTION_OKTOBERFEST /* TODO: config? */)
 					vd->cloth_color = 0;
+				if (vd->body_style && (
+					sd->sc.option&OPTION_WEDDING || sd->sc.option&OPTION_XMAS ||
+					sd->sc.option&OPTION_SUMMER || sd->sc.option&OPTION_HANBOK ||
+					sd->sc.option&OPTION_OKTOBERFEST))
+					vd->body_style = 0;
 			break;
 			case LOOK_HAIR:
 				vd->hair_style = val;
@@ -3140,6 +3149,14 @@ void CClif::changelook(struct block_list *bl,int type,int val)
 		#else
 				vd->robe = val;
 		#endif
+			break;
+			case LOOK_BODY2:
+				if (val && (
+					sd->sc.option&OPTION_WEDDING || sd->sc.option&OPTION_XMAS ||
+					sd->sc.option&OPTION_SUMMER || sd->sc.option&OPTION_HANBOK ||
+					sd->sc.option&OPTION_OKTOBERFEST))
+					val = 0;
+				vd->body_style = val;
 			break;
 	}
 
@@ -4124,6 +4141,9 @@ void CClif::getareachar_unit(struct map_session_data* sd,struct block_list *bl) 
 
 	if (vd->cloth_color)
 		clif->refreshlook(&sd->bl,bl->id,LOOK_CLOTHES_COLOR,vd->cloth_color,SELF);
+	if (vd->body_style)
+		clif->refreshlook(&sd->bl,bl->id,LOOK_BODY2,vd->body_style,SELF);
+
 	switch (bl->type) {
 		case BL_PC:
 			{
@@ -8245,6 +8265,8 @@ void CClif::refresh(struct map_session_data *sd)
 
 	if (sd->vd.cloth_color)
 		clif->refreshlook(&sd->bl,sd->bl.id,LOOK_CLOTHES_COLOR,sd->vd.cloth_color,SELF);
+	if (sd->vd.body_style)
+		clif->refreshlook(&sd->bl,sd->bl.id,LOOK_BODY2,sd->vd.body_style,SELF);
 	if(homun_alive(sd->hd))
 		clif->send_homdata(sd,SP_ACK,0);
 	if( sd->md ) {
@@ -9087,6 +9109,8 @@ void CClif::pLoadEndAck(int fd, struct map_session_data *sd) {
 
 	if(sd->vd.cloth_color)
 		clif->refreshlook(&sd->bl,sd->bl.id,LOOK_CLOTHES_COLOR,sd->vd.cloth_color,SELF);
+	if (sd->vd.body_style)
+		clif->refreshlook(&sd->bl,sd->bl.id,LOOK_BODY2,sd->vd.body_style,SELF);
 	// item
 	clif->inventorylist(sd);  // inventory list first, otherwise deleted items in pc->checkitem show up as 'unknown item'
 	pc->checkitem(sd);

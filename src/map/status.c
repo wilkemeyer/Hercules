@@ -4926,7 +4926,7 @@ unsigned short CStatus::calc_matk(struct block_list *bl, struct status_change *s
 	if (sc->data[SC_MOONLIT_SERENADE])
 		matk += matk * sc->data[SC_MOONLIT_SERENADE]->val2 / 100;
 	if (sc->data[SC_MTF_MATK])
-		matk += matk * sc->data[SC_MTF_MATK]->val1 / 100;
+		matk += sc->data[SC_MTF_MATK]->val1;
 	if (sc->data[SC_MYSTICSCROLL])
 		matk += matk * sc->data[SC_MYSTICSCROLL]->val1 / 100;
 		
@@ -6499,6 +6499,7 @@ void CStatus::set_viewdata(struct block_list *bl, int class_)
 				sd->vd.hair_color = cap_value(sd->status.hair_color,0,battle_config.max_hair_color);
 				sd->vd.cloth_color = cap_value(sd->status.clothes_color,0,battle_config.max_cloth_color);
 				sd->vd.robe = sd->status.robe;
+				sd->vd.body_style = sd->status.body;
 				sd->vd.sex = sd->status.sex;
 
 				if ( sd->vd.cloth_color ) {
@@ -6513,6 +6514,11 @@ void CStatus::set_viewdata(struct block_list *bl, int class_)
 					if( sd->sc.option&OPTION_OKTOBERFEST /* TODO: config? */ )
 						sd->vd.cloth_color = 0;
 				}
+				if ( sd->vd.body_style && (
+					sd->sc.option&OPTION_WEDDING || sd->sc.option&OPTION_XMAS ||
+					sd->sc.option&OPTION_SUMMER || sd->sc.option&OPTION_HANBOK ||
+					sd->sc.option&OPTION_OKTOBERFEST))
+					sd->vd.body_style = 0;
 			} else if (vd)
 				memcpy(&sd->vd, vd, sizeof(struct view_data));
 			else
@@ -9438,6 +9444,7 @@ int CStatus::change_start(struct block_list *src, struct block_list *bl, enum sc
 				clif->changelook(bl,LOOK_WEAPON,0);
 				clif->changelook(bl,LOOK_SHIELD,0);
 				clif->changelook(bl,LOOK_CLOTHES_COLOR,vd->cloth_color);
+				clif->changelook(bl,LOOK_BODY2,0);
 				break;
 			case SC_KAAHI:
 				val4 = INVALID_TIMER;
@@ -9842,6 +9849,17 @@ int CStatus::change_start(struct block_list *src, struct block_list *bl, enum sc
 		}
 		calc_flag&=~SCB_DYE;
 	}
+
+#if 0 //Currently No SC's use this
+	if (calc_flag&SCB_BODY) {
+		//Reset Body Style
+		if (vd && vd->body_style) {
+			val4 = vd->body_style;
+			clif->changelook(bl,LOOK_BODY2,0);
+		}
+		calc_flag&=~SCB_BODY;
+	}
+#endif
 
 	if(!(flag&SCFLAG_NOICON) && !(flag&SCFLAG_LOADED && status->dbs->DisplayType[type]))
 		clif->status_change(bl,status->dbs->IconChangeTable[type],1,tick,(val_flag&1)?val1:1,(val_flag&2)?val2:0,(val_flag&4)?val3:0);
@@ -10726,6 +10744,14 @@ int CStatus::change_end_(struct block_list* bl, enum sc_type type, int tid, cons
 		calc_flag&=~SCB_DYE;
 	}
 
+#if 0 // Currently No SC's use this
+	if (calc_flag&SCB_BODY) { // Restore Body color
+		if (vd && !vd->body_style && sce->val4)
+			clif->changelook(bl,LOOK_BODY2,sce->val4);
+		calc_flag&=~SCB_BODY;
+	}
+#endif
+
 	//On Aegis, when turning off a status change, first goes the sc packet, then the option packet.
 	clif->sc_end(bl,bl->id,AREA,status->dbs->IconChangeTable[type]);
 
@@ -10739,6 +10765,7 @@ int CStatus::change_end_(struct block_list* bl, enum sc_type type, int tid, cons
 			clif->changelook(bl,LOOK_WEAPON,sd->vd.weapon);
 			clif->changelook(bl,LOOK_SHIELD,sd->vd.shield);
 			clif->changelook(bl,LOOK_CLOTHES_COLOR,cap_value(sd->status.clothes_color,0,battle_config.max_cloth_color));
+			clif->changelook(bl,LOOK_BODY2,cap_value(sd->status.body,0,battle_config.max_body_style));
 		}
 	}
 

@@ -14193,6 +14193,7 @@ BUILDIN(getlook)
 		case LOOK_SHIELD:        val = sd->status.shield;        break; //8
 		case LOOK_SHOES:                                         break; //9
 		case LOOK_ROBE:          val = sd->status.robe;          break; //12
+		case LOOK_BODY2:         val=sd->status.body;            break; //13
 	}
 
 	script_pushint(st,val);
@@ -15816,6 +15817,76 @@ BUILDIN(md5)
 	md5str = (char *)aMalloc((32+1)*sizeof(char));
 	MD5_String(tmpstr, md5str);
 	script_pushstr(st, md5str);
+	return true;
+}
+
+BUILDIN(swap)
+{
+	struct map_session_data *sd = NULL;
+	struct script_data *data1, *data2;
+	const char *varname1, *varname2;
+	int64 uid1, uid2;
+
+	data1 = script_getdata(st,2);
+	data2 = script_getdata(st,3);
+
+	if (!data_isreference(data1) || !data_isreference(data2) || reference_toconstant(data1) || reference_toconstant(data2)) {
+		st->state = END;
+		return true; // avoid print error message twice
+	}
+
+	if (reference_toparam(data1) || reference_toparam(data2)) {
+		ShowError("script:swap: detected parameter type constant.\n");
+		if (reference_toparam(data1))
+			script->reportdata(data1);
+		if (reference_toparam(data2))
+			script->reportdata(data2);
+		st->state = END;
+		return false;
+	}
+
+	varname1 = reference_getname(data1);
+	varname2 = reference_getname(data2);
+
+	if ((is_string_variable(varname1) && !is_string_variable(varname2)) || (!is_string_variable(varname1) && is_string_variable(varname2))) {
+		ShowError("script:swap: both sides must be same integer or string type.\n");
+		script->reportdata(data1);
+		script->reportdata(data2);
+		st->state = END;
+		return false;
+	}
+
+	if (not_server_variable(*varname1) || not_server_variable(*varname2)) {
+		sd = script->rid2sd(st);
+		if (sd == NULL)
+			return true; // avoid print error message twice
+	}
+
+	uid1 = reference_getuid(data1);
+	uid2 = reference_getuid(data2);
+
+	if (is_string_variable(varname1)) {
+		const char *value1, *value2;
+
+		value1 = script_getstr(st,2);
+		value2 = script_getstr(st,3);
+
+		if (strcmpi(value1, value2)) {
+			script->set_reg(st, sd, uid1, varname1, (void*)(value2), script_getref(st,3));
+			script->set_reg(st, sd, uid2, varname2, (void*)(value1), script_getref(st,2));
+		}
+	}
+	else {
+		int value1, value2;
+
+		value1 = script_getnum(st,2);
+		value2 = script_getnum(st,3);
+
+		if (value1 != value2) {
+			script->set_reg(st, sd, uid1, varname1, (void*)h64BPTRSIZE(value2), script_getref(st,3));
+			script->set_reg(st, sd, uid2, varname2, (void*)h64BPTRSIZE(value1), script_getref(st,2));
+		}
+	}
 	return true;
 }
 
@@ -19013,8 +19084,6 @@ BUILDIN(montransform) {
 
 	if (tick != 0) {
 		struct map_session_data *sd = script->id2sd(st, bl->id);
-		struct mob_db *monster =  mob->db(mob_id);
-		char msg[CHAT_SIZE_MAX];
 
 		if (sd == NULL)
 			return true;
@@ -19029,8 +19098,6 @@ BUILDIN(montransform) {
 			return true;
 		}
 
-		sprintf(msg, msg_sd(sd,1485), monster->name); // Traaaansformation-!! %s form!!
-		clif->ShowScript(&sd->bl, msg);
 		status_change_end(bl, SC_MONSTER_TRANSFORM, INVALID_TIMER); // Clear previous
 		sc_start2(NULL, bl, SC_MONSTER_TRANSFORM, 100, mob_id, type, tick);
 
@@ -20573,6 +20640,7 @@ void CScript::parse_builtin(void) {
 		BUILDIN_DEF(min, "i*"),
 		BUILDIN_DEF(max, "i*"),
 		BUILDIN_DEF(md5,"s"),
+		BUILDIN_DEF(swap,"rr"),
 		// [zBuffer] List of dynamic var commands --->
 		BUILDIN_DEF(getd,"s"),
 		BUILDIN_DEF(setd,"sv"),

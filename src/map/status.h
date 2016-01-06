@@ -1641,10 +1641,10 @@ enum si_type {
 	//SI_CHUSEOK_WEEKEND                     = 790,
 	//SI_ALL_LIGHTGUARD                      = 791,
 	//SI_ALL_LIGHTGUARD_COOL_TIME            = 792,
-	//SI_MTF_MHP                             = 793,
-	//SI_MTF_MSP                             = 794,
-	//SI_MTF_PUMPKIN                         = 795,
-	//SI_MTF_HITFLEE                         = 796,
+	SI_MTF_MHP                               = 793,
+	SI_MTF_MSP                               = 794,
+	SI_MTF_PUMPKIN                           = 795,
+	SI_MTF_HITFLEE                           = 796,
 	//SI_MTF_CRIDAMAGE2                      = 797,
 	//SI_MTF_SPDRAIN                         = 798,
 	//SI_ACUO_MINT_GUM                       = 799,
@@ -1923,6 +1923,9 @@ enum scb_flag
 	SCB_RANGE   = 0x10000000,
 	SCB_REGEN   = 0x20000000,
 	SCB_DYE     = 0x40000000, // force cloth-dye change to 0 to avoid client crashes.
+#if 0 // Currently No SC use it. Also, when this will be implemented, there will be need to change to 64bit variable
+	SCB_BODY    = 0x80000000, // Force bodysStyle change to 0
+#endif
 
 	SCB_BATTLE  = 0x3FFFFFFE,
 	SCB_ALL     = 0x3FFFFFFF
