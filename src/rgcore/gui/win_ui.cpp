@@ -32,7 +32,7 @@ using namespace rgCore::Logging;
 #define WND_WIDTH 1024
 #define WND_HEIGHT 800
 #define WND_MAX_LOGLINES (WND_HEIGHT - 80)/16
-#define WND_MAX_LOGLINELENGTH 72
+#define WND_MAX_LOGLINELENGTH 78
 
 win_ui::win_ui(){
 	WNDCLASSEX cls;
