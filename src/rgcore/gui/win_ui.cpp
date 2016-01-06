@@ -534,6 +534,7 @@ void win_ui::logsys_drawLog(HDC hdc){
 	HGDIOBJ hPrevFont = SelectFont(hdc, this->m_font_fixed);
 	int c = 0, xoffset;
 
+	COLORREF oldColor;
 
 	this->m_logLine_lock->lock();
 
@@ -542,24 +543,24 @@ void win_ui::logsys_drawLog(HDC hdc){
 		switch(it->level){
 			case coreLogger::LOGLEVEL_DEBUG:
 				xoffset = 2;
-				SetTextColor(hdc, RGB(0, 0, 255));
+				oldColor = SetTextColor(hdc, RGB(0, 0, 255));
 			break;
 
 			case coreLogger::LOGLEVEL_WARNING:
 				xoffset = 2;
-				SetTextColor(hdc, RGB(0xff, 0x66, 0x00));
+				oldColor = SetTextColor(hdc, RGB(0xff, 0x66, 0x00));
 			break;
 
 			case coreLogger::LOGLEVEL_ERROR:
 			case coreLogger::LOGLEVEL_FATALERROR:
 				xoffset = 2;
-				SetTextColor(hdc, RGB(0xff, 0x00, 0x00));
+				oldColor = SetTextColor(hdc, RGB(0xff, 0x00, 0x00));
 				//TextOut(hdc, 2, c*16, "[Error]", 7);
 			break;
 	
 			default:
 				xoffset = 2;
-				SetTextColor(hdc, RGB(0, 0, 0));
+				oldColor = SetTextColor(hdc, RGB(0, 0, 0));
 			break;
 
 		}
@@ -578,6 +579,8 @@ void win_ui::logsys_drawLog(HDC hdc){
 
 		TextOut(hdc, xoffset, c*16, it->line, (int) (it->szLine) );
 
+
+		SetTextColor(hdc, oldColor);
 
 		c++;
 	}
