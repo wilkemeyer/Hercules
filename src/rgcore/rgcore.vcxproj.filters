@@ -277,5 +277,8 @@
     <ClInclude Include="crypto\CRijndael.h">
       <Filter>Header Files\crypto</Filter>
     </ClInclude>
+    <ClInclude Include="IServerApplication.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

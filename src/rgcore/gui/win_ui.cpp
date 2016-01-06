@@ -402,7 +402,8 @@ LRESULT CALLBACK win_ui::wndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 					if(MessageBox(hWnd, "Close Ok?", "Attention", MB_ICONWARNING | MB_OKCANCEL) == IDOK) {
 						_lFORCEQUIT:
-						core->request_shutdown();	// Sets the termination flag in athena thread 
+						rgCore_getApplication()->requestShutdown();
+
 
 
 

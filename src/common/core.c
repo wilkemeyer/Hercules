@@ -19,6 +19,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "stdafx.h"
+#include "core.h"
 
 using namespace rgCore;
 
@@ -141,18 +142,6 @@ void signals_init (void) {
 #endif
 
 
-void request_shutdown(){
-	
-	if(shutdown_callback != NULL){
-		shutdown_callback();
-	
-	}else{
-		core->runflag = CORE_ST_STOP;// auto-shutdown
-
-	}
-}//end: request_shutdown()
-
-
 /**
  * Warns the user if executed as superuser (root)
  */
@@ -163,9 +152,6 @@ void usercheck(void) {
 }
 
 void core_defaults(void) {
-	
-	core->request_shutdown = request_shutdown;
-
 	nullpo_defaults();
 	sysinfo_defaults();
 	strlib_defaults();
@@ -360,15 +346,43 @@ void cmdline_defaults(void)
 }
 
 
+/*======================================
+ * CORE : EntryPoint
+ *--------------------------------------*/
+int main (int argc, char **argv) {
+	int ret;
 
-/****
- * Main Thread
- * 
- */
-DWORD __stdcall serverMain(util::thread *_self){
-	DWORD retval = EXIT_SUCCESS;
+	{// initialize program arguments
+		char *p1 = SERVER_NAME = argv[0];
+		char *p2 = p1;
+		while ((p1 = strchr(p2, '/')) != NULL || (p1 = strchr(p2, '\\')) != NULL) {
+			SERVER_NAME = ++p1;
+			p2 = p1;
+		}
+		core->arg_c = argc;
+		core->arg_v = argv;
+		core->runflag = CORE_ST_RUN;
+	}
+	core_defaults();
+	
+	set_server_type();
+	
 
-	putDbg("serverMain: Begin Initialization\n");
+	{
+		AthenaServerApplication athenaApp;
+
+		ret = rgCore_run(&athenaApp);
+
+	}
+
+	return ret;
+}//end: main()
+
+
+
+void AthenaServerApplication::init() {
+
+	putDbg("Begin Athena Core Initialization\n");
 
 	cmdline->init();
 
@@ -401,22 +415,28 @@ DWORD __stdcall serverMain(util::thread *_self){
 
 	sockt->init();
 
-	putDbg("serverMain: Begin Application Initialization\n");
+	putDbg("Finished Athena Core Initialization\n");
 
+	// Application Initializaiton
+	putDbg("Begin Application Initialization\n");
 	do_init(core->arg_c, core->arg_v);
+	putDbg("Application Initializaiton Finished\n");
+}//end: AthenaServerApplication::init()
 
 
-	putDbg("serverMain: Initializaiton Finished, Entering MainLoop\n");
+void AthenaServerApplication::final() {
 
-	// Main runtime cycle
-	while(core->runflag != CORE_ST_STOP) {
-		int next = timer->perform(timer->gettick_nocache());
-		sockt->perform(next);
-	}
+	putDbg("Begin Finalization\n");
 
-	putDbg("serverMain: Begin Finalization\n");
 
-	retval = (DWORD)do_final();
+	// Application Initializaiton
+	putDbg("Begin Application Finalization\n");
+	do_final();
+	putDbg("Application Finalization Finished\n");
+
+	putDbg("Begin Athena Core Finalization\n");
+
+	//
 	timer->final();
 	sockt->final();
 	DB->final();
@@ -425,108 +445,56 @@ DWORD __stdcall serverMain(util::thread *_self){
 	cmdline->final();
 	sysinfo->final();
 
-	putDbg("serverMain: Finished Finalization\n");
-
-	rgCore_releaseIdleLoop();
-
-	return retval;
-}//end: serverMain()
+	putDbg("Finished Athena Core Finalization\n");
+}//end: AthenaServerApplication::final()
 
 
-
-
-
-
-
-/*======================================
- * CORE : MAINROUTINE 
- * Tasks Performed:
- *  - Pre Init
- *  - rgCore Init
- *  - UI handling
- *  - rgCore Final
- *  - post Final
- *--------------------------------------*/
-int main (int argc, char **argv) {
-	{// initialize program arguments
-		char *p1 = SERVER_NAME = argv[0];
-		char *p2 = p1;
-		while ((p1 = strchr(p2, '/')) != NULL || (p1 = strchr(p2, '\\')) != NULL) {
-			SERVER_NAME = ++p1;
-			p2 = p1;
-		}
-		core->arg_c = argc;
-		core->arg_v = argv;
-		core->runflag = CORE_ST_RUN;
+void AthenaServerApplication::main() {
+	// Main runtime cycle
+	while(core->runflag != CORE_ST_STOP) {
+		int next = timer->perform(timer->gettick_nocache());
+		sockt->perform(next);
 	}
-	core_defaults();
-	
-	set_server_type();
-	
-	{
-		//
-		// Initialize rgCore
-		//
-		char *appName;
-		rgCore::serverinfo::ServerType ownType;
+}//end: AthenaServerApplicaiton::main()
 
-		if(SERVER_TYPE == SERVER_TYPE_MAP){
-			appName = "MapServer";
-			ownType = serverinfo::ServerType::stZone;
+void AthenaServerApplication::requestShutdown() {
 
-		}else if(SERVER_TYPE == SERVER_TYPE_CHAR){
-			appName = "CharServer";
-			ownType = serverinfo::ServerType::stCharacter;
+	if(shutdown_callback != NULL) {
+		shutdown_callback();
 
-		}else if(SERVER_TYPE == SERVER_TYPE_LOGIN){
-			appName = "LoginServer";
-			ownType = serverinfo::ServerType::stAccount;
+	} else {
+		core->runflag = CORE_ST_STOP;// auto-shutdown
 
-		}else{
-			appName = "Unknown";
-			ownType = serverinfo::ServerType::stOther;
-		}
-
-		rgCore_init(ownType, appName);
 	}
 
+}//end: AthenaServerApplication::requestShutdown()
 
-	// 
-	// Create serverMain Thread (old athena main)
-	//
-	util::thread *hServerMain = new util::thread("Athena Server Main", serverMain);
 
-	if(iniGetAppBoolean("serverMain Thread", "Disable Priority Boost", false) == true){
-		putLog("ServerMain Thread -> Disabling Time Steal (Priority Boost)!\n");
-		hServerMain->setTimeSteal(false);
+const char *AthenaServerApplication::getApplicationName() {
+	char *appName;
+
+	switch(SERVER_TYPE){
+		case SERVER_TYPE_MAP:	appName = "MapServer"; break;
+		case SERVER_TYPE_CHAR:	appName = "CharServer"; break;
+		case SERVER_TYPE_LOGIN:	appName = "LoginServer"; break;
+		default: appName = "Unknown"; break;
 	}
 
 	
+	return appName;
+}//end: AthenaServerApplication::getApplicationName()
 
 
-	//
-	// Process rgCore MainLoop:
-	//
-	rgCore_idleLoop();
+serverinfo::ServerType AthenaServerApplication::getApplicationType() {
+	serverinfo::ServerType t;
 
+	switch(SERVER_TYPE) {
+		case SERVER_TYPE_MAP:	t = serverinfo::stZone; break;
+		case SERVER_TYPE_CHAR:	t = serverinfo::stCharacter; break;
+		case SERVER_TYPE_LOGIN:	t = serverinfo::stAccount; break;
+		default: t = serverinfo::stUnknown; break;
+	}
 
-	putLog("Finalization -> Waiting for ServerMain Thread Finalization!\n");
-	hServerMain->wait();
+	return t;
+}//end: AthenaServerApplication::getApplicationType()
 
-	// The ServerMain Thread sets athena-exit-code as exitParam
-	int retval = (int)hServerMain->getExitParam();
-
-	// Free up thread ressources
-	delete hServerMain;
-	hServerMain = NULL;
-
-
-
-	//
-	// rgCore Final:
-	//
-	rgCore_final();
-	
-
-	return retval;
-}//end: main()

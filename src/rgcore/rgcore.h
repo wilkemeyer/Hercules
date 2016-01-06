@@ -9,29 +9,30 @@
 //  - rg_final()
 //
 
+namespace rgCore {
+	class IServerApplication;
 
-// Platformlib Init:
-void rgCore_init(int ownServerType, const char *appName);
-void rgCore_final();
-
-// Note: calling this proc will close the GUI! 
-// any further (core-specific) debug output will be logged to file (if enabled)
-void rgCore_releaseIdleLoop();
-
-// Must be Called in Main Thread
-// Will Block until beginFinal() gets called
-void rgCore_idleLoop();
-
-const char *rgCore_getAppName();
+	/** 
+	 * Must be called from your entrypoint
+	 * will block until the application terminates
+	 *
+	 * Returns: 0 if the application terminated upon request otherwise errorcode
+	 */
+	int rgCore_run(IServerApplication *pApp);
 
 
-//
-// --
-//
-struct rgCoreSettings {
-	bool poolAllowLargePages;
-	bool poolEnforceLargePages;
-};
-extern struct rgCoreSettings rgCore_settings;
+	IServerApplication *rgCore_getApplication();
+	const char *rgCore_getAppName();
 
 
+	//
+	// --
+	//
+	struct rgCoreSettings {
+		bool poolAllowLargePages;
+		bool poolEnforceLargePages;
+	};
+	extern struct rgCoreSettings rgCore_settings;
+
+
+}
