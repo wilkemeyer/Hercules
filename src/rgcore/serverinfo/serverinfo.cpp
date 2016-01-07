@@ -138,6 +138,8 @@ ServerInfo::ServerInfo(int MySID,ServerType type, const char *dsn) {
 		}
 
 
+		// Initialzie Server Linkage for faster lookup of child/parent servers during runtime
+		this->initializeLinkage();
 
 		putLog("ServerInfo Loaded %u Definitions!\n", cnt);
 
@@ -161,14 +163,76 @@ ServerInfo::ServerInfo(int MySID,ServerType type, const char *dsn) {
 ServerInfo::~ServerInfo() {
 
 	for(size_t i  = 0; i < (SERVERID_MAX+1); i++){
-		if(m_data[i] != NULL){
-			rofree(m_data[i]);
-			//
+		auto it = m_data[i];
+		if(it != NULL){
 			m_data[i] = NULL;
+
+			// Free Linkage 
+			struct SERVERINFO::childServer *cl, *cln;
+			cl = it->childList;
+			while(1){
+				if(cl == NULL)
+					break;
+
+				cln = cl->next;
+
+				rofree(cl);
+				
+				cl = cln;
+			}
+
+			// Free ServerInfo 
+			rofree(it);
 		}
+		
 	}
 
 }
+
+
+void ServerInfo::initializeLinkage(){ // RG Extension to ServerInfo
+	
+	for(size_t i =0; i < (SERVERID_MAX+1); i++){
+		auto it = m_data[i];
+
+		if(it == NULL)
+			continue;
+
+
+		if(it->DestinationOneSID != 0){
+			it->destinationOne = getBySID(it->DestinationOneSID);
+			if(it->destinationOne == NULL){
+				putWrn("ServerInfo: Server '%s' SID(%u) DestinationOneSID(%u) is Unknown/Not Defined\n", it->Name, it->SID, it->DestinationOneSID);
+
+			}else{
+				// add ourself to destinationOne's childlist
+				auto node = (struct SERVERINFO::childServer*)roalloc(sizeof(struct SERVERINFO::childServer));
+
+				node->info = it;
+				node->next = it->destinationOne->childList;
+				it->destinationOne->childList = node;
+			}
+		}
+
+
+		if(it->DestinationTwoSID != 0) {
+			it->destinationTwo = getBySID(it->DestinationTwoSID);
+			if(it->destinationTwo == NULL) {
+				putWrn("ServerInfo: Server '%s' SID(%u) DestinationTwoSID(%u) is Unknown/Not Defined\n", it->Name, it->SID, it->DestinationTwoSID);
+
+			} else {
+				// add ourself to destinationOne's childlist
+				auto node = (struct SERVERINFO::childServer*)roalloc(sizeof(struct SERVERINFO::childServer));
+
+				node->info = it;
+				node->next = it->destinationTwo->childList;
+				it->destinationTwo->childList = node;
+			}
+		}
+
+	}
+
+}//end: ServerInfo::intiailizeLinkage()
 
 
 struct SERVERINFO *ServerInfo::getSelf(){

@@ -15,6 +15,8 @@ typedef enum ServerType {
 } ServerType;
 
 
+
+
 struct SERVERINFO {
 	int		SID;		// See: SERVERID_MAX
 	int		Type;
@@ -31,7 +33,21 @@ struct SERVERINFO {
 	DWORD	PrivateIP;
 	char	PrivateIPstr[16];
 	int		PrivatePort;
+
+	// rg  Extension:
+	struct childServer{
+		struct childServer *next;
+
+		struct SERVERINFO *info;
+	} *childList;	// list per server which contains all server's that're linked to this serverinfo node
+	
+
+	// Parent Servers 
+	struct SERVERINFO *destinationOne, *destinationTwo;
+
 };
+
+
 
 
 class ServerInfo : public roAlloc {
@@ -64,6 +80,8 @@ private:
 	struct SERVERINFO  *m_myself;
 
 
+	// Initializes child linkage & Parent Linakge on all loaded serverinfo nodes
+	void initializeLinkage();
 
 };
 
