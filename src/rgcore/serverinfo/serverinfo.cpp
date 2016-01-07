@@ -42,7 +42,7 @@ ServerInfo::ServerInfo(int MySID,ServerType type, const char *dsn) {
 		stmt  = odbc->stmt("SELECT SID, Type, IP, Port, DestinationOneSID, DestinationTwoSID, SvrName, PrivateIP, PrivatePort FROM ServerInfo");
 		
 		//
-		struct _SERVERINFO si;
+		struct SERVERINFO si;
 
 		stmt->bindint(1, &si.SID);
 		stmt->bindint(2, &si.Type);
@@ -85,10 +85,10 @@ ServerInfo::ServerInfo(int MySID,ServerType type, const char *dsn) {
 			}
 
 
-			m_data[si.SID] = (struct _SERVERINFO*)roalloc(sizeof(struct _SERVERINFO));
+			m_data[si.SID] = (struct SERVERINFO*)roalloc(sizeof(struct SERVERINFO));
 			
 			// Copy Data
-			memcpy(m_data[si.SID], &si, sizeof(struct _SERVERINFO));
+			memcpy(m_data[si.SID], &si, sizeof(struct SERVERINFO));
 			
 			// Assign DWORD IP Values
 			si.ip			= inet_addr(si.IPstr);
@@ -171,13 +171,13 @@ ServerInfo::~ServerInfo() {
 }
 
 
-struct _SERVERINFO *ServerInfo::getSelf(){
+struct SERVERINFO *ServerInfo::getSelf(){
 	return m_myself;
 }
 
 
-struct _SERVERINFO *ServerInfo::getBySID(int SID){
-	struct _SERVERINFO *sinfo; 
+struct SERVERINFO *ServerInfo::getBySID(int SID){
+	struct SERVERINFO *sinfo; 
 		if(SID > SERVERID_MAX) {
 #ifdef _DEBUG 
 				auto dbg = debugInfoGet(_ReturnAddress()); 
@@ -193,7 +193,7 @@ struct _SERVERINFO *ServerInfo::getBySID(int SID){
 
 
 ServerType ServerInfo::getServerType(int SID) {
-	struct _SERVERINFO *sinfo;
+	struct SERVERINFO *sinfo;
 	if(SID > SERVERID_MAX) {
 #ifdef _DEBUG 
 		auto dbg = debugInfoGet(_ReturnAddress());

@@ -15,7 +15,7 @@ typedef enum ServerType {
 } ServerType;
 
 
-struct _SERVERINFO {
+struct SERVERINFO {
 	int		SID;		// See: SERVERID_MAX
 	int		Type;
 
@@ -43,12 +43,12 @@ public:
 	/** 
 	 * returns the 'own' / myself ServerInfo Data
 	 */
-	struct _SERVERINFO *getSelf();
+	struct SERVERINFO *getSelf();
 
 	/**
 	 * returns the Data for the given SID
 	 */
-	struct _SERVERINFO *getBySID(int SID);
+	struct SERVERINFO *getBySID(int SID);
 
 
 	/** 
@@ -60,8 +60,8 @@ public:
 
 
 private:
-	struct _SERVERINFO	*m_data[SERVERID_MAX+1];
-	struct _SERVERINFO  *m_myself;
+	struct SERVERINFO	*m_data[SERVERID_MAX+1];
+	struct SERVERINFO  *m_myself;
 
 
 
