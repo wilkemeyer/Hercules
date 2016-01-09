@@ -126,8 +126,14 @@ int CNpc::get_new_npc_id(void) {
 	}
 }
 
-int CNpc::isnear_sub(struct block_list* bl, va_list args) {
-	struct npc_data *nd = (struct npc_data*)bl;
+int CNpc::isnear_sub(struct block_list *bl, va_list args)
+{
+	const struct npc_data *nd = NULL;
+
+	nullpo_ret(bl);
+	Assert_ret(bl->type == BL_NPC);
+	nd = BL_UCCAST(BL_NPC, bl);
+
 
 	if( nd->option & (OPTION_HIDE|OPTION_INVISIBLE) )
 		return 0;
@@ -191,9 +197,9 @@ int CNpc::enable_sub(struct block_list *bl, va_list ap)
 
 	nullpo_ret(bl);
 	nullpo_ret(nd=va_arg(ap,struct npc_data *));
-	if(bl->type == BL_PC)
-	{
-		TBL_PC *sd = (TBL_PC*)bl;
+
+	if (bl->type == BL_PC) {
+		struct map_session_data *sd = BL_UCAST(BL_PC, bl);
 
 		if (nd->option&OPTION_INVISIBLE)
 			return 1;
@@ -251,9 +257,9 @@ int CNpc::enable(const char* name, int flag)
 /*==========================================
  * NPC lookup (get npc_data through npcname)
  *------------------------------------------*/
-struct npc_data* CNpc::name2id(const char* name)
+struct npc_data *CNpc::name2id(const char *name)
 {
-	return (struct npc_data *) strdb_get(npc->name_db, name);
+	return (struct npc_data*)strdb_get(npc->name_db, name);
 }
 /**
  * For the Secure NPC Timeout option (check config/Secure.h) [RR]
@@ -545,10 +551,12 @@ struct timer_event_data {
 /*==========================================
  * triger 'OnTimerXXXX' events
  *------------------------------------------*/
-int CNpc::timerevent(int tid, int64 tick, int id, intptr_t data) {
+int CNpc::timerevent(int tid, int64 tick, int id, intptr_t data)
+{
+
 	int old_rid, old_timer;
 	int64 old_tick;
-	struct npc_data* nd=(struct npc_data *)map->id2bl(id);
+	struct npc_data *nd = map->id2nd(id);
 	struct npc_timerevent_list *te;
 	struct timer_event_data *ted = (struct timer_event_data*)data;
 	struct map_session_data *sd=NULL;
@@ -715,14 +723,13 @@ void CNpc::timerevent_quit(struct map_session_data* sd)
 	}
 
 	// Delete timer
-	nd = (struct npc_data *)map->id2bl(td->id);
+	nd = map->id2nd(td->id);
 	ted = (struct timer_event_data*)td->data;
 	timer->_delete(sd->npc_timer_id, npc->timerevent);
 	sd->npc_timer_id = INVALID_TIMER;
 
 	// Execute OnTimerQuit
-	if( nd && nd->bl.type == BL_NPC )
-	{
+	if (nd != NULL) {
 		char buf[EVENT_NAME_LENGTH];
 		struct event_data *ev;
 
@@ -1006,15 +1013,14 @@ int CNpc::touch_areanpc(struct map_session_data* sd, int16 m, int16 x, int16 y)
  *------------------------------------------*/
 int CNpc::untouch_areanpc(struct map_session_data* sd, int16 m, int16 x, int16 y)
 {
-	struct npc_data *nd;
+	struct npc_data *nd = NULL;
 	nullpo_retr(1, sd);
 
 	if (!sd->areanpc_id)
 		return 0;
 
-	nd = (struct npc_data *) map->id2bl(sd->areanpc_id);
-	if (!nd)
-	{
+	nd = map->id2nd(sd->areanpc_id);
+	if (nd == NULL) {
 		sd->areanpc_id = 0;
 		return 1;
 	}
@@ -1145,13 +1151,13 @@ int CNpc::check_areanpc(int flag, int16 m, int16 x, int16 y, int16 range) {
  *------------------------------------------*/
 struct npc_data* CNpc::checknear(struct map_session_data* sd, struct block_list* bl)
 {
-	struct npc_data *nd;
+	struct npc_data *nd = BL_CAST(BL_NPC, bl);
 	int distance = AREA_SIZE + 1;
 
 	nullpo_retr(NULL, sd);
-	if (bl == NULL) return NULL;
-	if (bl->type != BL_NPC) return NULL;
-	nd = (TBL_NPC*)bl;
+
+	if (nd == NULL)
+		return NULL;
 
 	if (sd->npc_id == bl->id)
 		return nd;
@@ -1276,8 +1282,8 @@ int CNpc::scriptcont(struct map_session_data* sd, int id, bool closing) {
 	nullpo_retr(1, sd);
 
 	if( id != sd->npc_id ){
-		TBL_NPC* nd_sd=(TBL_NPC*)map->id2bl(sd->npc_id);
-		TBL_NPC* nd = BL_CAST(BL_NPC, target);
+		struct npc_data *nd_sd = map->id2nd(sd->npc_id);
+		struct npc_data *nd = BL_CAST(BL_NPC, target);
 		ShowDebug("npc_scriptcont: %s (sd->npc_id=%d) is not %s (id=%d).\n",
 			nd_sd?(char*)nd_sd->name:"'Unknown NPC'", (int)sd->npc_id,
 			nd?(char*)nd->name:"'Unknown NPC'", (int)id);
@@ -1376,7 +1382,8 @@ int CNpc::cashshop_buylist(struct map_session_data *sd, int points, int count, u
 	if( points < 0 )
 		return ERROR_TYPE_MONEY;
 
-	if( !(nd = (struct npc_data *)map->id2bl(sd->npc_shopid)) )
+	nd = map->id2nd(sd->npc_shopid);
+	if (nd == NULL)
 		return ERROR_TYPE_NPC;
 
 	if( nd->subtype != CASHSHOP ) {
@@ -1610,11 +1617,10 @@ void CNpc::trader_update(int master) {
 	CREATE(master_nd->u.scr.shop,struct npc_shop_data,1);
 
 	iter = db_iterator(map->id_db);
-	for( bl = (struct block_list*)dbi_first(iter); dbi_exists(iter); bl = (struct block_list*)dbi_next(iter) ) {
-		if( bl->type == BL_NPC ) {
-			struct npc_data* nd = (struct npc_data*)bl;
-
-			if( nd->src_id == master ) {
+	for (bl = (struct block_list*)dbi_first(iter); dbi_exists(iter); bl = (struct block_list*)dbi_next(iter)) {
+		if (bl->type == BL_NPC) {
+			struct npc_data *nd = BL_UCAST(BL_NPC, bl);
+			if (nd->src_id == master) {
 				nd->u.scr.shop = master_nd->u.scr.shop;
 			}
 		}
@@ -1699,7 +1705,8 @@ int CNpc::cashshop_buy(struct map_session_data *sd, int nameid, int amount, int 
 	if( sd->state.trading )
 		return ERROR_TYPE_EXCHANGE;
 
-	if( !(nd = (struct npc_data *)map->id2bl(sd->npc_shopid)) )
+	nd = map->id2nd(sd->npc_shopid);
+	if (nd == NULL)
 		return ERROR_TYPE_NPC;
 
 	if( (item = itemdb->exists(nameid)) == NULL )
@@ -2262,11 +2269,12 @@ int CNpc::unload(struct npc_data* nd, bool single)
 	if( single && nd->bl.m != -1 )
 		map->remove_questinfo(nd->bl.m,nd);
 
-	if( nd->src_id == 0 && ( nd->subtype == SHOP || nd->subtype == CASHSHOP ) ) //src check for duplicate shops [Orcao]
+	if (nd->src_id == 0 && ( nd->subtype == SHOP || nd->subtype == CASHSHOP)) {
+		//src check for duplicate shops [Orcao]
 		aFree(nd->u.shop.shop_item);
-	else if( nd->subtype == SCRIPT ) {
-		struct s_mapiterator* iter;
-		struct block_list* bl;
+	} else if (nd->subtype == SCRIPT) {
+		struct s_mapiterator *iter;
+		struct map_session_data *sd = NULL;
 
 		if( single ) {
 			npc->ev_db->foreach(npc->ev_db,npc->unload_ev,nd->exname); //Clean up all events related
@@ -2274,9 +2282,8 @@ int CNpc::unload(struct npc_data* nd, bool single)
 		}
 
 		iter = mapit_geteachpc();
-		for( bl = (struct block_list*)mapit->first(iter); mapit->exists(iter); bl = (struct block_list*)mapit->next(iter) ) {
-			struct map_session_data *sd = ((TBL_PC*)bl);
-			if( sd && sd->npc_timer_id != INVALID_TIMER ) {
+		for (sd = BL_UCAST(BL_PC, mapit->first(iter)); mapit->exists(iter); sd = BL_UCAST(BL_PC, mapit->next(iter))) {
+			if (sd->npc_timer_id != INVALID_TIMER ) {
 				const struct TimerData *td = timer->get(sd->npc_timer_id);
 
 				if( td && td->id != nd->bl.id )
@@ -3408,10 +3415,19 @@ void CNpc::setcells(struct npc_data* nd) {
 	}
 }
 
-int CNpc::unsetcells_sub(struct block_list* bl, va_list ap) {
-	struct npc_data *nd = (struct npc_data*)bl;
-	int id =  va_arg(ap,int);
-	if (nd->bl.id == id) return 0;
+
+int CNpc::unsetcells_sub(struct block_list *bl, va_list ap)
+{
+	struct npc_data *nd = NULL;
+	int id = va_arg(ap, int);
+
+	nullpo_ret(bl);
+	Assert_ret(bl->type == BL_NPC);
+	nd = BL_UCAST(BL_NPC, bl);
+
+	if (nd->bl.id == id)
+		return 0;
+
 	npc->setcells(nd);
 	return 1;
 }
@@ -4641,11 +4657,11 @@ int CNpc::reload(void) {
 
 	//Remove all npcs/mobs. [Skotlex]
 	iter = mapit_geteachiddb();
-	for( bl = (struct block_list*)mapit->first(iter); mapit->exists(iter); bl = (struct block_list*)mapit->next(iter) ) {
+	for (bl = mapit->first(iter); mapit->exists(iter); bl = mapit->next(iter)) {
 		switch(bl->type) {
 			case BL_NPC:
 				if( bl->id != npc->fake_nd->bl.id )// don't remove fake_nd
-					npc->unload((struct npc_data *)bl, false);
+					npc->unload(BL_UCAST(BL_NPC, bl), false);
 				break;
 			case BL_MOB:
 				unit->free(bl,CLR_OUTSIGHT);
@@ -4856,7 +4872,7 @@ int CNpc::init(bool minimal) {
 	}
 
 	// Init dummy NPC
-	npc->fake_nd = (struct npc_data *)aCalloc(1,sizeof(struct npc_data));
+	CREATE(npc->fake_nd, struct npc_data, 1);
 	npc->fake_nd->bl.m = -1;
 	npc->fake_nd->bl.id = npc->get_new_npc_id();
 	npc->fake_nd->class_ = FAKE_NPC;

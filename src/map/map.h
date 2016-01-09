@@ -826,8 +826,89 @@ typedef struct homun_data       TBL_HOM;
 typedef struct mercenary_data   TBL_MER;
 typedef struct elemental_data   TBL_ELEM;
 
+/**
+ * Casts a block list to a specific type.
+ *
+ * @remark
+ *   The `bl` argument may be evaluated more than once.
+ *
+ * @param type_ The block list type (using symbols from enum bl_type).
+ * @param bl    The source block list to cast.
+ * @return The block list, cast to the correct type.
+ * @retval NULL if bl is the wrong type or NULL.
+ */
 #define BL_CAST(type_, bl) \
-	( ((bl) == (struct block_list*)NULL || (bl)->type != (type_)) ? (T ## type_ *)NULL : (T ## type_ *)(bl) )
+	( ((bl) == (struct block_list *)NULL || (bl)->type != (type_)) ? (T ## type_ *)NULL : (T ## type_ *)(bl) )
+
+/**
+ * Casts a const block list to a specific type.
+ *
+ * @remark
+ *   The `bl` argument may be evaluated more than once.
+ *
+ * @param type_ The block list type (using symbols from enum bl_type).
+ * @param bl    The source block list to cast.
+ * @return The block list, cast to the correct type.
+ * @retval NULL if bl is the wrong type or NULL.
+ */
+#define BL_CCAST(type_, bl) \
+	( ((bl) == (const struct block_list *)NULL || (bl)->type != (type_)) ? (const T ## type_ *)NULL : (const T ## type_ *)(bl) )
+
+/**
+ * Helper function for `BL_UCAST`.
+ *
+ * @warning
+ *   This function shouldn't be called on it own.
+ *
+ * The purpose of this function is to produce a compile-timer error if a non-bl
+ * object is passed to BL_UCAST. It's declared as static inline to let the
+ * compiler optimize out the function call overhead.
+ */
+static inline struct block_list *BL_UCAST_(struct block_list *bl)
+{
+	return bl;
+}
+
+/**
+ * Casts a block list to a specific type, without performing any type checks.
+ *
+ * @remark
+ *   The `bl` argument is guaranteed to be evaluated once and only once.
+ *
+ * @param type_ The block list type (using symbols from enum bl_type).
+ * @param bl    The source block list to cast.
+ * @return The block list, cast to the correct type.
+ */
+#define BL_UCAST(type_, bl) \
+	((T ## type_ *)BL_UCAST_(bl))
+
+/**
+ * Helper function for `BL_UCCAST`.
+ *
+ * @warning
+ *   This function shouldn't be called on it own.
+ *
+ * The purpose of this function is to produce a compile-timer error if a non-bl
+ * object is passed to BL_UCAST. It's declared as static inline to let the
+ * compiler optimize out the function call overhead.
+ */
+static inline const struct block_list *BL_UCCAST_(const struct block_list *bl)
+{
+	return bl;
+}
+
+/**
+ * Casts a const block list to a specific type, without performing any type checks.
+ *
+ * @remark
+ *   The `bl` argument is guaranteed to be evaluated once and only once.
+ *
+ * @param type_ The block list type (using symbols from enum bl_type).
+ * @param bl    The source block list to cast.
+ * @return The block list, cast to the correct type.
+ */
+#define BL_UCCAST(type_, bl) \
+	((const T ## type_ *)BL_UCCAST_(bl))
 
 struct charid_request {
 	struct charid_request* next;
@@ -1031,13 +1112,19 @@ public:
 	static int vforeachininstance(int (*func)(struct block_list*,va_list), int16 instance_id, int type, va_list ap);
 	static int foreachininstance(int (*func)(struct block_list*,va_list), int16 instance_id, int type,...);
 
-	static struct map_session_data * id2sd (int id);
-	static struct mob_data * id2md (int id);
-	static struct npc_data * id2nd (int id);
-	static struct homun_data* id2hd (int id);
-	static struct mercenary_data* id2mc (int id);
-	static struct chat_data* id2cd (int id);
-	static struct block_list * id2bl (int id);
+	static struct map_session_data *id2sd (int id);
+	static struct npc_data *id2nd (int id);
+	static struct mob_data *id2md (int id);
+	static struct flooritem_data *id2fi (int id);
+	static struct chat_data *id2cd (int id);
+	static struct skill_unit *id2su (int id);
+	static struct pet_data *id2pd (int id);
+	static struct homun_data *id2hd (int id);
+	static struct mercenary_data *id2mc (int id);
+	static struct elemental_data *id2ed (int id);
+	static struct block_list *id2bl (int id);
+
+
 	static bool blid_exists (int id);
 	static int16 mapindex2mapid (unsigned short map_index);
 	static int16 mapname2mapid (const char* name);
@@ -1047,6 +1134,7 @@ public:
 	static int eraseallipport (void);
 	static void addiddb (struct block_list *bl);
 	static void deliddb (struct block_list *bl);
+
 	/* */
 	static struct map_session_data * nick2sd (const char *nick);
 	static struct mob_data * getmob_boss (int16 m);

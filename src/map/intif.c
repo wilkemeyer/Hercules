@@ -967,7 +967,7 @@ void CIntif::pWisEnd(int fd) {
 
 	if (battle_config.etc_log)
 		ShowInfo("intif_parse_wisend: player: %s, flag: %d\n", RFIFOP(fd,2), RFIFOB(fd,26)); // flag: 0: success to send whisper, 1: target character is not logged in?, 2: ignored by target
-	sd = (struct map_session_data *)map->nick2sd((char *) RFIFOP(fd,2));
+	sd = map->nick2sd((char *)RFIFOP(fd,2));
 	if (sd != NULL)
 		clif->wis_end(sd->fd, RFIFOB(fd,26));
 
@@ -1468,7 +1468,9 @@ QUESTLOG SYSTEM FUNCTIONS
  *
  * @param sd Character's data
  */
-void CIntif::request_questlog(TBL_PC *sd) {
+
+void CIntif::request_questlog(struct map_session_data *sd)
+{
 	nullpo_retv(sd);
 	WFIFOHEAD(inter_fd,6);
 	WFIFOW(inter_fd,0) = 0x3060;
@@ -1485,7 +1487,7 @@ void CIntif::request_questlog(TBL_PC *sd) {
  */
 void CIntif::pQuestLog(int fd) {
 	int char_id = RFIFOL(fd, 4), num_received = (RFIFOW(fd, 2)-8)/sizeof(struct quest);
-	TBL_PC *sd = map->charid2sd(char_id);
+	struct map_session_data *sd = map->charid2sd(char_id);
 
 	if (!sd) // User not online anymore
 		return;
@@ -1540,7 +1542,7 @@ void CIntif::pQuestLog(int fd) {
  */
 void CIntif::pQuestSave(int fd) {
 	int cid = RFIFOL(fd, 2);
-	TBL_PC *sd = map->id2sd(cid);
+	struct map_session_data *sd = map->id2sd(cid);
 
 	if( !RFIFOB(fd, 6) )
 		ShowError("intif_parse_QuestSave: Failed to save quest(s) for character %d!\n", cid);
@@ -1554,7 +1556,8 @@ void CIntif::pQuestSave(int fd) {
  * @param sd Character's data
  * @return 0 in case of success, nonzero otherwise
  */
-int CIntif::quest_save(TBL_PC *sd) {
+int CIntif::quest_save(struct map_session_data *sd)
+{
 	int len = sizeof(struct quest)*sd->num_quests + 8;
 
 	if(intif->CIntif::CheckForCharServer())
@@ -1604,7 +1607,7 @@ void CIntif::pMailInboxReceived(int fd) {
 		return;
 
 	if (RFIFOW(fd,2) - 9 != sizeof(struct mail_data)) {
-		ShowError("intif_parse_MailInboxReceived: data size mismatch %d != %"PRIuS"\n", RFIFOW(fd,2) - 9, sizeof(struct mail_data));
+		ShowError("intif_parse_MailInboxReceived: data size mismatch %d != %" PRIuS "\n", RFIFOW(fd,2) - 9, sizeof(struct mail_data));
 		return;
 	}
 

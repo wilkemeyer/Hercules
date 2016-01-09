@@ -34,7 +34,7 @@ struct chat_data* CChat::create(struct block_list* bl, const char* title, const 
 	nullpo_retr(NULL, ev);
 
 	/* Given the overhead and the numerous instances (npc allocated or otherwise) wouldn't it be beneficial to have it use ERS? [Ind] */
-	cd = (struct chat_data *) aMalloc(sizeof(struct chat_data));
+	CREATE(cd, struct chat_data, 1);
 
 	safestrncpy(cd->title, title, sizeof(cd->title));
 	safestrncpy(cd->pass, pass, sizeof(cd->pass));
@@ -121,7 +121,7 @@ bool CChat::join(struct map_session_data* sd, int chatid, const char* pass) {
 
 	nullpo_ret(sd);
 	nullpo_ret(pass);
-	cd = (struct chat_data*)map->id2bl(chatid);
+	cd = map->id2cd(chatid);
 
 	if( cd == NULL || cd->bl.type != BL_CHAT || cd->bl.m != sd->bl.m || sd->state.vending || sd->state.buyingstore || sd->chatID || ((cd->owner->type == BL_NPC) ? cd->users+1 : cd->users) >= cd->limit )
 	{
@@ -185,7 +185,7 @@ int CChat::leave(struct map_session_data* sd, bool kicked) {
 
 	nullpo_retr(0, sd);
 
-	cd = (struct chat_data*)map->id2bl(sd->chatID);
+	cd = map->id2cd(sd->chatID);
 	if( cd == NULL ) {
 		pc_setchatid(sd, 0);
 		return 0;
@@ -228,14 +228,14 @@ int CChat::leave(struct map_session_data* sd, bool kicked) {
 
 	if( leavechar == 0 && cd->owner->type == BL_PC ) {
 		// Set and announce new owner
-		cd->owner = (struct block_list*) cd->usersd[0];
+		cd->owner = &cd->usersd[0]->bl;
 		clif->changechatowner(cd, cd->usersd[0]);
 		clif->clearchat(cd, 0);
 
 		//Adjust Chat location after owner has been changed.
 		map->delblock( &cd->bl );
-		cd->bl.x=cd->usersd[0]->bl.x;
-		cd->bl.y=cd->usersd[0]->bl.y;
+		cd->bl.x = cd->owner->x;
+		cd->bl.y = cd->owner->y;
 		map->addblock( &cd->bl );
 
 		clif->dispchat(cd,0);
@@ -260,8 +260,8 @@ bool CChat::change_owner(struct map_session_data* sd, const char* nextownername)
 	nullpo_ret(sd);
 	nullpo_ret(nextownername);
 
-	cd = (struct chat_data*)map->id2bl(sd->chatID);
-	if( cd == NULL || (struct block_list*) sd != cd->owner )
+	cd = map->id2cd(sd->chatID);
+	if (cd == NULL || &sd->bl != cd->owner)
 		return false;
 
 	ARR_FIND( 1, cd->users, i, strncmp(cd->usersd[i]->status.name, nextownername, NAME_LENGTH) == 0 );
@@ -272,7 +272,7 @@ bool CChat::change_owner(struct map_session_data* sd, const char* nextownername)
 	clif->clearchat(cd,0);
 
 	// set new owner
-	cd->owner = (struct block_list*) cd->usersd[i];
+	cd->owner = &cd->usersd[i]->bl;
 	clif->changechatowner(cd,cd->usersd[i]);
 
 	// swap the old and new owners' positions
@@ -305,8 +305,8 @@ bool CChat::change_status(struct map_session_data* sd, const char* title, const 
 	nullpo_ret(title);
 	nullpo_ret(pass);
 
-	cd = (struct chat_data*)map->id2bl(sd->chatID);
-	if( cd==NULL || (struct block_list *)sd != cd->owner )
+	cd = map->id2cd(sd->chatID);
+	if (cd == NULL || &sd->bl != cd->owner)
 		return false;
 
 	safestrncpy(cd->title, title, CHATROOM_TITLE_SIZE);
@@ -333,9 +333,9 @@ bool CChat::kick(struct map_session_data* sd, const char* kickusername) {
 	nullpo_ret(sd);
 	nullpo_ret(kickusername);
 
-	cd = (struct chat_data *)map->id2bl(sd->chatID);
+	cd = map->id2cd(sd->chatID);
 
-	if( cd==NULL || (struct block_list *)sd != cd->owner )
+	if (cd == NULL || &sd->bl != cd->owner)
 		return false;
 
 	ARR_FIND( 0, cd->users, i, strncmp(cd->usersd[i]->status.name, kickusername, NAME_LENGTH) == 0 );
@@ -390,8 +390,8 @@ bool CChat::delete_npc_chat(struct npc_data* nd) {
 	struct chat_data *cd;
 	nullpo_ret(nd);
 
-	cd = (struct chat_data*)map->id2bl(nd->chat_id);
-	if( cd == NULL )
+	cd = map->id2cd(nd->chat_id);
+	if (cd == NULL)
 		return false;
 
 	chat->npc_kick_all(cd);

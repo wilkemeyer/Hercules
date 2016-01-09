@@ -645,13 +645,14 @@ public:
 	static void error (const char* src, const char* file, int start_line, const char* error_msg, const char* error_pos);
 	static void warning (const char* src, const char* file, int start_line, const char* error_msg, const char* error_pos);
 	/* */
+
 	static bool addScript (char *name, char *args, bool (*func)(struct script_state *st), bool isDeprecated);
 	static int conv_num (struct script_state *st,struct script_data *data);
 	static const char* conv_str (struct script_state *st,struct script_data *data);
-	static TBL_PC *rid2sd (struct script_state *st);
-	static TBL_PC *id2sd (struct script_state *st, int account_id);
-	static TBL_PC *charid2sd (struct script_state *st, int char_id);
-	static TBL_PC *nick2sd (struct script_state *st, const char *name);
+	static map_session_data *rid2sd (struct script_state *st);
+	static map_session_data *id2sd (struct script_state *st, int account_id);
+	static map_session_data *charid2sd (struct script_state *st, int char_id);
+	static map_session_data *nick2sd (struct script_state *st, const char *name);
 	static void detach_rid (struct script_state* st);
 	static struct script_data* push_val(struct script_stack* stack, enum c_op type, int64 val, struct reg_db *ref);
 	static struct script_data *get_val (struct script_state* st, struct script_data* data);
@@ -692,6 +693,7 @@ public:
 	static int search_str (const char* p);
 	static void setd_sub (struct script_state *st, struct map_session_data *sd, const char *varname, int elem, void *value, struct reg_db *ref);
 	static void attach_state (struct script_state* st);
+
 	/* */
 	static struct script_queue *queue (int idx);
 	static bool queue_add (int idx, int var);
@@ -700,6 +702,7 @@ public:
 	static int queue_create (void);
 	static bool queue_clear (int idx);
 	/* */
+
 	static const char * parse_curly_close (const char *p);
 	static const char * parse_syntax_close (const char *p);
 	static const char * parse_syntax_close_sub (const char *p, int *flag);
@@ -729,7 +732,7 @@ public:
 	static void read_constdb (void);
 	static const char* print_line (StringBuf *buf, const char *p, const char *mark, int line);
 	static void errorwarning_sub (StringBuf *buf, const char *src, const char *file, int start_line, const char *error_msg, const char *error_pos);
-	static int set_reg (struct script_state *st, TBL_PC *sd, int64 num, const char *name, const void *value, struct reg_db *ref);
+	static int set_reg (struct script_state *st, map_session_data *sd, int64 num, const char *name, const void *value, struct reg_db *ref);
 	static void set_reg_ref_str (struct script_state* st, struct reg_db *n, int64 num, const char* name, const char *str);
 	static void set_reg_scope_str (struct script_state* st, struct reg_db *n, int64 num, const char* name, const char *str);
 	static void set_reg_npc_str (struct script_state* st, struct reg_db *n, int64 num, const char* name, const char *str);
@@ -775,6 +778,7 @@ public:
 	static int cleanfloor_sub (struct block_list *bl, va_list ap);
 	static int run_func (struct script_state *st);
 	static const char *getfuncname (struct script_state *st);
+
 	// for ENABLE_CASE_CHECK
 	static unsigned int calc_hash_ci (const char *p);
 	static struct casecheck_data local_casecheck;

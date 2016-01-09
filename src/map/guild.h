@@ -26,6 +26,9 @@
 #include "../common/db.h"
 #include "../common/mmo.h"
 
+
+struct map_session_data;
+
 /**
  * Defines
  **/
@@ -163,8 +166,9 @@ public:
 	/* item bound [Mhalicot]*/
 	static void retrieveitembound (int char_id,int aid,int guild_id);
 	/* */
+
 	static int payexp_timer (int tid, int64 tick, int id, intptr_t data);
-	static TBL_PC* sd_check (int guild_id, int account_id, int char_id);
+	static map_session_data* sd_check (int guild_id, int account_id, int char_id);
 	static bool read_guildskill_tree_db (char* split[], int columns, int current);
 	static bool read_castledb (char* str[], int columns, int current);
 	static int payexp_timer_sub (DBKey key, DBData *data, va_list ap);
@@ -180,6 +184,7 @@ public:
 	static int check_member (struct guild *g);
 	static int get_alliance_count (struct guild *g,int flag);
 	static void castle_reconnect_sub (void *key, void *data, va_list ap);
+
 };
 
 extern CGuild *guild;

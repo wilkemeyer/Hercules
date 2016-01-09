@@ -21,6 +21,7 @@
 #ifndef MAP_QUEST_H
 #define MAP_QUEST_H
 
+
 #include "map.h" // TBL_PC
 #include "../common/hercules.h"
 #include "../common/conf.h"
@@ -64,18 +65,20 @@ public:
 	static void final (void);
 	static void reload (void);
 	/* */
+
 	static struct quest_db *db (int quest_id);
-	static int pc_login (TBL_PC *sd);
-	static int add (TBL_PC *sd, int quest_id);
-	static int change (TBL_PC *sd, int qid1, int qid2);
-	static int _delete (TBL_PC *sd, int quest_id);
+	static int pc_login (struct map_session_data *sd);
+	static int add (struct map_session_data *sd, int quest_id);
+	static int change (struct map_session_data *sd, int qid1, int qid2);
+	static int _delete (struct map_session_data *sd, int quest_id);
 	static int update_objective_sub (struct block_list *bl, va_list ap);
-	static void update_objective (TBL_PC *sd, int mob_id);
-	static int update_status (TBL_PC *sd, int quest_id, enum quest_state qs);
-	static int check (TBL_PC *sd, int quest_id, enum quest_check_type type);
+	static void update_objective (struct map_session_data *sd, int mob_id);
+	static int update_status (struct map_session_data *sd, int quest_id, enum quest_state qs);
+	static int check (struct map_session_data *sd, int quest_id, enum quest_check_type type);
 	static void clear (void);
 	static int read_db (void);
 	static struct quest_db *read_db_sub (config_setting_t *cs, int n, const char *source);
+
 };
 extern CQuest *quest;
 

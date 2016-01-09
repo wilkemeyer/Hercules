@@ -48,7 +48,7 @@ struct quest_db *CQuest::db(int quest_id) {
  * @param sd Player's data
  * @return 0 in case of success, nonzero otherwise (i.e. the player has no quests)
  */
-int CQuest::pc_login(TBL_PC *sd)
+int CQuest::pc_login(struct map_session_data *sd)
 {
 #if PACKETVER < 20141022
 	int i;
@@ -79,7 +79,8 @@ int CQuest::pc_login(TBL_PC *sd)
  * @param quest_id ID of the quest to add.
  * @return 0 in case of success, nonzero otherwise
  */
-int CQuest::add(TBL_PC *sd, int quest_id) {
+int CQuest::add(struct map_session_data *sd, int quest_id)
+{
 	int n;
 	struct quest_db *qi = quest->db(quest_id);
 
@@ -130,7 +131,8 @@ int CQuest::add(TBL_PC *sd, int quest_id) {
  * @param qid2 New quest to add
  * @return 0 in case of success, nonzero otherwise
  */
-int CQuest::change(TBL_PC *sd, int qid1, int qid2) {
+int CQuest::change(struct map_session_data *sd, int qid1, int qid2)
+{
 	int i;
 	struct quest_db *qi = quest->db(qid2);
 
@@ -180,7 +182,8 @@ int CQuest::change(TBL_PC *sd, int qid1, int qid2) {
  * @param quest_id ID of the quest to remove
  * @return 0 in case of success, nonzero otherwise
  */
-int CQuest::_delete(TBL_PC *sd, int quest_id) {
+int CQuest::_delete(struct map_session_data *sd, int quest_id)
+{
 	int i;
 
 	//Search for quest
@@ -222,15 +225,15 @@ int CQuest::_delete(TBL_PC *sd, int quest_id) {
  *           int Party ID
  *           int Mob ID
  */
-int CQuest::update_objective_sub(struct block_list *bl, va_list ap) {
-	struct map_session_data *sd;
-	int mob_id, party_id;
+int CQuest::update_objective_sub(struct block_list *bl, va_list ap)
+{
+	struct map_session_data *sd = NULL;
+	int party_id = va_arg(ap, int);
+	int mob_id = va_arg(ap, int);
 
 	nullpo_ret(bl);
-	nullpo_ret(sd = (struct map_session_data *)bl);
-
-	party_id = va_arg(ap,int);
-	mob_id = va_arg(ap,int);
+	Assert_ret(bl->type == BL_PC);
+	sd = BL_UCAST(BL_PC, bl);
 
 	if( !sd->avail_quests )
 		return 0;
@@ -249,7 +252,7 @@ int CQuest::update_objective_sub(struct block_list *bl, va_list ap) {
  * @param sd     Character's data
  * @param mob_id Monster ID
  */
-void CQuest::update_objective(TBL_PC *sd, int mob_id)
+void CQuest::update_objective(struct map_session_data *sd, int mob_id)
 {
 	int i,j;
 
@@ -304,7 +307,9 @@ void CQuest::update_objective(TBL_PC *sd, int mob_id)
  * @param qs       New quest state
  * @return 0 in case of success, nonzero otherwise
  */
-int CQuest::update_status(TBL_PC *sd, int quest_id, enum quest_state qs) {
+
+int CQuest::update_status(struct map_session_data *sd, int quest_id, enum quest_state qs)
+{
 	int i;
 
 	ARR_FIND(0, sd->avail_quests, i, sd->quest_log[i].quest_id == quest_id);
@@ -353,7 +358,7 @@ int CQuest::update_status(TBL_PC *sd, int quest_id, enum quest_state qs) {
  *                    1 if the quest's timeout has expired
  *                    0 otherwise
  */
-int CQuest::check(TBL_PC *sd, int quest_id, enum quest_check_type type)
+int CQuest::check(struct map_session_data *sd, int quest_id, enum quest_check_type type)
 {
 	int i;
 

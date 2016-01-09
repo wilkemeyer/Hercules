@@ -24,6 +24,7 @@
 #include "map.h" //TBL_PC
 #include "../common/hercules.h"
 #include "../common/db.h"
+#include "../common/mmo.h"
 
 struct eri;
 struct map_session_data;
@@ -123,6 +124,7 @@ public:
 	static bool char_online (struct map_session_data *sd);
 	static bool changesex (struct map_session_data *sd, bool change_account);
 	//int (*chardisconnect) (struct map_session_data *sd); // FIXME: Commented out in clif.c, function does not exist
+
 	static bool divorce (int partner_id1, int partner_id2);
 
 	static bool removefriend (int char_id, int friend_id);
@@ -131,9 +133,9 @@ public:
 	static bool flush (void);
 	static void skillid2idx (int fd);
 
-	static bool sd_to_auth (TBL_PC* sd, enum sd_state state);
+	static bool sd_to_auth (struct map_session_data *sd, enum sd_state state);
 	static int check_connect_char_server (int tid, int64 tick, int id, intptr_t data);
-	static bool auth_logout (TBL_PC* sd, enum sd_state state);
+	static bool auth_logout (struct map_session_data *sd, enum sd_state state);
 	static void save_ack (int fd);
 	static int reconnect (DBKey key, DBData *data, va_list ap);
 	static int auth_db_cleanup_sub (DBKey key, DBData *data, va_list ap);
@@ -166,6 +168,7 @@ public:
 	static int parse (int fd);
 	static void save_scdata_single (int account_id, int char_id, short type, struct status_change_entry *sce);
 	static void del_scdata_single (int account_id, int char_id, short type);
+
 };
 extern CChrif *chrif;
 

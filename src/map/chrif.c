@@ -144,7 +144,8 @@ bool CChrif::auth_delete(int account_id, int char_id, enum sd_state state) {
 }
 
 //Moves the sd character to the auth_db structure.
-bool CChrif::sd_to_auth(TBL_PC* sd, enum sd_state state) {
+bool CChrif::sd_to_auth(struct map_session_data *sd, enum sd_state state)
+{
 	struct auth_node *node;
 
 	nullpo_retr(false, sd);
@@ -172,7 +173,7 @@ bool CChrif::sd_to_auth(TBL_PC* sd, enum sd_state state) {
 	return true;
 }
 
-bool CChrif::auth_logout(TBL_PC* sd, enum sd_state state)
+bool CChrif::auth_logout(struct map_session_data *sd, enum sd_state state)
 {
 	nullpo_retr(false, sd);
 	if(sd->fd && state == ST_LOGOUT) { //Disassociate player, and free it after saving ack returns. [Skotlex]
@@ -185,7 +186,8 @@ bool CChrif::auth_logout(TBL_PC* sd, enum sd_state state)
 	return chrif->sd_to_auth(sd, state);
 }
 
-bool CChrif::auth_finished(TBL_PC* sd) {
+bool CChrif::auth_finished(struct map_session_data *sd)
+{
 	struct auth_node *node;
 
 	nullpo_retr(false, sd);
@@ -574,7 +576,7 @@ void CChrif::authok(int fd) {
 	struct mmo_charstatus* charstatus;
 	struct auth_node *node;
 	bool changing_mapservers;
-	TBL_PC* sd;
+	struct map_session_data *sd = NULL;
 
 	//Check if both servers agree on the struct's size
 	if( RFIFOW(fd,2) - 25 != sizeof(struct mmo_charstatus) ) {
@@ -1449,8 +1451,8 @@ int CChrif::send_usercount_tochar(int tid, int64 tick, int id, intptr_t data) {
  *------------------------------------------*/
 bool CChrif::send_users_tochar(void) {
 	int users = 0, i = 0;
-	struct map_session_data* sd;
-	struct s_mapiterator* iter;
+	const struct map_session_data *sd;
+	struct s_mapiterator *iter;
 
 	chrif_check(false);
 
@@ -1460,7 +1462,7 @@ bool CChrif::send_users_tochar(void) {
 	WFIFOW(chrif->fd,0) = 0x2aff;
 
 	iter = mapit_getallusers();
-	for( sd = (TBL_PC*)mapit->first(iter); mapit->exists(iter); sd = (TBL_PC*)mapit->next(iter) ) {
+	for (sd = BL_UCCAST(BL_PC, mapit->first(iter)); mapit->exists(iter); sd = BL_UCCAST(BL_PC, mapit->next(iter))) {
 		WFIFOL(chrif->fd,6+8*i) = sd->status.account_id;
 		WFIFOL(chrif->fd,6+8*i+4) = sd->status.char_id;
 		i++;

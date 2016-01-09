@@ -21,6 +21,7 @@
 #ifndef MAP_PARTY_H
 #define MAP_PARTY_H
 
+
 #include "map.h" // TBL_PC
 #include "../common/hercules.h"
 #include "../common/db.h"
@@ -28,6 +29,11 @@
 
 #define PARTY_BOOKING_JOBS 6
 #define PARTY_BOOKING_RESULTS 10
+
+
+//struct block_list;
+//struct map_session_data;
+
 
 struct party_member_data {
 	struct map_session_data *sd;
@@ -134,14 +140,16 @@ public:
 	static void recruit_search (struct map_session_data *sd, short level, short mapid, unsigned long lastindex, short resultcount);
 	static bool booking_delete (struct map_session_data *sd);
 	/* */
+
 	static int vforeachsamemap (int (*func)(struct block_list *,va_list),struct map_session_data *sd,int range, va_list ap);
 	static int foreachsamemap (int (*func)(struct block_list *,va_list),struct map_session_data *sd,int range,...);
 	static int send_xy_timer (int tid, int64 tick, int id, intptr_t data);
 	static void fill_member (struct party_member* member, struct map_session_data* sd, unsigned int leader);
-	static TBL_PC* sd_check (int party_id, int account_id, int char_id);
+	struct map_session_data* sd_check (int party_id, int account_id, int char_id);
 	static void check_state (struct party_data *p);
 	static struct party_booking_ad_info* create_booking_data (void);
 	static int db_final (DBKey key, DBData *data, va_list ap);
+
 };
 extern CParty *party;
 #ifdef HERCULES_CORE
