@@ -628,7 +628,7 @@ public:
 	static int isidentified (int nameid);
 	static int isidentified2 (struct item_data *data);
 	static int combo_split_atoi (char *str, int *val);
-	static void read_combos ();
+	static void read_combos (void);
 	static int gendercheck (struct item_data *id);
 	static int validate_entry (struct item_data *entry, int n, const char *source);
 	static void readdb_additional_fields (int itemid, config_setting_t *it, int n, const char *source);
@@ -642,6 +642,7 @@ public:
 	static struct item_combo * id2combo (unsigned short id);
 	static bool is_item_usable (struct item_data *item);
 	static bool lookup_const (const config_setting_t *it, const char *name, int *value);
+
 };
 extern CItemdb *itemdb;
 

@@ -10800,6 +10800,27 @@ void CClif::pChangeCart(int fd,struct map_session_data *sd)
 		pc->setcart(sd,type);
 }
 
+
+/// Request to select cart's visual look for new cart design (CZ_SELECTCART).
+/// 0980 <identity>.L <type>.B
+void CClif::pSelectCart(int fd, struct map_session_data *sd)
+{
+#if PACKETVER >= 20150805 // RagexeRE
+	int type;
+
+	if (!sd || !pc->checkskill(sd, MC_CARTDECORATE) || RFIFOL(fd, 2) != sd->status.account_id)
+		return;
+
+	type = (int)RFIFOB(fd, 6);
+
+	if (type <= MAX_BASE_CARTS || type > MAX_CARTS)
+		return;
+
+	pc->setcart(sd, type);
+#endif
+}
+
+
 /// Request to increase status (CZ_STATUS_CHANGE).
 /// 00bb <status id>.W <amount>.B
 /// status id:
@@ -18351,6 +18372,28 @@ void CClif::dressroom_open(struct map_session_data *sd, int view)
 	WFIFOSET(fd,packet_len(0xa02));
 }
 
+/// Request to select cart's visual look for new cart design (ZC_SELECTCART).
+/// 097f <Length>.W <identity>.L <type>.B
+void CClif::selectcart(struct map_session_data *sd)
+{
+#if PACKETVER >= 20150805
+	int i = 0, fd;
+
+	fd = sd->fd;
+
+	WFIFOHEAD(fd, 8 + MAX_CARTDECORATION_CARTS);
+	WFIFOW(fd, 0) = 0x97f;
+	WFIFOW(fd, 2) = 8 + MAX_CARTDECORATION_CARTS;
+	WFIFOL(fd, 4) = sd->status.account_id;
+
+	for (i = 0; i < MAX_CARTDECORATION_CARTS; i++) {
+		WFIFOB(fd, 8 + i) = MAX_BASE_CARTS + 1 + i;
+	}
+
+	WFIFOSET(fd, 8 + MAX_CARTDECORATION_CARTS);
+#endif
+}
+
 /* */
 unsigned short clif_decrypt_cmd( int cmd, struct map_session_data *sd ) {
 	if( sd ) {
@@ -18666,6 +18709,4 @@ void clif_defaults(void) {
 	// Set default parsers / decrypt
 	clif->parse_cmd = clif_parse_cmd_optional;
 	clif->decrypt_cmd = clif_decrypt_cmd;
-
-
 }

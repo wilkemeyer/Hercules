@@ -1153,7 +1153,7 @@ int CPet::skill_support_timer(int tid, int64 tick, int id, intptr_t data) {
 /**
  * Loads (or reloads) the pet database.
  */
-int CPet::read_db()
+int CPet::read_db(void)
 {
 	const char *filename[] = {
 		DBPATH"pet_db.txt",

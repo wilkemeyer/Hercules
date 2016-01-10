@@ -4898,7 +4898,7 @@ void CMob::reload(void) {
 /**
  * Clears spawn related information for a script reload.
  */
-void CMob::clear_spawninfo()
+void CMob::clear_spawninfo(void)
 {
 	int i;
 	for (i = 0; i < MAX_MOB_DB; i++)

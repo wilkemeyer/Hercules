@@ -167,7 +167,7 @@ public:
 	static int skill_bonus_timer (int tid, int64 tick, int id, intptr_t data);
 	static int recovery_timer (int tid, int64 tick, int id, intptr_t data);
 	static int skill_support_timer (int tid, int64 tick, int id, intptr_t data);
-	static int read_db ();
+	static int read_db (void);
 };
 extern CPet *pet;
 #ifdef HERCULES_CORE

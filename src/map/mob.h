@@ -525,7 +525,7 @@ public:
 	static bool readdb_race2 (char *fields[], int columns, int current);
 	static bool readdb_itemratio (char *str[], int columns, int current);
 	static void load (bool minimal);
-	static void clear_spawninfo ();
+	static void clear_spawninfo (void);
 	static void destroy_mob_db (int index);
 };
 extern CMob *mob;
