@@ -4360,7 +4360,7 @@ int CSkill::castend_damage_id(struct block_list* src, struct block_list *bl, uin
 					clif->slide(src, x, y);
 					clif->fixpos(src); // the official server send these two packets.
 					skill->attack(BF_WEAPON, src, src, bl, skill_id, skill_lv, tick, flag);
-					if ( rnd() % 100 < 4 * skill_lv &&	skill_id == GC_DARKILLUSION )
+					if (rnd() % 100 < 4 * skill_lv && skill_id == GC_DARKILLUSION)
 						skill->castend_damage_id(src, bl, GC_CROSSIMPACT, skill_lv, tick, flag);
 				}
 			}
@@ -14830,7 +14830,7 @@ int CSkill::vf_cast_fix(struct block_list *bl, double time, uint16 skill_id, uin
 		}
 		if (sc->data[SC_MYSTICSCROLL])
 			VARCAST_REDUCTION(sc->data[SC_MYSTICSCROLL]->val1);
-			
+
 		// Fixed cast reduction bonuses
 		if( sc->data[SC__LAZINESS] )
 			fixcast_r = max(fixcast_r, sc->data[SC__LAZINESS]->val2);
@@ -18073,7 +18073,7 @@ int CSkill::blockpc_start(struct map_session_data *sd, uint16 skill_id, int tick
 				return 0;
 			else {
 				int cursor;
-				/**	somehow, the timer vanished. (bugreport:8367) **/
+				/* somehow, the timer vanished. (bugreport:8367) */
 				ers_free(skill->cd_entry_ers, cd->entry[i]);
 
 				cd->entry[i] = NULL;
@@ -18786,7 +18786,7 @@ bool CSkill::parse_row_skilldb(char* split[], int columns, int current) {
 	safestrncpy(skill->dbs->db[idx].name, trim(split[15]), sizeof(skill->dbs->db[idx].name));
 	safestrncpy(skill->dbs->db[idx].desc, trim(split[16]), sizeof(skill->dbs->db[idx].desc));
 	strdb_iput(skill->name2id_db, skill->dbs->db[idx].name, skill_id);
-	script->set_constant2(skill->dbs->db[idx].name,(int)skill_id,0);
+	script->set_constant2(skill->dbs->db[idx].name, (int)skill_id, false, false);
 
 	return true;
 }

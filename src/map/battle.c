@@ -4091,7 +4091,8 @@ struct Damage CBattle::calc_misc_attack(struct block_list *src,struct block_list
 #else
 			short totaldef = tstatus->def2 + (short)status->get_def(target);
 #endif
-			if ( sd )	wd.damage += sd->bonus.arrow_atk;
+			if (sd != NULL)
+				wd.damage += sd->bonus.arrow_atk;
 			md.damage = (int)(3 * (1 + wd.damage) * (5 + skill_lv) / 5.0f);
 			md.damage -= totaldef;
 
@@ -4556,7 +4557,7 @@ struct Damage CBattle::calc_weapon_attack(struct block_list *src,struct block_li
 		skill_id == NJ_KIRIKAGE))
 	{
 		short cri = sstatus->cri;
-		if (sd)	{
+		if (sd != NULL) {
 			// if show_katar_crit_bonus is enabled, it already done the calculation in status.c
 			if (!battle_config.show_katar_crit_bonus && sd->status.weapon == W_KATAR) {
 				cri <<= 1;

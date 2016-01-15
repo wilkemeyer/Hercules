@@ -974,7 +974,7 @@ void CClif::set_unit_idle(struct block_list* bl, struct map_session_data *tsd, e
 #endif
 #if PACKETVER >= 20131223
 	p.AID = bl->id;
-	p.GID = (sd) ? sd->status.char_id : 0;	// CCODE
+	p.GID = (sd) ? sd->status.char_id : 0; // CCODE
 #else
 	p.GID = bl->id;
 #endif
@@ -1115,7 +1115,7 @@ void CClif::spawn_unit(struct block_list* bl, enum send_target target) {
 #endif
 #if PACKETVER >= 20131223
 	p.AID = bl->id;
-	p.GID = (sd) ? sd->status.char_id : 0;	// CCODE
+	p.GID = (sd) ? sd->status.char_id : 0; // CCODE
 #else
 	p.GID = bl->id;
 #endif
@@ -1210,7 +1210,7 @@ void CClif::set_unit_walking(struct block_list* bl, struct map_session_data *tsd
 #endif
 #if PACKETVER >= 20131223
 	p.AID = bl->id;
-	p.GID = (tsd) ? tsd->status.char_id : 0;	// CCODE
+	p.GID = (tsd) ? tsd->status.char_id : 0; // CCODE
 #else
 	p.GID = bl->id;
 #endif
@@ -2297,9 +2297,9 @@ void CClif::add_random_options(unsigned char* buf, struct item* item)
 	int i;
 	nullpo_retv(buf);
 	for (i = 0; i < 5; i++){
-		WBUFW(buf,i*5+0) = 0;	// OptIndex
-		WBUFW(buf,i*5+2) = 0;	// Value
-		WBUFB(buf,i*5+4) = 0;	// Param1
+		WBUFW(buf,i*5+0) = 0; // OptIndex
+		WBUFW(buf,i*5+2) = 0; // Value
+		WBUFB(buf,i*5+4) = 0; // Param1
 	}
 }
 
@@ -4295,7 +4295,7 @@ int CClif::damage(struct block_list* src, struct block_list* dst, int sdelay, in
 		p.leftDamage = damage2;
 	}
 #if PACKETVER >= 20131223
-	p.is_sp_damaged = 0;	// [ToDo] IsSPDamage - Displays blue digits.
+	p.is_sp_damaged = 0; // TODO: IsSPDamage - Displays blue digits.
 #endif
 
 	if(disguised(dst)) {
@@ -5043,7 +5043,7 @@ int CClif::skill_damage(struct block_list *src, struct block_list *dst, int64 ti
 	// type 6 (ACTION_SKILL) skills. So we have to do a small
 	// hack to set all type 6 to be sent as type 8 ACTION_ATTACK_MULTIPLE
 #if PACKETVER < 20131223
- 	WBUFB(buf, 32) = type;
+	WBUFB(buf, 32) = type;
 #else
 	WBUFB(buf, 32) = (type == BDT_SKILL) ? BDT_MULTIHIT : type;
 #endif
@@ -17330,18 +17330,18 @@ void CClif::maptypeproperty2(struct block_list *bl,enum send_target t) {
 
 	p.PacketType = maptypeproperty2Type;
 	p.type = 0x28;
-	p.flag.party = map->list[bl->m].flag.pvp ? 1 : 0;	//PARTY
-	p.flag.guild = (map->list[bl->m].flag.battleground || map_flag_gvg(bl->m)) ? 1 : 0;	// GUILD
-	p.flag.siege = (map->list[bl->m].flag.battleground || map_flag_gvg2(bl->m)) ? 1: 0;	// SIEGE
-	p.flag.mineffect = map_flag_gvg(bl->m) ? 1 : ( (sd && sd->state.lesseffect) ? 1 : 0);	// USE_SIMPLE_EFFECT - Forcing /mineffect in castles during WoE (probably redundant? I'm not sure)
+	p.flag.party = map->list[bl->m].flag.pvp ? 1 : 0; //PARTY
+	p.flag.guild = (map->list[bl->m].flag.battleground || map_flag_gvg(bl->m)) ? 1 : 0; // GUILD
+	p.flag.siege = (map->list[bl->m].flag.battleground || map_flag_gvg2(bl->m)) ? 1: 0; // SIEGE
+	p.flag.mineffect = map_flag_gvg(bl->m) ? 1 : ( (sd && sd->state.lesseffect) ? 1 : 0); // USE_SIMPLE_EFFECT - Forcing /mineffect in castles during WoE (probably redundant? I'm not sure)
 	p.flag.nolockon = 0; // DISABLE_LOCKON - TODO
-	p.flag.countpk = map->list[bl->m].flag.pvp ? 1 : 0;	// COUNT_PK
-	p.flag.nopartyformation = map->list[bl->m].flag.partylock ? 1 : 0;	// NO_PARTY_FORMATION
-	p.flag.bg = map->list[bl->m].flag.battleground ? 1 : 0;	// BATTLEFIELD
+	p.flag.countpk = map->list[bl->m].flag.pvp ? 1 : 0; // COUNT_PK
+	p.flag.nopartyformation = map->list[bl->m].flag.partylock ? 1 : 0; // NO_PARTY_FORMATION
+	p.flag.bg = map->list[bl->m].flag.battleground ? 1 : 0; // BATTLEFIELD
 	p.flag.nocostume = (map->list[bl->m].flag.noviewid & EQP_COSTUME) ? 1 : 0; // DISABLE_COSTUMEITEM - Disables Costume Sprite
 	p.flag.usecart = 1; // USECART - TODO
 	p.flag.summonstarmiracle = 0; // SUNMOONSTAR_MIRACLE - TODO
-	p.flag.SpareBits = 0;	// UNUSED
+	p.flag.SpareBits = 0; // UNUSED
 
 	clif->send(&p,sizeof(p),bl,t);
 #endif

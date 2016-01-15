@@ -645,7 +645,6 @@ public:
 	static void error (const char* src, const char* file, int start_line, const char* error_msg, const char* error_pos);
 	static void warning (const char* src, const char* file, int start_line, const char* error_msg, const char* error_pos);
 	/* */
-
 	static bool addScript (char *name, char *args, bool (*func)(struct script_state *st), bool isDeprecated);
 	static int conv_num (struct script_state *st,struct script_data *data);
 	static const char* conv_str (struct script_state *st,struct script_data *data);
@@ -668,8 +667,8 @@ public:
 	static struct script_data* push_str (struct script_stack* stack, enum c_op type, char* str);
 	static struct script_data* push_copy (struct script_stack* stack, int pos);
 	static void pop_stack (struct script_state* st, int start, int end);
-	static void set_constant (const char* name, int value, bool isparameter);
-	static void set_constant2 (const char *name, int value, bool isparameter);
+	static void set_constant (const char *name, int value, bool is_parameter, bool is_deprecated);
+	static void set_constant2 (const char *name, int value, bool is_parameter, bool is_deprecated);
 	static bool get_constant (const char* name, int* value);
 	static void label_add(int key, int pos);
 	static void run (struct script_code *rootscript, int pos, int rid, int oid);

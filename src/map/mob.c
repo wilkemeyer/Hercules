@@ -2040,7 +2040,7 @@ void CMob::damage(struct mob_data *md, struct block_list *src, int damage) {
 
 	if (battle_config.show_mob_info&3)
 		clif->charnameack (0, &md->bl);
-	
+
 #if PACKETVER >= 20131223
 	// Resend ZC_NOTIFY_MOVEENTRY to Update the HP
 	if (battle_config.show_monster_hp_bar)
@@ -4292,7 +4292,7 @@ void CMob::name_constants(void) {
 #endif // ENABLE_CASE_CHECK
 	for (i = 0; i < MAX_MOB_DB; i++) {
 		if (mob->db_data[i] && !mob->is_clone(i))
-			script->set_constant2(mob->db_data[i]->sprite, i, 0);
+			script->set_constant2(mob->db_data[i]->sprite, i, false, false);
 	}
 #ifdef ENABLE_CASE_CHECK
 	script->parser_current_file = NULL;

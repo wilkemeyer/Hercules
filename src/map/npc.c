@@ -2531,7 +2531,7 @@ void CNpc::parsename(struct npc_data* nd, const char* name, const char* start, c
 // Support for using Constants in place of NPC View IDs.
 int CNpc::parseview(const char* w4, const char* start, const char* buffer, const char* filepath) {
 	int val = FAKE_NPC, i = 0;
-	char viewid[1024]; // Max size of name from const.txt, see script->read_constdb.
+	char viewid[1024]; // Max size of name from constants.conf, see script->read_constdb.
 
 	// Extract view ID / constant
 	while (w4[i] != '\0') {

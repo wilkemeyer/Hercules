@@ -1056,7 +1056,7 @@ static int connect_check_clear(int tid, int64 tick, int id, intptr_t data) {
 				clear++;
 			}
 		list++;
- 	}
+	}
 	dbi_destroy(iter);
 
 	if( access_debug ){
